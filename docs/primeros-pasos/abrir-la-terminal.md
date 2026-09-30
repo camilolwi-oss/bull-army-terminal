@@ -1,6 +1,6 @@
 # Abrir la terminal
 
-Hay tres formas de usarla. Para operar, la primera alcanza.
+Hay dos formas de usarla. Para operar, la primera alcanza.
 
 ## 1. Desde la web (recomendado)
 
@@ -8,13 +8,11 @@ Entrá a:
 
 **https://camilolwi-oss.github.io/bull-army-terminal/**
 
-Se actualiza sola cada vez que se publica una versión nueva. Guardala en favoritos.
+Se actualiza sola cada vez que se publica una versión nueva. Guardala en favoritos o [instalala como app](iniciar-sesion.md).
 
-## 2. Como archivo
+Necesitás tu **usuario y contraseña VIP**: ver [Iniciar sesión e instalar](iniciar-sesion.md).
 
-Si alguien te pasó el archivo `bull-army-extremos.html`, abrilo con doble clic en Chrome, Edge, Safari o Firefox. Tiene todo adentro: no necesita nada más que conexión a internet para traer los datos.
-
-## 3. Desde el código (para desarrollar)
+## 2. Desde el código (para desarrollar)
 
 Necesitás [Node.js](https://nodejs.org) 18 o superior y [Git](https://git-scm.com).
 

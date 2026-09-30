@@ -1,12 +1,20 @@
 # Preguntas frecuentes
 
+## Olvidé mi contraseña
+
+Pedile a Bull Army una nueva: el Admin genera otra desde el panel de accesos. Las contraseñas no se pueden recuperar porque no se guardan en ningún lado, solo una huella cifrada.
+
+## ¿Puedo usar mi acceso en varios dispositivos?
+
+Sí: entrás con el mismo usuario en cada navegador. Cada uno guarda su sesión.
+
 ## ¿Necesito cuenta en Hyperliquid?
 
 No. La terminal solo **lee** datos públicos. No se conecta a ninguna billetera ni puede operar.
 
 ## ¿Es gratis?
 
-Sí. Todas las fuentes de datos son públicas y gratuitas. La key de Tree News también es gratis.
+La terminal es exclusiva para miembros VIP de Bull Army. Las fuentes de datos que usa son públicas y la key de Tree News es gratis.
 
 ## Dice "Demo · datos de muestra". ¿Qué hago?
 

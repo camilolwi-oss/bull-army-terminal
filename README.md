@@ -12,7 +12,9 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 | **Liquidaciones** | Mapa de los precios de liquidación de las cuentas más grandes de Hyperliquid. |
 | **Noticias** | Feed de Tree News en tiempo real y calendario macro de la semana. |
 
-**Abrila en el navegador:** https://camilolwi-oss.github.io/bull-army-terminal/
+**Abrila en el navegador:** https://camilolwi-oss.github.io/bull-army-terminal/ (requiere usuario VIP). Se puede instalar como app (PWA).
+
+**Accesos:** los administra el Admin desde `#admin`. Ver [ADMIN.md](ADMIN.md).
 
 > Material educativo de Bull Army. **No es consejo financiero.**
 
@@ -28,20 +30,14 @@ npm run dev
 
 Abrí <http://localhost:5173> en el navegador.
 
-¿Querés un solo archivo para abrir con doble clic o compartir?
-
-```bash
-npm run build
-```
-
-Genera `dist/bull-army-extremos.html`, que funciona sin servidor.
+La terminal pide login también en desarrollo: usá un acceso válido (ver [ADMIN.md](ADMIN.md)).
 
 ## Comandos
 
 | Comando | Qué hace |
 |---|---|
 | `npm run dev` | Sirve `src/` en <http://localhost:5173> para trabajar en el código. |
-| `npm run build` | Arma `dist/bull-army-extremos.html` con todo incrustado (CSS, JS, datos y Pine Script). |
+| `npm run build` | Arma `dist/`: la página con todo incrustado (CSS, JS, datos y Pine Script) más `access.json`, el manifest, el service worker y los íconos de la PWA. |
 | `npm run preview` | Hace el build y sirve el archivo de `dist/` para probarlo. |
 
 Para usar otro puerto: `PORT=8080 npm run dev` (en PowerShell: `$env:PORT=8080; npm run dev`).
@@ -52,9 +48,12 @@ Para usar otro puerto: `PORT=8080 npm run dev` (en PowerShell: `$env:PORT=8080; 
 bull-army-terminal/
 ├── src/                       Código fuente del panel
 │   ├── index.html             Estructura de la página (todas las secciones)
+│   ├── access.json            Lista de accesos (contraseñas solo como hash)
+│   ├── manifest.webmanifest   PWA · sw.js · icons/
 │   ├── css/styles.css         Estilos (tema oscuro de Bull Army)
 │   ├── js/
 │   │   ├── loader.js          Carga datos y scripts en orden (solo en desarrollo)
+│   │   ├── acceso/            Login, sesión y panel de Admin
 │   │   ├── app.js             Arranque, navegación, ajustes, buscador de mercados y sección Indicador
 │   │   ├── contexto/          calc.js (cálculos puros) · ui.js (interfaz y datos)
 │   │   ├── aurora/            calc.js (réplica de Aurora y el Hull) · ui.js (gráfico)
@@ -65,7 +64,7 @@ bull-army-terminal/
 │   ├── data/                  Datos de muestra para el modo demo (sin conexión)
 │   └── pine/                  extremos.pine · aurora.pine · hull-suite.pine
 ├── scripts/
-│   ├── build.mjs              Genera el archivo único de dist/
+│   ├── build.mjs              Arma dist/ (página + accesos + PWA)
 │   └── serve.mjs              Servidor local sin dependencias
 ├── docs/                      Documentación (GitBook)
 ├── .github/workflows/         Publicación automática en GitHub Pages

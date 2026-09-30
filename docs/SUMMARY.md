@@ -5,6 +5,7 @@
 ## Primeros pasos
 
 * [Abrir la terminal](primeros-pasos/abrir-la-terminal.md)
+* [Iniciar sesión e instalar](primeros-pasos/iniciar-sesion.md)
 * [La interfaz](primeros-pasos/la-interfaz.md)
 * [Ajustes](primeros-pasos/ajustes.md)
 

@@ -3,13 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bull Army · Extremos</title>
+<title>Bull Army Terminal</title>
+<meta name="theme-color" content="#0B0B0C">
+<meta name="robots" content="noindex">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
+<body class="locked">
+<!-- Acceso: la terminal queda oculta hasta que la sesión es válida (js/acceso/gate.js) -->
+<div class="gate" id="gate" hidden>
+  <form class="gate-card" id="gateForm" autocomplete="on">
+    <img class="gate-logo" src="icons/icon-192.png" alt="" width="84" height="84">
+    <h1>Bull Army Terminal</h1>
+    <p class="gate-sub">Acceso exclusivo para miembros VIP.</p>
+    <label>Usuario <input id="gateUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false"></label>
+    <label>Contraseña <span class="pw"><input id="gatePass" name="password" type="password" autocomplete="current-password"><button type="button" class="btn" id="gateShow">Ver</button></span></label>
+    <p class="gate-err" id="gateErr" role="alert" hidden></p>
+    <button type="submit" class="gate-btn" id="gateBtn">Entrar</button>
+    <p class="gate-foot">¿Todavía no sos VIP? <a href="https://discord.gg/bullarmy" target="_blank" rel="noopener">Sumate a Bull Army</a></p>
+  </form>
+</div>
+<div class="admin-view" id="adminView" hidden></div>
 <div class="app" id="app">
 <nav class="side" id="side" aria-label="Secciones">
   <a class="side-brand" href="#contexto"><span class="mark" aria-hidden="true">BA</span><b>Bull Army</b></a>
@@ -27,6 +48,7 @@
     <li><a class="side-item" href="https://discord.gg/bullarmy" target="_blank" rel="noopener" title="Unirte al Discord"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10h.01M15 10h.01"/></svg><span class="lab">Unirte al Discord</span><span class="ext" aria-hidden="true">↗</span></a></li>
     <li><a class="side-item" href="https://bullarmy.io" target="_blank" rel="noopener" title="Membresía"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg><span class="lab">Membresía</span><span class="ext" aria-hidden="true">↗</span></a></li>
     <li><button type="button" class="side-item" id="openSettings" title="Ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span class="lab">Ajustes</span></button></li>
+    <li><button type="button" class="side-item" id="logout" title="Cerrar sesión"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg><span class="lab">Salir · <span id="sessUser"></span></span></button></li>
     <li><button type="button" class="side-item collapse-btn" id="collapse" aria-expanded="true" aria-controls="side" title="Contraer menú"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span class="lab">Contraer menú</span></button></li>
   </ul>
   <span class="mode" id="mode" data-state="loading"><i></i><span id="modeTxt">Cargando</span></span>
@@ -592,6 +614,11 @@
     <div class="actions"><button type="button" class="btn" id="setCancel">Cancelar</button><button type="submit" class="btn primary" value="save">Guardar</button></div>
   </form>
 </dialog>
+
+<!-- Acceso: login, sesión y panel de Admin. Corren antes que la terminal. -->
+<script src="js/acceso/cripto.js"></script>
+<script src="js/acceso/gate.js"></script>
+<script src="js/acceso/admin.js"></script>
 
 <!-- Datos de respaldo (modo demo) y Pine Script. js/loader.js los completa desde data-src antes de arrancar la app. -->
 <script type="application/json" id="liqSnap" data-src="data/liquidaciones.json"></script>

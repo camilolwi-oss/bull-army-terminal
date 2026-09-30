@@ -14,8 +14,8 @@ npm run dev
 
 | Comando | Qué hace |
 |---|---|
-| `npm run dev` | Sirve `src/` en <http://localhost:5173>. Recargá la página después de cada cambio. |
-| `npm run build` | Arma `dist/bull-army-extremos.html`, un único archivo con todo adentro. |
+| `npm run dev` | Sirve `src/` en <http://localhost:5173>. Recargá la página después de cada cambio. Pide login como la versión publicada: usá un acceso válido (el Admin puede crear uno de prueba en `#admin`). |
+| `npm run build` | Arma `dist/`: la página con todo adentro más `access.json`, el manifest, el service worker y los íconos. |
 | `npm run preview` | Hace el build y sirve el resultado para probarlo. |
 
 Para usar otro puerto: `PORT=8080 npm run dev` (en PowerShell: `$env:PORT=8080; npm run dev`).
@@ -37,7 +37,7 @@ Al final de `src/index.html` hay dos tipos de marcadores:
 `js/loader.js` descarga los datos, los pone dentro de su `<script>` y después ejecuta los scripts de la app **en orden**. El build hace lo mismo, pero incrustando todo en el HTML y quitando el loader.
 
 {% hint style="info" %}
-Por eso `src/index.html` **no se abre con doble clic**: el navegador no deja leer archivos desde `file://`. Usá `npm run dev` o el archivo de `dist/`.
+Por eso `src/index.html` **no se abre con doble clic**: el navegador no deja leer archivos desde `file://`. Usá `npm run dev` (o `npm run preview` para probar el build).
 {% endhint %}
 
 ## Dónde tocar
@@ -88,7 +88,7 @@ PineTS no soporta el 100 % de Pine Script. Si usás funciones nuevas, verificá 
 - [ ] `npm run dev`: las siete secciones cargan y la consola no muestra errores.
 - [ ] El estado dice **En vivo · Hyperliquid**.
 - [ ] `npm run build` termina sin errores.
-- [ ] `npm run preview`: el archivo único funciona igual.
+- [ ] `npm run preview`: el build funciona igual (login incluido).
 
 Después:
 

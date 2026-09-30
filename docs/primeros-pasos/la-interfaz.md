@@ -20,6 +20,7 @@ Al pie del menú:
 
 - **Unirte al Discord** y **Membresía**: enlaces a la comunidad de Bull Army.
 - **Ajustes**: la key de noticias y el servidor del calendario. Ver [Ajustes](ajustes.md).
+- **Salir · tu usuario**: cierra la sesión. Ver [Iniciar sesión e instalar](iniciar-sesion.md).
 - **Contraer menú**: deja solo los íconos para ganar espacio.
 
 En el celular el menú se esconde; se abre con el botón **☰** de arriba a la izquierda.

@@ -1,5 +1,5 @@
-// Cargador para desarrollo: completa los <script data-src> (datos y Pine Script) y después
-// ejecuta los <script data-app> en orden. El build (scripts/build.mjs) incrusta todo y quita este archivo.
+// Cargador para desarrollo: completa los <script data-src> (datos y Pine Script), espera el login
+// (BAGate.ready) y recién ahí ejecuta los <script data-app> en orden. El build (scripts/build.mjs) incrusta todo y quita este archivo.
 (async () => {
   const fail = (msg) => {
     const $ = (id) => document.getElementById(id);
@@ -18,6 +18,7 @@
       if (!r.ok) throw new Error(`${s.dataset.src}: HTTP ${r.status}`);
       s.textContent = await r.text();
     }));
+    await window.BAGate.ready();
     for (const holder of document.querySelectorAll('script[data-app]')) {
       await new Promise((ok, ko) => {
         const s = document.createElement('script');
