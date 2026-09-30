@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bull Army · Extremos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="app" id="app">
+<nav class="side" id="side" aria-label="Secciones">
+  <a class="side-brand" href="#contexto"><span class="mark" aria-hidden="true">BA</span><b>Bull Army</b></a>
+  <ul class="side-nav">
+    <li><a class="side-item" href="#contexto" data-v="ctx" title="Contexto"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="lab">Contexto</span></a></li>
+    <li><a class="side-item" href="#indicador" data-v="ind" title="Indicador"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v18M17 3v18"/><rect x="4.5" y="7" width="5" height="8" rx="1"/><rect x="14.5" y="5" width="5" height="10" rx="1"/></svg><span class="lab">Indicador</span></a></li>
+    <li><a class="side-item" href="#spaghetti" data-v="spag" title="Spaghetti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 9-9"/><path d="M3 11l6 3 5-5 7 5"/></svg><span class="lab">Spaghetti</span></a></li>
+    <li><a class="side-item" href="#liquidaciones" data-v="liq" title="Liquidaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M9 20V4M14 20v-8M19 20v-5"/></svg><span class="lab">Liquidaciones</span></a></li>
+    <li><a class="side-item" href="#noticias" data-v="news" title="Noticias"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="lab">Noticias</span></a></li>
+  </ul>
+  <div class="side-spacer"></div>
+  <ul class="side-foot">
+    <li><a class="side-item" href="https://discord.gg/bullarmy" target="_blank" rel="noopener" title="Unirte al Discord"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10h.01M15 10h.01"/></svg><span class="lab">Unirte al Discord</span><span class="ext" aria-hidden="true">↗</span></a></li>
+    <li><a class="side-item" href="https://bullarmy.io" target="_blank" rel="noopener" title="Membresía"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg><span class="lab">Membresía</span><span class="ext" aria-hidden="true">↗</span></a></li>
+    <li><button type="button" class="side-item" id="openSettings" title="Ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg><span class="lab">Ajustes</span></button></li>
+    <li><button type="button" class="side-item collapse-btn" id="collapse" aria-expanded="true" aria-controls="side" title="Contraer menú"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg><span class="lab">Contraer menú</span></button></li>
+  </ul>
+  <span class="mode" id="mode" data-state="loading"><i></i><span id="modeTxt">Cargando</span></span>
+</nav>
+<div class="main-col">
+<header class="topbar"><button type="button" id="menuBtn" aria-expanded="false" aria-controls="side" aria-label="Abrir menú"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><b>Bull Army</b></header>
+<div class="wrap">
+  <div class="warn" id="warn" hidden>
+    <div class="warn-txt"><b id="warnTitle">Datos históricos, no en vivo.</b> <span id="warnBody"></span></div>
+    <button type="button" id="retry">Reintentar conexión</button>
+  </div>
+  <main>
+  <section id="panel-ctx" class="ctx" aria-labelledby="h-ctx" hidden>
+    <header class="view-head">
+      <h1 id="h-ctx">Contexto de mercado</h1>
+      <p class="sp-cap" id="cxCap">Bitcoin y el mercado de Hyperliquid, en una mirada.</p>
+    </header>
+    <div class="cx-grid">
+      <article class="card" id="cxReg">
+        <header><h2>¿Long o short?</h2><button type="button" class="help" aria-expanded="false" aria-controls="cxRegHelp">?</button></header>
+        <p class="help-txt" id="cxRegHelp" hidden>Compara el precio con sus medias de 50 y 200 días. Arriba de ambas, sesgo long; abajo de ambas, sesgo short; entre medio, neutral. La estadística mide qué hizo BTC 5 días después en el mismo estado, desde 2019.</p>
+        <p class="big" id="cxRegBig">—</p>
+        <p class="lead" id="cxRegLead"></p>
+        <p class="sub" id="cxRegSub"></p>
+      </article>
+
+      <article class="card span2" id="cxBtc">
+        <header>
+          <dl class="kpis">
+            <div><dt>Bitcoin</dt><dd id="cxPx">—</dd></div>
+            <div><dt>5 días</dt><dd id="cx5d">—</dd></div>
+            <div><dt>Volatilidad</dt><dd id="cxVol">—</dd></div>
+          </dl>
+          <button type="button" class="help" aria-expanded="false" aria-controls="cxBtcHelp">?</button>
+        </header>
+        <p class="help-txt" id="cxBtcHelp" hidden>Precio de BTC en Hyperliquid. La volatilidad compara la de los últimos 7 días con la del último año: calma, normal o agitada.</p>
+        <div class="range-row">
+          <div class="seg" id="cxRange" role="group" aria-label="Rango del gráfico"><button type="button" data-r="7" aria-pressed="true">7D</button><button type="button" data-r="30">30D</button><button type="button" data-r="90">90D</button></div>
+          <span class="chg" id="cxRangeChg"></span>
+        </div>
+        <figure class="cx-chart"><svg id="cxBtcSvg" role="img" aria-label="Precio de Bitcoin"></svg><div class="sp-tip" id="cxBtcTip" hidden></div></figure>
+      </article>
+
+      <article class="card" id="cxTrade">
+        <header><h2>¿Operar o esperar?</h2><button type="button" class="help" aria-expanded="false" aria-controls="cxTradeHelp">?</button></header>
+        <p class="help-txt" id="cxTradeHelp" hidden>Mide cuánto se mueve BTC hoy y ahora contra lo normal. Día: rango medio de este día de la semana en el último año. Ahora: rango de la última hora contra el promedio de esa hora en 30 días. Horario fuerte: las 4 horas seguidas que más se mueven.</p>
+        <p class="big" id="cxTradeBig">—</p>
+        <dl class="rows-dl">
+          <div><dt id="cxDow">Hoy</dt><dd id="cxDowV">—</dd></div>
+          <div><dt>Ahora</dt><dd id="cxNowV">—</dd></div>
+          <div><dt>Horario fuerte (UTC)</dt><dd id="cxPrimeV">—</dd></div>
+        </dl>
+      </article>
+
+      <article class="card span2" id="cxBreadth">
+        <header>
+          <dl class="kpis">
+            <div><dt>Amplitud · 24 h</dt><dd id="cxBrPct">—</dd></div>
+            <div><dt>Suben</dt><dd id="cxBrUp" class="up">—</dd></div>
+            <div><dt>Bajan</dt><dd id="cxBrDn" class="dn">—</dd></div>
+            <div><dt>30 días</dt><dd><svg class="spark" id="cxBr30" role="img" aria-label="Amplitud diaria de 30 días"></svg></dd></div>
+            <div><dt>Moneda mediana</dt><dd id="cxBrMed">—</dd></div>
+          </dl>
+          <button type="button" class="help" aria-expanded="false" aria-controls="cxBrHelp">?</button>
+        </header>
+        <p class="help-txt" id="cxBrHelp" hidden>Cambio de 24 h de los perps de Hyperliquid con más volumen, ordenados de mayor a menor. La línea de 30 días muestra qué parte subió cada día.</p>
+        <figure class="cx-bars"><svg id="cxBrSvg" role="img" aria-label="Cambio de 24 horas por moneda"></svg><div class="sp-tip" id="cxBrTip" hidden></div></figure>
+      </article>
+
+      <article class="card" id="cxAlts">
+        <header><h2>Alts contra BTC · 14 d</h2><button type="button" class="help" aria-expanded="false" aria-controls="cxAltsHelp">?</button></header>
+        <p class="help-txt" id="cxAltsHelp" hidden>Cuántas de las monedas con más volumen rinden más que BTC en 14 días. La línea muestra esa proporción día a día.</p>
+        <p class="big" id="cxAltsBig">—</p>
+        <p class="lead" id="cxAltsLead"></p>
+        <div class="meter" aria-hidden="true"><span id="cxAltsBar"></span></div>
+        <div class="spark-row"><span class="lbl">30 días</span><svg class="spark wide" id="cxAlts30" role="img" aria-label="Alts que superan a BTC, 30 días"></svg></div>
+        <dl class="rows-dl">
+          <div><dt>ETH contra BTC · 14 d</dt><dd id="cxEth">—</dd></div>
+          <div><dt>Moneda mediana contra BTC · 14 d</dt><dd id="cxMedBtc">—</dd></div>
+        </dl>
+      </article>
+
+      <article class="card" id="cxLev">
+        <header><h2>Apalancamiento y posicionamiento</h2><button type="button" class="help" aria-expanded="false" aria-controls="cxLevHelp">?</button></header>
+        <p class="help-txt" id="cxLevHelp" hidden>Futuros de BTC en Binance, últimas 24 h: variación del open interest, cuentas long contra short y compras agresivas contra ventas agresivas. El funding es el de BTC en Hyperliquid (por hora).</p>
+        <div class="mini-grid">
+          <div><span class="lbl">Open interest 24 h</span><b id="cxOi">—</b><svg class="spark" id="cxOiS"></svg></div>
+          <div><span class="lbl">Long / short</span><b id="cxLs">—</b><svg class="spark" id="cxLsS"></svg></div>
+          <div><span class="lbl">Compras / ventas</span><b id="cxTk">—</b><svg class="spark" id="cxTkS"></svg></div>
+          <div><span class="lbl">Funding BTC (1 h)</span><b id="cxFund">—</b></div>
+        </div>
+      </article>
+
+      <article class="card" id="cxCme">
+        <header><h2>Gap de CME</h2><button type="button" class="help" aria-expanded="false" aria-controls="cxCmeHelp">?</button></header>
+        <p class="help-txt" id="cxCmeHelp" hidden>Aproximación: usa el precio de BTC en Hyperliquid al cierre de CME (viernes 16:00, hora de Chicago) y a la reapertura (domingo 17:00). No son los precios del futuro de CME.</p>
+        <p class="big" id="cxCmeBig">—</p>
+        <p class="lead" id="cxCmeLead"></p>
+        <table class="cx-tbl"><caption class="vh">Últimos gaps</caption><tbody id="cxCmeRows"></tbody></table>
+      </article>
+
+      <article class="card" id="cxEtf">
+        <header><h2>Flujos de ETF de BTC · 7 d</h2><button type="button" class="help" aria-expanded="false" aria-controls="cxEtfHelp">?</button></header>
+        <p class="help-txt" id="cxEtfHelp" hidden>Entradas netas diarias de los ETF spot de Bitcoin en EE.UU. (SoSoValue). La estadística mide qué hizo BTC 5 días después de rachas de 5 o más días de entradas.</p>
+        <p class="big" id="cxEtfBig">—</p>
+        <p class="lead" id="cxEtfLead"></p>
+        <p class="sub" id="cxEtfSub"></p>
+        <figure class="cx-bars small"><svg id="cxEtfSvg" role="img" aria-label="Flujos diarios de ETF"></svg></figure>
+      </article>
+
+      <article class="card" id="cxAtr">
+        <header><h2>ATR · movimiento típico por día</h2><button type="button" class="help" aria-expanded="false" aria-controls="cxAtrHelp">?</button></header>
+        <p class="help-txt" id="cxAtrHelp" hidden>Average True Range de 14 períodos: cuánto se mueve BTC en una vela típica. La barra muestra qué parte del rango diario normal ya se usó hoy.</p>
+        <p class="big" id="cxAtrBig">—</p>
+        <div class="spark-row"><span class="lbl">ATR diario · 30 d</span><svg class="spark wide" id="cxAtrS"></svg></div>
+        <div class="meter" aria-hidden="true"><span id="cxAtrBar"></span></div>
+        <p class="lead" id="cxAtrLead"></p>
+        <dl class="rows-dl">
+          <div><dt>ATR de 4 h</dt><dd id="cxAtr4">—</dd></div>
+          <div><dt>ATR de 1 h</dt><dd id="cxAtr1">—</dd></div>
+        </dl>
+      </article>
+
+      <article class="card" id="cxMoves">
+        <header><h2>Cuándo se mueve · UTC</h2><button type="button" class="help" aria-expanded="false" aria-controls="cxMovesHelp">?</button></header>
+        <p class="help-txt" id="cxMovesHelp" hidden>Rango medio de cada hora del día en los últimos 30 días. En dorado, el horario fuerte; resaltada, la hora actual.</p>
+        <figure class="cx-bars tall"><svg id="cxMovesSvg" role="img" aria-label="Rango medio por hora UTC"></svg><div class="sp-tip" id="cxMovesTip" hidden></div></figure>
+      </article>
+    </div>
+    <p class="note" id="cxNote"></p>
+  </section>
+  <section id="panel-ind" aria-labelledby="h-ind" hidden>
+  <header class="view-head">
+    <h1 id="h-ind">Indicador · Extremos</h1>
+    <p class="sp-cap"><b>El RSI y el Hull filtran, el SRSI cronometra.</b> Señales de reversión solo desde los extremos y a favor de la tendencia.</p>
+  </header>
+  <div class="controls" role="group" aria-label="Mercado e indicador">
+    <div class="ctl picker" id="symCtl">
+      <span class="lbl">Mercado</span>
+      <button type="button" id="symBtn" aria-haspopup="listbox" aria-expanded="false"><span id="symLbl">BTC-PERP</span><span class="caret" aria-hidden="true">▾</span></button>
+      <div class="pop" id="pop" hidden>
+        <input type="text" id="symQ" role="combobox" aria-controls="symList" aria-expanded="true" aria-autocomplete="list" placeholder="Buscar entre todos los mercados…" aria-label="Buscar mercado" autocomplete="off" spellcheck="false">
+        <div class="seg filt" id="symF">
+          <button type="button" data-g="all" aria-pressed="true">Todos</button><button type="button" data-g="perp">Perps</button><button type="button" data-g="spot">Spot</button><button type="button" data-g="hip3">HIP-3</button>
+        </div>
+        <div class="rows-head"><span>Mercado</span><span>Precio</span><span>24h</span><span>Volumen 24h</span></div>
+        <ul class="rows" id="symList" role="listbox" aria-label="Mercados de Hyperliquid"></ul>
+        <p class="pop-foot" id="symCount">Cargando mercados…</p>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lbl">Temporalidad</span>
+      <div class="seg scroll" id="tf">
+        <button type="button" data-tf="1">1m</button><button type="button" data-tf="5">5m</button><button type="button" data-tf="15">15m</button><button type="button" data-tf="30">30m</button><button type="button" data-tf="60" aria-pressed="true">1H</button><button type="button" data-tf="240">4H</button><button type="button" data-tf="360">6H</button><button type="button" data-tf="1D">1D</button><button type="button" data-tf="3D">3D</button><button type="button" data-tf="W">1W</button><button type="button" data-tf="M">1M</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lbl">Niveles</span>
+      <div class="seg" id="lv">
+        <button type="button" data-v="Última" aria-pressed="true">Última</button><button type="button" data-v="Todas">Todas</button><button type="button" data-v="Ninguna">Ninguna</button>
+      </div>
+    </div>
+    <span class="spacer"></span>
+    <label class="tog"><input type="checkbox" id="fade" checked> Fade de cascada</label>
+    <label class="tog"><input type="checkbox" id="room" checked> Exigir R:R</label>
+    <label class="tog"><input type="checkbox" id="htf"> Régimen diario</label>
+    <label class="tog"><input type="checkbox" id="hullS" checked> Hull Suite</label>
+    <label class="tog"><input type="checkbox" id="hullF" checked> Filtro Hull</label>
+    <label class="tog"><input type="checkbox" id="trail"> Stop sigue al Hull</label>
+    <label class="tog"><input type="checkbox" id="divR" checked> Div. RSI</label>
+    <label class="tog"><input type="checkbox" id="divO" checked> Div. OBV</label>
+  </div>
+
+  <div class="chartbox">
+    <div id="chart"></div>
+    <div class="veil" id="veil"><span id="veilTxt">Ejecutando el Pine Script…</span></div>
+  </div>
+  <p class="note" id="note"></p>
+
+  <div class="read">
+    <div>
+      <h2>Cómo leer el gráfico</h2>
+      <dl class="legend">
+        <div><dt><span class="chip c-long">LONG ★</span></dt><dd><b>Hull y RSI alcistas</b>, pullback a la zona 40–50 y cruce %K/%D <b>debajo de 0.2</b>.</dd></div>
+        <div><dt><span class="chip c-short">SHORT ★</span></dt><dd><b>Hull y RSI bajistas</b>, rebote a la zona 50–60 y cruce %K/%D <b>encima de 0.8</b>.</dd></div>
+        <div><dt><span class="chip c-hull">HULL</span></dt><dd>Hull Suite de InSilico. <b>Verde</b>: solo compras. <b>Rojo</b>: solo ventas.</dd></div>
+        <div><dt><span class="chip c-gray">TP · SL · Hull</span></dt><dd>Entrada, stop y objetivo <b>avanzan con el trade</b> y se cierran en el TP, en el SL o cuando el Hull gira, con el resultado en R.</dd></div>
+        <div><dt><span class="chip c-txt gold">Historial</span></dt><dd>El tablero suma los trades cerrados del gráfico: cuántos por TP, SL y Hull, y el total en R.</dd></div>
+        <div><dt><span class="chip c-txt">0.2 – 0.8</span></dt><dd>Ningún cruce en el medio del oscilador genera señal: <b>solo los extremos</b>.</dd></div>
+        <div><dt><span class="chip c-txt gold">★★ → ★★★★</span></dt><dd>Suma una estrella por cada <b>divergencia RSI</b>, <b>divergencia OBV</b> y <b>failure swing</b> recientes.</dd></div>
+        <div><dt><span class="chip c-fade">FADE ▲▼</span></dt><dd>Cascada agotada: <b>clímax</b> de volumen, vela contraria con <b>volumen bajo</b> y recién ahí el cruce.</dd></div>
+        <div><dt><span class="chip c-gray">sin R:R</span></dt><dd>Gatillo válido, pero el extremo previo está más cerca que el objetivo. <b>No hay trade.</b></dd></div>
+        <div><dt><span class="chip c-abs">ABSORCIÓN</span></dt><dd>Tres o más señales contrarias que el precio se tragó sin girar. <b>Esperá continuación.</b></dd></div>
+        <div><dt><span class="chip c-txt bull">RANGE SHIFT</span></dt><dd>El RSI rompió 60 o perdió 40: <b>cambió el régimen</b> y con él la dirección permitida.</dd></div>
+        <div><dt><span class="chip c-txt">× en el panel</span></dt><dd>Cruce del SRSI contra el régimen. Es <b>silencio</b>, no una señal.</dd></div>
+        <div><dt><span class="chip c-txt bear">Div− · FS▼</span></dt><dd>Divergencia del RSI y failure swing de Wilder. <b>Advertencias</b>, no gatillos.</dd></div>
+        <div><dt><span class="chip c-obv">OBV+ · OBV−</span></dt><dd>El precio marca un extremo nuevo y el <b>volumen acumulado</b> no lo acompaña. Línea punteada.</dd></div>
+        <div><dt><span class="chip c-txt gold">RSI·OBV</span></dt><dd><b>Confluencia</b>: momentum y volumen divergen en la misma zona. Se marca en dorado.</dd></div>
+        <div><dt><span class="chip c-txt">CLÍMAX · agotada</span></dt><dd>Los dos hitos de la cascada que habilitan el fade.</dd></div>
+      </dl>
+    </div>
+    <div>
+      <h2>La regla en cuatro pasos</h2>
+      <ol class="steps">
+        <li><div><b>Tendencia con el Hull y el RSI</b><span>El Hull tiene que apuntar a favor y el RSI vivir en su rango: sobre 60 manda el lado largo, bajo 40 el corto.</span></div></li>
+        <li><div><b>Esperar el pullback</b><span>No se persigue precio: el RSI tiene que volver a la zona del 50.</span></div></li>
+        <li><div><b>Gatillo con el SRSI</b><span>Cruce %K/%D nacido dentro del extremo que apunta a favor: bajo 0.2 para compras, sobre 0.8 para ventas.</span></div></li>
+        <li><div><b>Riesgo estructural</b><span>Stop en el swing, objetivo a 2R. Si la geometría no da 2R, no hay trade. Si el Hull gira en contra, el trade se cierra.</span></div></li>
+      </ol>
+      <p class="rule"><b>Regla de hierro:</b> el SRSI nunca opera contra el Hull ni contra el régimen del RSI. Con el filtro activo, el fade de cascada también respeta el Hull.</p>
+    </div>
+  </div>
+  </section>
+
+  <section id="panel-spag" class="spag" aria-labelledby="h-spag" hidden>
+    <header class="view-head">
+      <h1 id="h-spag">Spaghetti</h1>
+      <p class="sp-cap">Todos los activos de Hyperliquid en un mismo gráfico: quién lidera, quién se queda.</p>
+    </header>
+    <div class="controls sp-bar" id="spBar" role="group" aria-label="Filtros del spaghetti">
+      <label class="ctl"><span class="lbl">Serie</span>
+        <select id="spSrc"><option value="close">Precio</option><option value="vol">Volumen</option></select>
+      </label>
+      <label class="ctl"><span class="lbl">Referencia</span>
+        <select id="spRef"><option value="none">Absoluta</option><option value="market" selected>Relativa al mercado</option><option value="BTC">Relativa a BTC</option></select>
+      </label>
+      <div class="ctl picker" id="spCoinsCtl">
+        <span class="lbl">Activos</span>
+        <button type="button" class="pickbtn" id="spCoinsBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="spCoinsPop"><span id="spCoinsLbl">—</span><span class="caret" aria-hidden="true">▾</span></button>
+        <div class="pop" id="spCoinsPop" role="dialog" aria-label="Elegir activos" hidden>
+          <div class="seg filt" id="spPreset" role="group" aria-label="Selección rápida">
+            <button type="button" data-n="10">Top 10</button><button type="button" data-n="20">Top 20</button><button type="button" data-n="30">Top 30</button><button type="button" data-n="50">Top 50</button><button type="button" data-n="0">Ninguno</button>
+          </div>
+          <div class="seg filt" id="spGroup" role="group" aria-label="Tipo de mercado">
+            <button type="button" data-g="perp" aria-pressed="true">Perps</button><button type="button" data-g="hip3">HIP-3</button><button type="button" data-g="spot">Spot</button><button type="button" data-g="all">Todos</button>
+          </div>
+          <input type="search" id="spCoinsQ" placeholder="Buscar para agregar o quitar…" aria-label="Buscar activo" autocomplete="off" spellcheck="false">
+          <fieldset class="checkset"><legend class="vh">Activos disponibles</legend><ul class="checklist" id="spCoinsList"></ul></fieldset>
+          <p class="pop-foot" id="spCoinsFoot"></p>
+        </div>
+      </div>
+      <label class="ctl"><span class="lbl">Ventana</span>
+        <select id="spLb">
+          <option value="21600000">6H</option><option value="43200000">12H</option><option value="86400000">1D</option><option value="259200000" selected>3D</option><option value="604800000">7D</option><option value="1209600000">14D</option><option value="2592000000">30D</option><option value="7776000000">90D</option><option value="15552000000">180D</option><option value="31536000000">1A</option>
+        </select>
+      </label>
+      <label class="ctl"><span class="lbl">Vela</span>
+        <select id="spTf">
+          <option value="1m">1m</option><option value="5m">5m</option><option value="15m">15m</option><option value="30m">30m</option><option value="1h" selected>1H</option><option value="2h">2H</option><option value="4h">4H</option><option value="8h">8H</option><option value="12h">12H</option><option value="1d">1D</option>
+        </select>
+      </label>
+      <div class="ctl picker" id="spFxCtl">
+        <span class="lbl">Fórmula</span>
+        <button type="button" class="pickbtn" id="spFxBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="spFxPop"><span id="spFxLbl">Cambio acum. %</span><span class="caret" aria-hidden="true">▾</span></button>
+        <div class="pop pop-sm" id="spFxPop" role="dialog" aria-label="Fórmula y métrica" hidden>
+          <fieldset>
+            <legend>Fórmula</legend>
+            <label><input type="radio" name="spF" value="standard"> Estándar</label>
+            <label><input type="radio" name="spF" value="cum"> Cambio acumulado</label>
+            <label><input type="radio" name="spF" value="cumpct" checked> Cambio acumulado (%)</label>
+            <label><input type="radio" name="spF" value="chg"> Cambio</label>
+            <label><input type="radio" name="spF" value="chgpct"> Cambio (%)</label>
+          </fieldset>
+          <fieldset>
+            <legend>Métrica</legend>
+            <label><input type="radio" name="spM" value="none" checked> Ninguna</label>
+            <label><input type="radio" name="spM" value="rsi"> RSI</label>
+            <label><input type="radio" name="spM" value="sma"> SMA</label>
+            <label><input type="radio" name="spM" value="ema"> EMA</label>
+          </fieldset>
+          <label class="num"><span>Longitud</span><input type="number" id="spLen" value="14" min="2" max="100" step="1" inputmode="numeric"></label>
+          <label class="tog"><input type="checkbox" id="spPct"> Percentil móvil</label>
+        </div>
+      </div>
+      <div class="sp-view" role="group" aria-label="Vista">
+        <label class="tog"><input type="checkbox" id="spTop" checked> Top 5</label>
+        <label class="tog"><input type="checkbox" id="spBot" checked> Bottom 5</label>
+        <label class="tog"><input type="checkbox" id="spLegOn" checked> Leyenda</label>
+        <button type="button" class="btn" id="spReplayBtn" aria-pressed="false" aria-controls="spReplay">Replay</button>
+        <button type="button" class="btn" id="spReload">Actualizar</button>
+      </div>
+    </div>
+
+    <header class="sp-head">
+      <h2 id="spTitle">Spaghetti</h2>
+      <p class="sp-cap" id="spCap"></p>
+    </header>
+
+    <div class="sp-body" id="spBody">
+      <figure class="sp-fig">
+        <canvas id="spCv" tabindex="0" role="img" aria-label="Spaghetti chart" aria-describedby="spTitle"></canvas>
+        <div class="sp-tip" id="spTip" role="status" hidden></div>
+        <div class="veil" id="spVeil"><span id="spVeilTxt">Abrí esta pestaña para cargar los activos.</span></div>
+        <div class="sp-replay" id="spReplay" hidden>
+          <button type="button" class="btn" id="spPlay" aria-label="Reproducir">▶</button>
+          <input type="range" id="spScrub" min="0" max="1" value="1" aria-label="Momento del replay">
+          <output id="spScrubT" for="spScrub"></output>
+        </div>
+      </figure>
+      <aside class="sp-leg" id="spLeg" aria-label="Leyenda y valores">
+        <table>
+          <caption class="vh">Valores por activo en el momento marcado</caption>
+          <thead><tr><th scope="col"><input type="checkbox" id="spAll" checked aria-label="Mostrar todos"></th><th scope="col">Activo</th><th scope="col" class="r">Valor</th></tr></thead>
+          <tbody id="spLegBody"></tbody>
+        </table>
+      </aside>
+    </div>
+    <p class="note" id="spNote"></p>
+  </section>
+  <section id="panel-liq" class="liq" aria-labelledby="h-liq" hidden>
+    <header class="view-head">
+      <h1 id="h-liq">Mapa de liquidaciones</h1>
+      <p class="sp-cap">Dónde están los precios de liquidación de las cuentas más grandes de Hyperliquid.</p>
+    </header>
+    <div class="controls" role="group" aria-label="Mercado y escaneo">
+      <div class="ctl picker" id="lqCoinCtl">
+        <span class="lbl">Mercado</span>
+        <button type="button" class="pickbtn" id="lqCoinBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="lqCoinPop"><span id="lqCoinLbl">BTC</span><span class="caret" aria-hidden="true">▾</span></button>
+        <div class="pop" id="lqCoinPop" role="dialog" aria-label="Elegir mercado" hidden>
+          <input type="search" id="lqCoinQ" role="combobox" aria-controls="lqCoinList" aria-expanded="true" aria-autocomplete="list" placeholder="Buscar perpetuo…" aria-label="Buscar perpetuo" autocomplete="off" spellcheck="false">
+          <div class="rows-head lq-rows"><span>Mercado</span><span>Open interest</span><span>Cobertura</span></div>
+          <ul class="rows lq-rows" id="lqCoinList" role="listbox" aria-label="Perpetuos"></ul>
+          <p class="pop-foot" id="lqCoinFoot"></p>
+        </div>
+      </div>
+      <label class="ctl"><span class="lbl">Cuentas</span>
+        <select id="lqN"><option value="500">Top 500</option><option value="1000">Top 1.000</option><option value="2000" selected>Top 2.000</option><option value="3000">Top 3.000</option><option value="5000">Top 5.000</option></select>
+      </label>
+      <button type="button" class="btn" id="lqScan">Escanear</button>
+      <output class="lq-status" id="lqStatus" for="lqScan lqN"></output>
+    </div>
+
+    <fieldset class="controls lq-sens">
+      <legend class="lbl">Sensibilidad</legend>
+      <label class="ctl"><span class="lbl">Rango</span>
+        <select id="lqRange"><option value="5">±5 %</option><option value="10">±10 %</option><option value="15" selected>±15 %</option><option value="25">±25 %</option><option value="50">±50 %</option></select>
+      </label>
+      <label class="ctl"><span class="lbl">Niveles</span>
+        <select id="lqBins"><option value="60">60</option><option value="120" selected>120</option><option value="200">200</option><option value="300">300</option></select>
+      </label>
+      <div class="ctl"><label class="lbl" for="lqSmooth">Suavizado</label>
+        <input type="range" id="lqSmooth" min="0" max="6" step="0.5" value="1.5"><output id="lqSmoothV" for="lqSmooth">1,5</output>
+      </div>
+      <label class="ctl"><span class="lbl">Posición mín.</span>
+        <select id="lqMin"><option value="0">Todas</option><option value="10000">$10 K</option><option value="100000">$100 K</option><option value="1000000">$1 M</option><option value="10000000">$10 M</option></select>
+      </label>
+      <label class="ctl"><span class="lbl">Apalanc. mín.</span>
+        <select id="lqLev"><option value="0">Todos</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option><option value="20">20x</option></select>
+      </label>
+      <label class="ctl"><span class="lbl">Lado</span>
+        <select id="lqSide"><option value="both">Longs y shorts</option><option value="long">Solo longs</option><option value="short">Solo shorts</option></select>
+      </label>
+      <label class="ctl"><span class="lbl">Margen</span>
+        <select id="lqMargin"><option value="all">Cross e isolated</option><option value="cross">Cross</option><option value="isolated">Isolated</option></select>
+      </label>
+      <label class="ctl"><span class="lbl">Escala</span>
+        <select id="lqScale"><option value="lin">Lineal</option><option value="sqrt" selected>Raíz</option></select>
+      </label>
+    </fieldset>
+
+    <header class="sp-head">
+      <h2 id="lqTitle">Mapa de liquidaciones</h2>
+      <p class="sp-cap" id="lqCap"></p>
+    </header>
+
+    <div class="sp-body lq-body">
+      <figure class="sp-fig lq-fig">
+        <canvas id="lqCv" tabindex="0" role="img" aria-label="Mapa de liquidaciones" aria-describedby="lqTitle"></canvas>
+        <div class="sp-tip" id="lqTip" role="status" hidden></div>
+        <div class="veil" id="lqVeil"><span id="lqVeilTxt">Abrí esta pestaña para cargar el mapa.</span></div>
+      </figure>
+      <aside class="sp-leg lq-side" aria-label="Clusters más grandes">
+        <table>
+          <caption>Clusters · longs (debajo)</caption>
+          <thead><tr><th scope="col">Precio</th><th scope="col" class="r">Dist.</th><th scope="col" class="r">USD</th></tr></thead>
+          <tbody id="lqLongs"></tbody>
+        </table>
+        <table>
+          <caption>Clusters · shorts (arriba)</caption>
+          <thead><tr><th scope="col">Precio</th><th scope="col" class="r">Dist.</th><th scope="col" class="r">USD</th></tr></thead>
+          <tbody id="lqShorts"></tbody>
+        </table>
+      </aside>
+    </div>
+    <p class="note" id="lqNote"></p>
+  </section>
+  <section id="panel-news" class="news" aria-labelledby="h-news" hidden>
+    <div class="nw-layout">
+      <div class="nw-main">
+        <header class="nw-head">
+          <h1 id="h-news">Noticias</h1>
+          <div class="seg" id="nwFilter" role="group" aria-label="Filtrar noticias">
+            <button type="button" data-f="all" aria-pressed="true">Todas</button><button type="button" data-f="coins">Con moneda</button><button type="button" data-f="tw">X / Twitter</button><button type="button" data-f="media">Medios</button>
+          </div>
+          <input type="search" id="nwQ" placeholder="Buscar…" aria-label="Buscar en las noticias" autocomplete="off">
+          <span class="nw-status" id="nwStatus" role="status"><i></i><span id="nwStatusTxt">Conectando…</span></span>
+        </header>
+        <div class="nw-feed" id="nwFeed" aria-live="polite" aria-busy="true">
+          <p class="empty">Cargando noticias…</p>
+        </div>
+      </div>
+      <aside class="nw-macro" aria-labelledby="h-macro">
+        <h2 id="h-macro">Macro esta semana</h2>
+        <div id="nwMacro"><p class="empty">Cargando calendario…</p></div>
+      </aside>
+    </div>
+  </section>
+  </main>
+
+  <footer>
+    <span>Material educativo de Bull Army. No es consejo financiero.</span>
+    <span>Hull Suite: InSilico · Motor: <a href="https://github.com/LuxAlgo/PineTS" target="_blank" rel="noopener">PineTS</a> (AGPL-3.0) · Gráfico: <a href="https://github.com/LuxAlgo/Vela" target="_blank" rel="noopener">Vela™</a> · Datos: Hyperliquid</span>
+  </footer>
+</div>
+</div>
+<div class="backdrop" id="backdrop"></div>
+</div>
+<dialog class="settings" id="settings" aria-labelledby="h-set">
+  <form method="dialog" id="setForm">
+    <h2 id="h-set">Ajustes</h2>
+    <label>API key de Tree News
+      <input type="password" id="setTree" autocomplete="off" spellcheck="false" placeholder="Pegá tu key">
+      <small>Se consigue gratis entrando con Discord en <a href="https://news.treeofalpha.com/" target="_blank" rel="noopener">news.treeofalpha.com</a>. Queda guardada solo en este navegador; nunca se escribe en el archivo.</small>
+    </label>
+    <label>Servidor del calendario
+      <input type="url" id="setCal" autocomplete="off" spellcheck="false" placeholder="https://bullarmy-calendario.tu-usuario.workers.dev">
+      <small>La dirección de tu Cloudflare Worker (ver server/LEEME.md).</small>
+    </label>
+    <div class="actions"><button type="button" class="btn" id="setCancel">Cancelar</button><button type="submit" class="btn primary" value="save">Guardar</button></div>
+  </form>
+</dialog>
+
+<!-- Datos de respaldo (modo demo) y Pine Script. js/loader.js los completa desde data-src antes de arrancar la app. -->
+<script type="application/json" id="liqSnap" data-src="data/liquidaciones.json"></script>
+<script type="application/json" id="spagSnap" data-src="data/spaghetti.json"></script>
+<script type="text/plain" id="pine" data-src="pine/extremos.pine"></script>
+<script type="application/json" id="snap" data-src="data/indicador.json"></script>
+
+<!-- Scripts de la app, en orden de ejecución. js/loader.js los carga después de los datos. -->
+<script type="text/plain" data-app="js/spaghetti/calc.js"></script>
+<script type="text/plain" data-app="js/spaghetti/ui.js"></script>
+<script type="text/plain" data-app="js/liquidaciones/calc.js"></script>
+<script type="text/plain" data-app="js/liquidaciones/source.js"></script>
+<script type="text/plain" data-app="js/liquidaciones/ui.js"></script>
+<script type="text/plain" data-app="js/contexto/calc.js"></script>
+<script type="text/plain" data-app="js/contexto/ui.js"></script>
+<script type="text/plain" data-app="js/noticias/ui.js"></script>
+<script type="text/plain" data-app="js/app.js"></script>
+<script src="js/loader.js"></script>
+</body>
+</html>

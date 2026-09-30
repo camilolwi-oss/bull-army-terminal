@@ -1,0 +1,15 @@
+# Salida del build
+dist/
+
+# Dependencias y entorno
+node_modules/
+.env
+.env.*
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+.claude/

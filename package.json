@@ -1,0 +1,15 @@
+{
+  "name": "bull-army-extremos",
+  "version": "1.0.0",
+  "description": "Panel de trading de Bull Army: contexto de mercado, indicador Extremos, spaghetti, mapa de liquidaciones y noticias sobre datos de Hyperliquid.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/serve.mjs src",
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/build.mjs && node scripts/serve.mjs dist bull-army-extremos.html"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

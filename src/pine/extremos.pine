@@ -1,0 +1,769 @@
+//@version=6
+// ═══════════════════════════════════════════════════════════════════════
+//  Bull Army · Extremos
+//  El RSI filtra (régimen Cardwell) · el SRSI cronometra (14/14/3/3)
+//  + Hull Suite (InSilico) como filtro de tendencia, divergencias RSI y OBV,
+//    failure swings de Wilder, absorción y fade de cascadas
+//
+//  Panel: SRSI %K/%D (0–100 = 0–1 × 100) + RSI + fondo por régimen
+//  Gráfico: señales, niveles de entrada/stop/TP y advertencias
+// ═══════════════════════════════════════════════════════════════════════
+indicator("Bull Army · Extremos", shorttitle = "BA Extremos", overlay = false, max_labels_count = 500, max_lines_count = 500)
+
+// ───────────────────────── Paleta (Bull Army) ─────────────────────────
+color C_GOLD = #C9A227
+color C_BULL = #6E9A6E
+color C_BEAR = #B5654A
+color C_GRAY = #8A8A8A
+color C_DIM  = #4A4A4A
+color C_BG   = #0B0B0C
+color C_TEXT = #E6E6E6
+
+// ───────────────────────────── Inputs ─────────────────────────────────
+string G1 = "1 · Régimen (el RSI filtra)"
+int    rsiLen    = input.int(14, "Longitud RSI", minval = 2, group = G1)
+float  bullFloor = input.float(40, "Piso del rango alcista", group = G1, tooltip = "Cardwell: en tendencia alcista el RSI vive entre 40 y 80. Perder este nivel = range shift bajista.")
+float  bearCeil  = input.float(60, "Techo del rango bajista", group = G1, tooltip = "Cardwell: en tendencia bajista el RSI vive entre 20 y 60. Superar este nivel = range shift alcista.")
+bool   useHTF    = input.bool(false, "Régimen desde TF superior", group = G1, inline = "htf")
+string htfTf     = input.timeframe("D", "", group = G1, inline = "htf", tooltip = "Usá un TF 4–6 veces mayor que el del gráfico (D → 4H/1H). Sin repintado: toma la vela HTF cerrada.")
+bool   reqPB     = input.bool(true, "Exigir pullback del RSI a la zona 50", group = G1, tooltip = "Long: el RSI tuvo que bajar a ≤50 (zona 40–50). Short: subir a ≥50 (zona 50–60).")
+int    pbLook    = input.int(10, "Ventana del pullback (velas)", minval = 1, group = G1)
+
+string G2 = "2 · Gatillo (el SRSI cronometra)"
+int    stLen     = input.int(14, "Longitud estocástico", minval = 2, group = G2)
+int    kLen      = input.int(3, "Suavizado %K", minval = 1, group = G2)
+int    dLen      = input.int(3, "Suavizado %D", minval = 1, group = G2)
+float  obLvl     = input.float(80, "Sobrecompra (0.8)", group = G2)
+float  osLvl     = input.float(20, "Sobreventa (0.2)", group = G2)
+int    trigLook  = input.int(3, "El %K tocó el extremo en las últimas N velas", minval = 1, group = G2)
+bool   zoneCross = input.bool(true, "Solo cruces dentro de la zona extrema", group = G2, tooltip = "El cruce %K/%D tiene que nacer por debajo de 0.2 (compras) o por encima de 0.8 (ventas). Nada en el medio del oscilador genera señal. Si está activo, se ignora la confirmación de 0.5.")
+bool   useMid    = input.bool(false, "Confirmar con recuperación/pérdida de 0.5", group = G2)
+int    midWin    = input.int(5, "Ventana para confirmar 0.5", minval = 1, group = G2)
+bool   onlyClose = input.bool(true, "Señales solo al cierre de vela", group = G2)
+
+string G3 = "3 · Riesgo (la estructura manda)"
+int    swingLook = input.int(10, "Velas para el swing del stop", minval = 2, group = G3)
+float  stopBuf   = input.float(0.1, "Buffer del stop (× ATR)", step = 0.05, minval = 0, group = G3)
+float  rrMin     = input.float(2.0, "R:R objetivo", step = 0.5, minval = 1, group = G3)
+bool   reqRoom   = input.bool(true, "Exigir espacio ≥ R:R hasta el extremo previo", group = G3, tooltip = "Si el máximo (long) o mínimo (short) previo está más cerca que el objetivo, la señal se marca en gris como 'sin R:R'.")
+int    tgtLook   = input.int(50, "Velas para el extremo previo", minval = 5, group = G3)
+string lvMode    = input.string("Última", "Niveles entrada/stop/TP", options = ["Última", "Todas", "Ninguna"], group = G3)
+bool   exitHull  = input.bool(true, "Cerrar el trade si el Hull gira en contra", group = G3, tooltip = "Entrada, stop y TP viven mientras el Hull acompaña. Si el Hull gira, el trade se cierra al cierre de esa vela.")
+bool   trailHull = input.bool(false, "Stop que sigue a la banda del Hull", group = G3, tooltip = "El stop sube (long) o baja (short) hasta el borde de la banda del Hull menos el buffer, nunca en contra y nunca del otro lado del precio.")
+
+string G4 = "4 · Advertencias (no gatillos)"
+float  rsiOB     = input.float(70, "RSI clásico sobrecompra", group = G4, inline = "cl")
+float  rsiOS     = input.float(30, "sobreventa", group = G4, inline = "cl")
+bool   showDiv   = input.bool(true, "Divergencias RSI", group = G4)
+bool   showObv   = input.bool(true, "Divergencias OBV", group = G4, tooltip = "Precio contra volumen acumulado (§5.3): dos familias de datos distintas. Se miden en los pivotes del precio.")
+int    confWin   = input.int(5, "Confluencia RSI+OBV: pivotes a ≤ N velas", minval = 0, group = G4)
+int    pvL       = input.int(5, "Pivote izq.", minval = 1, group = G4, inline = "pv")
+int    pvR       = input.int(3, "der.", minval = 1, group = G4, inline = "pv")
+int    divMax    = input.int(60, "Distancia máx. entre pivotes", minval = 5, group = G4)
+int    bonusWin  = input.int(15, "Div. RSI/OBV y FS suman ★ si ocurrieron hace ≤ N velas", minval = 1, group = G4)
+bool   showFS    = input.bool(true, "Failure swings de Wilder", group = G4)
+int    fsMax     = input.int(40, "Duración máx. del failure swing", minval = 5, group = G4)
+bool   showAbs   = input.bool(true, "Absorción (señales contrarias fallidas)", group = G4)
+int    absMin    = input.int(3, "Señales fallidas mínimas", minval = 2, group = G4)
+int    absWin    = input.int(30, "Ventana de absorción (velas)", minval = 5, group = G4)
+
+string G5 = "5 · Fade de cascada (liquidaciones)"
+bool   useFade    = input.bool(true, "Activar fade de cascada", group = G5, tooltip = "Única excepción contra el impulso: solo después de clímax de volumen + vela contraria grande con volumen bajo (libro vacío).")
+int    cascN      = input.int(4, "Velas mínimas de la cascada", minval = 2, group = G5)
+int    volLen     = input.int(20, "Media de volumen", minval = 2, group = G5)
+float  climaxMult = input.float(2.5, "Clímax: volumen ≥ N × media", step = 0.1, group = G5)
+float  rangeMult  = input.float(1.5, "Clímax: rango ≥ N × ATR", step = 0.1, group = G5)
+float  pinLvl     = input.float(10, "SRSI clavado: ≤ N (o ≥ 100 − N)", group = G5)
+int    exhWin     = input.int(3, "Velas para la vela de agotamiento", minval = 1, group = G5)
+float  exhRatio   = input.float(0.6, "Agotamiento: volumen ≤ N × clímax", step = 0.05, group = G5)
+float  bodyMult   = input.float(0.6, "Agotamiento: cuerpo ≥ N × ATR", step = 0.1, group = G5)
+int    fadeWin    = input.int(3, "Velas para el cruce del SRSI", minval = 0, group = G5)
+
+string G6 = "6 · Visual"
+bool   showRsi     = input.bool(true, "Mostrar RSI en el panel", group = G6)
+bool   showSilence = input.bool(true, "Marcar señales contrarias al régimen (silencio)", group = G6)
+bool   showShift   = input.bool(true, "Marcar range shifts", group = G6)
+bool   showTable   = input.bool(true, "Tablero", group = G6)
+string colorBars   = input.string("No", "Colorear velas", options = ["No", "Régimen RSI", "Hull"], group = G6)
+
+string G7 = "7 · Hull Suite (InSilico)"
+bool   showHull   = input.bool(true, "Mostrar Hull Suite", group = G7)
+bool   hullFilter = input.bool(true, "Filtrar señales por la tendencia del Hull", group = G7, tooltip = "Hull bajista: no se muestran compras. Hull alcista: no se muestran ventas.")
+bool   hullFade   = input.bool(true, "El fade de cascada también respeta el Hull", group = G7, tooltip = "Desactivalo para que el fade siga siendo la excepción contra el impulso que plantea la guía.")
+string hullMode   = input.string("Hma", "Variante", options = ["Hma", "Ehma", "Thma"], group = G7)
+int    hullLen    = input.int(55, "Longitud", minval = 2, group = G7, tooltip = "InSilico: 55 para entradas de swing, 180–200 como soporte/resistencia dinámico.")
+float  hullMult   = input.float(1.0, "Multiplicador de longitud", minval = 0.1, step = 0.1, group = G7)
+bool   hullHtf    = input.bool(false, "Hull de otra temporalidad", group = G7, inline = "hh")
+string hullTf     = input.timeframe("240", "", group = G7, inline = "hh", tooltip = "Sin repintado: toma la vela cerrada de esa temporalidad.")
+bool   hullBand   = input.bool(true, "Mostrar como banda", group = G7)
+int    hullTransp = input.int(70, "Transparencia de la banda", minval = 0, maxval = 100, step = 5, group = G7)
+
+// ───────────────────────── Cálculos base ──────────────────────────────
+float rsi  = ta.rsi(close, rsiLen)
+float k    = ta.sma(ta.stoch(rsi, rsi, rsi, stLen), kLen)
+float d    = ta.sma(k, dLen)
+float atr  = ta.atr(14)
+float vol  = nz(volume)
+bool  cfm  = not onlyClose or barstate.isconfirmed
+
+// ───────────────────── Hull Suite (InSilico) ──────────────────────────
+f_hma(float src, int len) =>
+    ta.wma(2 * ta.wma(src, math.max(1, int(len / 2))) - ta.wma(src, len), math.max(1, int(math.round(math.sqrt(len)))))
+f_ehma(float src, int len) =>
+    ta.ema(2 * ta.ema(src, math.max(1, int(len / 2))) - ta.ema(src, len), math.max(1, int(math.round(math.sqrt(len)))))
+f_thma(float src, int len) =>
+    ta.wma(ta.wma(src, math.max(1, int(len / 3))) * 3 - ta.wma(src, math.max(1, int(len / 2))) - ta.wma(src, len), len)
+
+int   hLen    = math.max(2, int(hullLen * hullMult))
+float hHma    = f_hma(close, hLen)
+float hEhma   = f_ehma(close, hLen)
+float hThma   = f_thma(close, math.max(2, int(hLen / 2)))
+float hullRaw = hullMode == "Ehma" ? hEhma : hullMode == "Thma" ? hThma : hHma
+float hullHT  = request.security(syminfo.tickerid, hullTf, hullRaw[1], lookahead = barmerge.lookahead_on)
+float hull    = hullHtf ? hullHT : hullRaw
+bool  hullUp  = hull > hull[2]
+bool  hullDn  = hull < hull[2]
+bool  longAllowed  = not hullFilter or hullUp
+bool  shortAllowed = not hullFilter or hullDn
+
+float rsiHTF = request.security(syminfo.tickerid, htfTf, ta.rsi(close, rsiLen)[1], lookahead = barmerge.lookahead_on)
+float rsiReg = useHTF ? rsiHTF : rsi
+
+// ───────────────────── Paso 1 · Régimen (Cardwell) ────────────────────
+// Histéresis: > techo bajista ⇒ alcista; < piso alcista ⇒ bajista.
+var int regime = 0
+int prevRegime = regime
+if rsiReg > bearCeil
+    regime := 1
+else if rsiReg < bullFloor
+    regime := -1
+bool shiftUp = regime == 1 and prevRegime == -1
+bool shiftDn = regime == -1 and prevRegime == 1
+
+// ───────────────────── Eventos del SRSI ───────────────────────────────
+bool  crossUp  = ta.crossover(k, d)
+bool  crossDn  = ta.crossunder(k, d)
+float kMinN    = ta.lowest(k, trigLook)
+float kMaxN    = ta.highest(k, trigLook)
+bool  kWasOS   = zoneCross ? (d <= osLvl and nz(k[1], 100) <= osLvl) : kMinN <= osLvl
+bool  kWasOB   = zoneCross ? (d >= obLvl and nz(k[1], 0) >= obLvl) : kMaxN >= obLvl
+
+// ───────────────────── Paso 2 · Pullback ──────────────────────────────
+float rsiMinPB = ta.lowest(rsi, pbLook)
+float rsiMaxPB = ta.highest(rsi, pbLook)
+bool  pbBull   = not reqPB or rsiMinPB <= 50
+bool  pbBear   = not reqPB or rsiMaxPB >= 50
+
+// ───────────────────── Paso 3 · Gatillo ───────────────────────────────
+bool trigL = regime == 1 and pbBull and crossUp and kWasOS
+bool trigS = regime == -1 and pbBear and crossDn and kWasOB
+
+var int pendL = na
+var int pendS = na
+bool setL = false
+bool setS = false
+if useMid and not zoneCross
+    if trigL
+        pendL := bar_index
+    if trigS
+        pendS := bar_index
+    if not na(pendL)
+        if regime != 1 or bar_index - pendL > midWin
+            pendL := na
+        else if k >= 50
+            setL  := true
+            pendL := na
+    if not na(pendS)
+        if regime != -1 or bar_index - pendS > midWin
+            pendS := na
+        else if k <= 50
+            setS  := true
+            pendS := na
+else
+    setL := trigL
+    setS := trigS
+
+// Señales contrarias al régimen = silencio (y combustible de la absorción)
+bool silBear = regime == 1 and crossDn and kWasOB
+bool silBull = regime == -1 and crossUp and kWasOS
+
+// ───────────────────── Absorción (§5.2) ───────────────────────────────
+float cntSB    = math.sum(silBear ? 1 : 0, absWin)
+float cntSU    = math.sum(silBull ? 1 : 0, absWin)
+float closeAgo = close[absWin]
+bool  absUp    = showAbs and cntSB >= absMin and cntSB[1] < absMin and close > closeAgo
+bool  absDn    = showAbs and cntSU >= absMin and cntSU[1] < absMin and close < closeAgo
+
+// ───────────────────── Divergencias RSI (§1.4) ────────────────────────
+float plR    = ta.pivotlow(rsi, pvL, pvR)
+float phR    = ta.pivothigh(rsi, pvL, pvR)
+float lowPv  = low[pvR]
+float highPv = high[pvR]
+
+var float lastPlR = na
+var float lastPlP = na
+var int   lastPlB = na
+var float lastPhR = na
+var float lastPhP = na
+var int   lastPhB = na
+bool bullDiv = false
+bool bearDiv = false
+
+// Registro para confluencia RSI+OBV
+var int   rsiBullB  = na
+var int   rsiBearB  = na
+var label rsiBullLb = na
+var label rsiBearLb = na
+var int   obvBullB  = na
+var int   obvBearB  = na
+
+if not na(plR)
+    int curB = bar_index - pvR
+    if not na(lastPlR) and curB - lastPlB <= divMax and lowPv < lastPlP and plR > lastPlR
+        bullDiv  := true
+        rsiBullB := curB
+        if showDiv
+            bool  strong = plR <= rsiOS
+            bool  conf   = showObv and not na(obvBullB) and math.abs(curB - obvBullB) <= confWin
+            color c = conf ? C_GOLD : strong ? C_BULL : color.new(C_BULL, 55)
+            line.new(lastPlB, lastPlP, curB, lowPv, color = c, width = strong or conf ? 2 : 1, force_overlay = true)
+            line.new(lastPlB, lastPlR, curB, plR, color = c, width = strong or conf ? 2 : 1)
+            rsiBullLb := label.new(curB, lowPv, conf ? "Div+ RSI·OBV" : strong ? "Div+ ext." : "Div+", yloc = yloc.belowbar, style = label.style_none, textcolor = c, size = size.tiny, tooltip = conf ? "Confluencia: el RSI y el OBV divergen del precio en la misma zona. Momentum y volumen cuentan lo mismo." : "Divergencia alcista: precio LL, RSI HL. Advertencia, no gatillo: la confirma la estructura.", force_overlay = true)
+    lastPlR := plR
+    lastPlP := lowPv
+    lastPlB := curB
+
+if not na(phR)
+    int curB = bar_index - pvR
+    if not na(lastPhR) and curB - lastPhB <= divMax and highPv > lastPhP and phR < lastPhR
+        bearDiv  := true
+        rsiBearB := curB
+        if showDiv
+            bool  strong = phR >= rsiOB
+            bool  conf   = showObv and not na(obvBearB) and math.abs(curB - obvBearB) <= confWin
+            color c = conf ? C_GOLD : strong ? C_BEAR : color.new(C_BEAR, 55)
+            line.new(lastPhB, lastPhP, curB, highPv, color = c, width = strong or conf ? 2 : 1, force_overlay = true)
+            line.new(lastPhB, lastPhR, curB, phR, color = c, width = strong or conf ? 2 : 1)
+            rsiBearLb := label.new(curB, highPv, conf ? "Div− RSI·OBV" : strong ? "Div− ext." : "Div−", yloc = yloc.abovebar, style = label.style_none, textcolor = c, size = size.tiny, tooltip = conf ? "Confluencia: el RSI y el OBV divergen del precio en la misma zona. Momentum y volumen cuentan lo mismo." : "Divergencia bajista: precio HH, RSI LH. Advertencia, no gatillo: la confirma la estructura.", force_overlay = true)
+    lastPhR := phR
+    lastPhP := highPv
+    lastPhB := curB
+
+// ───────────────────── Divergencias OBV (§5.3) ─────────────────────────
+// Precio contra volumen acumulado: se comparan los pivotes del PRECIO con el OBV
+// en esas mismas velas. Si el precio hace un extremo nuevo y el OBV no lo acompaña,
+// el movimiento avanza sin combustible.
+float obv  = ta.cum(math.sign(ta.change(close)) * vol)
+float plPx = ta.pivotlow(low, pvL, pvR)
+float phPx = ta.pivothigh(high, pvL, pvR)
+float obvPv = obv[pvR]
+
+var float oLastPlP = na
+var float oLastPlO = na
+var int   oLastPlB = na
+var float oLastPhP = na
+var float oLastPhO = na
+var int   oLastPhB = na
+bool bullObv = false
+bool bearObv = false
+
+if not na(plPx)
+    int curB = bar_index - pvR
+    if not na(oLastPlP) and curB - oLastPlB <= divMax and plPx < oLastPlP and obvPv > oLastPlO
+        bullObv  := true
+        obvBullB := curB
+        if showObv
+            bool conf = showDiv and not na(rsiBullB) and math.abs(curB - rsiBullB) <= confWin
+            color c = conf ? C_GOLD : C_BULL
+            line.new(oLastPlB, oLastPlP, curB, plPx, color = c, style = line.style_dotted, width = 2, force_overlay = true)
+            if conf and rsiBullB == curB and not na(rsiBullLb)
+                rsiBullLb.set_text("Div+ RSI·OBV")
+                rsiBullLb.set_textcolor(C_GOLD)
+            else
+                label.new(curB, plPx, conf ? "OBV+ · conf." : "OBV+", yloc = yloc.belowbar, style = label.style_label_up, color = color.new(conf ? C_GOLD : C_BULL, 82), textcolor = conf ? C_GOLD : C_BULL, size = size.tiny, tooltip = conf ? "Divergencia OBV alcista en confluencia con una divergencia RSI." : "Divergencia OBV alcista: precio LL, OBV HL. Se vende menos volumen en cada mínimo nuevo.", force_overlay = true)
+    oLastPlP := plPx
+    oLastPlO := obvPv
+    oLastPlB := curB
+
+if not na(phPx)
+    int curB = bar_index - pvR
+    if not na(oLastPhP) and curB - oLastPhB <= divMax and phPx > oLastPhP and obvPv < oLastPhO
+        bearObv  := true
+        obvBearB := curB
+        if showObv
+            bool conf = showDiv and not na(rsiBearB) and math.abs(curB - rsiBearB) <= confWin
+            color c = conf ? C_GOLD : C_BEAR
+            line.new(oLastPhB, oLastPhP, curB, phPx, color = c, style = line.style_dotted, width = 2, force_overlay = true)
+            if conf and rsiBearB == curB and not na(rsiBearLb)
+                rsiBearLb.set_text("Div− RSI·OBV")
+                rsiBearLb.set_textcolor(C_GOLD)
+            else
+                label.new(curB, phPx, conf ? "OBV− · conf." : "OBV−", yloc = yloc.abovebar, style = label.style_label_down, color = color.new(conf ? C_GOLD : C_BEAR, 82), textcolor = conf ? C_GOLD : C_BEAR, size = size.tiny, tooltip = conf ? "Divergencia OBV bajista en confluencia con una divergencia RSI." : "Divergencia OBV bajista: precio HH, OBV LH. Cada máximo nuevo se compra con menos volumen.", force_overlay = true)
+    oLastPhP := phPx
+    oLastPhO := obvPv
+    oLastPhB := curB
+
+// ───────────────────── Failure swings de Wilder (§1.4) ────────────────
+float fsPh = ta.pivothigh(rsi, 2, 2)
+float fsPl = ta.pivotlow(rsi, 2, 2)
+
+// Alcista: RSI < 30 → rebote (H) → segundo piso sin romper el primero → rompe H
+var float bL1 = na
+var float bH  = na
+var int   bHBar = na
+var float bL2 = na
+var int   bStart = na
+bool bullFS = false
+if not na(bStart) and bar_index - bStart > fsMax
+    bL1    := na
+    bH     := na
+    bL2    := na
+    bStart := na
+if rsi < rsiOS and (na(bL1) or rsi < bL1)
+    bL1    := rsi
+    bH     := na
+    bL2    := na
+    bStart := bar_index
+else if not na(bL1)
+    if na(bH)
+        if not na(fsPh) and fsPh > rsiOS and bar_index - 2 > bStart
+            bH    := fsPh
+            bHBar := bar_index - 2
+    else
+        if na(bL2) and not na(fsPl) and bar_index - 2 > bHBar
+            bL2 := fsPl
+        if na(bL2) and rsi > bH
+            bH := na
+        else if not na(bL2) and rsi > bH
+            bullFS := true
+            bL1    := na
+            bH     := na
+            bL2    := na
+            bStart := na
+
+// Bajista: espejo
+var float sH1 = na
+var float sL  = na
+var int   sLBar = na
+var float sH2 = na
+var int   sStart = na
+bool bearFS = false
+if not na(sStart) and bar_index - sStart > fsMax
+    sH1    := na
+    sL     := na
+    sH2    := na
+    sStart := na
+if rsi > rsiOB and (na(sH1) or rsi > sH1)
+    sH1    := rsi
+    sL     := na
+    sH2    := na
+    sStart := bar_index
+else if not na(sH1)
+    if na(sL)
+        if not na(fsPl) and fsPl < rsiOB and bar_index - 2 > sStart
+            sL    := fsPl
+            sLBar := bar_index - 2
+    else
+        if na(sH2) and not na(fsPh) and bar_index - 2 > sLBar
+            sH2 := fsPh
+        if na(sH2) and rsi < sL
+            sL := na
+        else if not na(sH2) and rsi < sL
+            bearFS := true
+            sH1    := na
+            sL     := na
+            sH2    := na
+            sStart := na
+
+int sinceBullDiv = ta.barssince(bullDiv)
+int sinceBearDiv = ta.barssince(bearDiv)
+int sinceBullFS  = ta.barssince(bullFS)
+int sinceBearFS  = ta.barssince(bearFS)
+int sinceBullObv = ta.barssince(bullObv)
+int sinceBearObv = ta.barssince(bearObv)
+
+// ───────────────────── Paso 4 · Riesgo estructural ────────────────────
+float swLo  = ta.lowest(low, swingLook)
+float swHi  = ta.highest(high, swingLook)
+float tgtHi = ta.highest(high, tgtLook)
+float tgtLo = ta.lowest(low, tgtLook)
+float stopL = swLo - stopBuf * atr
+float stopS = swHi + stopBuf * atr
+float rL    = close - stopL
+float rS    = stopS - close
+float tpL   = close + rrMin * rL
+float tpS   = close - rrMin * rS
+bool  roomL = tgtHi - close >= rrMin * rL
+bool  roomS = close - tgtLo >= rrMin * rS
+
+bool longOK    = setL and longAllowed and cfm and rL > 0 and (not reqRoom or roomL)
+bool longWeak  = setL and longAllowed and cfm and rL > 0 and reqRoom and not roomL
+bool shortOK   = setS and shortAllowed and cfm and rS > 0 and (not reqRoom or roomS)
+bool shortWeak = setS and shortAllowed and cfm and rS > 0 and reqRoom and not roomS
+
+int starsL = 1 + (nz(sinceBullDiv, 9999) <= bonusWin ? 1 : 0) + (nz(sinceBullObv, 9999) <= bonusWin ? 1 : 0) + (nz(sinceBullFS, 9999) <= bonusWin ? 1 : 0)
+int starsS = 1 + (nz(sinceBearDiv, 9999) <= bonusWin ? 1 : 0) + (nz(sinceBearObv, 9999) <= bonusWin ? 1 : 0) + (nz(sinceBearFS, 9999) <= bonusWin ? 1 : 0)
+
+// ───────────────────── Fade de cascada (§6–§7) ────────────────────────
+float volMA   = ta.sma(vol, volLen)
+float volHi   = ta.highest(vol, cascN * 3)
+float nBear   = math.sum(close < open ? 1 : 0, cascN)
+float nBull   = math.sum(close > open ? 1 : 0, cascN)
+float originH = ta.highest(high, cascN + 3)
+float originL = ta.lowest(low, cascN + 3)
+float rng     = high - low
+float body    = math.abs(close - open)
+bool  hasVol  = volMA > 0
+
+bool bearClimax = useFade and hasVol and close < open and vol >= climaxMult * nz(volMA[1]) and vol >= volHi and rng >= rangeMult * atr and nBear >= cascN - 1 and k <= pinLvl
+bool bullClimax = useFade and hasVol and close > open and vol >= climaxMult * nz(volMA[1]) and vol >= volHi and rng >= rangeMult * atr and nBull >= cascN - 1 and k >= 100 - pinLvl
+
+// Cascada bajista → fade long
+var int   dnSt     = 0
+var int   dnClxBar = na
+var float dnClxVol = na
+var float dnExt    = na
+var float dnOrig   = na
+var int   dnExhBar = na
+bool  evClxDn = false
+bool  evExhDn = false
+bool  fadeL   = false
+float fExtL   = na
+float fOrigL  = na
+if bearClimax
+    dnSt     := 1
+    dnClxBar := bar_index
+    dnClxVol := vol
+    dnExt    := low
+    dnOrig   := originH
+    evClxDn  := true
+else if dnSt == 1
+    dnExt := math.min(dnExt, low)
+    if bar_index - dnClxBar > exhWin
+        dnSt := 0
+    else if close > open and body >= bodyMult * atr and vol <= exhRatio * dnClxVol
+        dnSt     := 2
+        dnExhBar := bar_index
+        evExhDn  := true
+else if dnSt == 2
+    if low < dnExt
+        dnSt := 0
+if dnSt == 2
+    if crossUp and kWasOS
+        fadeL  := true
+        fExtL  := dnExt
+        fOrigL := dnOrig
+        dnSt   := 0
+    else if bar_index - dnExhBar > fadeWin
+        dnSt := 0
+
+// Cascada alcista (squeeze de shorts) → fade short
+var int   upSt     = 0
+var int   upClxBar = na
+var float upClxVol = na
+var float upExt    = na
+var float upOrig   = na
+var int   upExhBar = na
+bool  evClxUp = false
+bool  evExhUp = false
+bool  fadeS   = false
+float fExtS   = na
+float fOrigS  = na
+if bullClimax
+    upSt     := 1
+    upClxBar := bar_index
+    upClxVol := vol
+    upExt    := high
+    upOrig   := originL
+    evClxUp  := true
+else if upSt == 1
+    upExt := math.max(upExt, high)
+    if bar_index - upClxBar > exhWin
+        upSt := 0
+    else if close < open and body >= bodyMult * atr and vol <= exhRatio * upClxVol
+        upSt     := 2
+        upExhBar := bar_index
+        evExhUp  := true
+else if upSt == 2
+    if high > upExt
+        upSt := 0
+if upSt == 2
+    if crossDn and kWasOB
+        fadeS  := true
+        fExtS  := upExt
+        fOrigS := upOrig
+        upSt   := 0
+    else if bar_index - upExhBar > fadeWin
+        upSt := 0
+
+float fStopL = fExtL - stopBuf * atr
+float fRL    = close - fStopL
+float fTpL   = close + rrMin * fRL
+bool  fRoomL = fOrigL - close >= rrMin * fRL
+float fStopS = fExtS + stopBuf * atr
+float fRS    = fStopS - close
+float fTpS   = close - rrMin * fRS
+bool  fRoomS = close - fOrigS >= rrMin * fRS
+
+bool fadeLAllow    = not hullFade or longAllowed
+bool fadeSAllow    = not hullFade or shortAllowed
+bool fadeLongOK    = fadeL and fadeLAllow and cfm and fRL > 0 and (not reqRoom or fRoomL)
+bool fadeLongWeak  = fadeL and fadeLAllow and cfm and fRL > 0 and reqRoom and not fRoomL
+bool fadeShortOK   = fadeS and fadeSAllow and cfm and fRS > 0 and (not reqRoom or fRoomS)
+bool fadeShortWeak = fadeS and fadeSAllow and cfm and fRS > 0 and reqRoom and not fRoomS
+
+tradeTip(string kind, float entry, float stop, float tp) =>
+    kind + "\nEntrada: " + str.tostring(entry, format.mintick) + "\nStop estructural: " + str.tostring(stop, format.mintick) + "\nTP: " + str.tostring(tp, format.mintick) + "\nR: " + str.tostring(math.abs(entry - stop), format.mintick)
+
+var string lastSig = "—"
+
+// ───────────────────── Señales en el gráfico ──────────────────────────
+if longOK
+    label.new(bar_index, low, "LONG " + str.repeat("★", starsL), yloc = yloc.belowbar, style = label.style_label_up, color = C_BULL, textcolor = color.white, size = size.small, tooltip = tradeTip("Régimen alcista + pullback + cruce SRSI desde 0.2", close, stopL, tpL), force_overlay = true)
+    lastSig := "LONG " + str.repeat("★", starsL)
+if shortOK
+    label.new(bar_index, high, "SHORT " + str.repeat("★", starsS), yloc = yloc.abovebar, style = label.style_label_down, color = C_BEAR, textcolor = color.white, size = size.small, tooltip = tradeTip("Régimen bajista + rebote + cruce SRSI desde 0.8", close, stopS, tpS), force_overlay = true)
+    lastSig := "SHORT " + str.repeat("★", starsS)
+if longWeak
+    label.new(bar_index, low, "sin R:R", yloc = yloc.belowbar, style = label.style_label_up, color = color.new(C_GRAY, 70), textcolor = C_TEXT, size = size.tiny, tooltip = "Gatillo válido pero el máximo previo está más cerca que el objetivo: no hay trade.", force_overlay = true)
+if shortWeak
+    label.new(bar_index, high, "sin R:R", yloc = yloc.abovebar, style = label.style_label_down, color = color.new(C_GRAY, 70), textcolor = C_TEXT, size = size.tiny, tooltip = "Gatillo válido pero el mínimo previo está más cerca que el objetivo: no hay trade.", force_overlay = true)
+
+if fadeLongOK
+    label.new(bar_index, low, "FADE ▲", yloc = yloc.belowbar, style = label.style_label_up, color = C_GOLD, textcolor = C_BG, size = size.small, tooltip = tradeTip("Cascada bajista agotada: clímax + vela contraria con volumen bajo + cruce SRSI.\nTamaño ≤ al de un setup a favor.", close, fStopL, fTpL), force_overlay = true)
+    lastSig := "FADE ▲"
+if fadeShortOK
+    label.new(bar_index, high, "FADE ▼", yloc = yloc.abovebar, style = label.style_label_down, color = C_GOLD, textcolor = C_BG, size = size.small, tooltip = tradeTip("Cascada alcista agotada: clímax + vela contraria con volumen bajo + cruce SRSI.\nTamaño ≤ al de un setup a favor.", close, fStopS, fTpS), force_overlay = true)
+    lastSig := "FADE ▼"
+if fadeLongWeak or fadeShortWeak
+    label.new(bar_index, fadeLongWeak ? low : high, "fade sin R:R", yloc = fadeLongWeak ? yloc.belowbar : yloc.abovebar, style = fadeLongWeak ? label.style_label_up : label.style_label_down, color = color.new(C_GRAY, 70), textcolor = C_TEXT, size = size.tiny, force_overlay = true)
+
+// Hitos de la cascada
+if evClxDn
+    label.new(bar_index, low, "CLÍMAX", yloc = yloc.belowbar, style = label.style_none, textcolor = C_GRAY, size = size.tiny, tooltip = "Clímax de volumen bajista. No es entrada: es la anteúltima condición.", force_overlay = true)
+if evClxUp
+    label.new(bar_index, high, "CLÍMAX", yloc = yloc.abovebar, style = label.style_none, textcolor = C_GRAY, size = size.tiny, tooltip = "Clímax de volumen alcista. No es entrada: es la anteúltima condición.", force_overlay = true)
+if evExhDn
+    label.new(bar_index, high, "agotada", yloc = yloc.abovebar, style = label.style_none, textcolor = C_GOLD, size = size.tiny, tooltip = "Vela contraria grande con volumen bajo: libro vacío. Fade autorizado.", force_overlay = true)
+if evExhUp
+    label.new(bar_index, low, "agotada", yloc = yloc.belowbar, style = label.style_none, textcolor = C_GOLD, size = size.tiny, tooltip = "Vela contraria grande con volumen bajo: libro vacío. Fade autorizado.", force_overlay = true)
+
+// Advertencias
+if showFS and bullFS
+    label.new(bar_index, low, "FS▲", yloc = yloc.belowbar, style = label.style_none, textcolor = C_BULL, size = size.tiny, tooltip = "Failure swing alcista de Wilder: el RSI rompió su máximo intermedio sin perder el piso previo.", force_overlay = true)
+if showFS and bearFS
+    label.new(bar_index, high, "FS▼", yloc = yloc.abovebar, style = label.style_none, textcolor = C_BEAR, size = size.tiny, tooltip = "Failure swing bajista de Wilder: el RSI perdió su mínimo intermedio sin superar el techo previo.", force_overlay = true)
+if absUp
+    label.new(bar_index, high, "ABSORCIÓN → ▲", yloc = yloc.abovebar, style = label.style_label_down, color = color.new(C_GOLD, 75), textcolor = C_GOLD, size = size.tiny, tooltip = str.tostring(absMin) + "+ señales bajistas del SRSI tragadas sin que el precio gire: hay un absorbente comprador. Continuación.", force_overlay = true)
+if absDn
+    label.new(bar_index, low, "ABSORCIÓN → ▼", yloc = yloc.belowbar, style = label.style_label_up, color = color.new(C_GOLD, 75), textcolor = C_GOLD, size = size.tiny, tooltip = str.tostring(absMin) + "+ señales alcistas del SRSI tragadas sin que el precio gire: hay un absorbente vendedor. Continuación.", force_overlay = true)
+if showShift and shiftUp
+    label.new(bar_index, low, "RANGE SHIFT ▲", yloc = yloc.belowbar, style = label.style_label_up, color = color.new(C_BULL, 80), textcolor = C_BULL, size = size.tiny, tooltip = "El RSI superó " + str.tostring(bearCeil) + ": nuevo régimen alcista (40–80).", force_overlay = true)
+if showShift and shiftDn
+    label.new(bar_index, high, "RANGE SHIFT ▼", yloc = yloc.abovebar, style = label.style_label_down, color = color.new(C_BEAR, 80), textcolor = C_BEAR, size = size.tiny, tooltip = "El RSI perdió " + str.tostring(bullFloor) + ": nuevo régimen bajista (20–60).", force_overlay = true)
+
+// ───────────────────── Trade vivo (entrada · SL · TP) ──────────────────
+// Los niveles solo nacen de una señal válida (extremo + régimen + Hull) y
+// avanzan vela a vela mientras el Hull acompaña. Terminan en TP, SL o giro del Hull.
+bool  newL   = longOK or fadeLongOK
+bool  newS   = shortOK or fadeShortOK
+float nStop  = longOK ? stopL : fadeLongOK ? fStopL : shortOK ? stopS : fStopS
+float nTp    = longOK ? tpL : fadeLongOK ? fTpL : shortOK ? tpS : fTpS
+
+var int   tDir   = 0
+var float tEntry = na
+var float tStop  = na
+var float tTp    = na
+var float tR     = na
+var int   tStart = na
+var line  lnE    = na
+var line  lnS    = na
+var line  lnT    = na
+var label lbS    = na
+var label lbT    = na
+var array<line>  curLines  = array.new<line>()
+var array<label> curLabels = array.new<label>()
+var int   nTr   = 0
+var int   nTP   = 0
+var int   nSL   = 0
+var int   nHull = 0
+var float sumR  = 0.0
+bool  tradeOpen  = false
+bool  tradeClose = false
+bool  showLv = lvMode != "Ninguna"
+
+// 1) Gestión del trade abierto (desde la vela siguiente a la entrada)
+if tDir != 0 and bar_index > tStart
+    float exitPx  = na
+    string exitWhy = ""
+    if tDir == 1
+        if low <= tStop
+            exitPx  := tStop
+            exitWhy := "SL"
+        else if high >= tTp
+            exitPx  := tTp
+            exitWhy := "TP"
+        else if exitHull and hullDn
+            exitPx  := close
+            exitWhy := "Hull"
+    else
+        if high >= tStop
+            exitPx  := tStop
+            exitWhy := "SL"
+        else if low <= tTp
+            exitPx  := tTp
+            exitWhy := "TP"
+        else if exitHull and hullUp
+            exitPx  := close
+            exitWhy := "Hull"
+    if not na(exitPx)
+        float r = (exitPx - tEntry) * tDir / tR
+        nTr   += 1
+        sumR  += r
+        nTP   += exitWhy == "TP" ? 1 : 0
+        nSL   += exitWhy == "SL" ? 1 : 0
+        nHull += exitWhy == "Hull" ? 1 : 0
+        if showLv
+            lnE.set_x2(bar_index)
+            lnS.set_x2(bar_index)
+            lnT.set_x2(bar_index)
+            lbS.set_x(bar_index)
+            lbT.set_x(bar_index)
+        color rc = r > 0 ? C_BULL : r < 0 ? C_BEAR : C_GRAY
+        string rTxt = exitWhy + " " + (r >= 0 ? "+" : "−") + str.tostring(math.abs(r), "0.0") + "R"
+        label.new(bar_index, exitPx, rTxt, style = label.style_label_left, color = color.new(rc, 75), textcolor = rc, size = size.tiny, tooltip = exitWhy == "Hull" ? "El Hull giró en contra: el trade se cerró al cierre de la vela." : exitWhy == "TP" ? "Objetivo alcanzado." : "Stop alcanzado.", force_overlay = true)
+        tDir := 0
+        tradeClose := true
+    else
+        if trailHull
+            float cand = tDir == 1 ? math.min(hull, hull[2]) - stopBuf * atr : math.max(hull, hull[2]) + stopBuf * atr
+            bool better = tDir == 1 ? (cand > tStop and cand < close) : (cand < tStop and cand > close)
+            if better
+                tStop := cand
+                if showLv
+                    lnS.set_x2(bar_index)
+                    lnS := line.new(bar_index, tStop, bar_index, tStop, color = C_BEAR, width = 2, force_overlay = true)
+                    curLines.push(lnS)
+                    lbS.set_y(tStop)
+                    lbS.set_text("SL " + str.tostring(tStop, format.mintick))
+        if showLv
+            lnE.set_x2(bar_index)
+            lnS.set_x2(bar_index)
+            lnT.set_x2(bar_index)
+            lbS.set_x(bar_index)
+            lbT.set_x(bar_index)
+
+// 2) Apertura (una señal nueva reemplaza al trade abierto)
+if newL or newS
+    if tDir != 0
+        float r = (close - tEntry) * tDir / tR
+        nTr  += 1
+        sumR += r
+        if showLv
+            lnE.set_x2(bar_index)
+            lnS.set_x2(bar_index)
+            lnT.set_x2(bar_index)
+    if lvMode == "Última"
+        for ln in curLines
+            ln.delete()
+        for lb in curLabels
+            lb.delete()
+        curLines.clear()
+        curLabels.clear()
+    tDir   := newL ? 1 : -1
+    tEntry := close
+    tStop  := nStop
+    tTp    := nTp
+    tR     := math.abs(close - nStop)
+    tStart := bar_index
+    tradeOpen := true
+    if showLv
+        lnE := line.new(bar_index, tEntry, bar_index, tEntry, color = C_GRAY, style = line.style_dashed, force_overlay = true)
+        lnS := line.new(bar_index, tStop, bar_index, tStop, color = C_BEAR, width = 2, force_overlay = true)
+        lnT := line.new(bar_index, tTp, bar_index, tTp, color = C_BULL, width = 2, force_overlay = true)
+        lbS := label.new(bar_index, tStop, "SL " + str.tostring(tStop, format.mintick), style = label.style_label_left, color = color.new(C_BEAR, 80), textcolor = C_TEXT, size = size.tiny, force_overlay = true)
+        lbT := label.new(bar_index, tTp, "TP " + str.tostring(rrMin, "#.#") + "R  " + str.tostring(tTp, format.mintick), style = label.style_label_left, color = color.new(C_BULL, 80), textcolor = C_TEXT, size = size.tiny, force_overlay = true)
+        curLines.push(lnE)
+        curLines.push(lnS)
+        curLines.push(lnT)
+        curLabels.push(lbS)
+        curLabels.push(lbT)
+
+// ───────────────────── Panel del oscilador ────────────────────────────
+bgcolor(regime == 1 ? color.new(C_BULL, 93) : regime == -1 ? color.new(C_BEAR, 93) : na, title = "Régimen")
+
+h100 = hline(100, display = display.none)
+hOB  = hline(obLvl, "0.8", color = C_DIM, linestyle = hline.style_dashed)
+h50  = hline(50, "0.5 filtro", color = C_DIM, linestyle = hline.style_dotted)
+hOS  = hline(osLvl, "0.2", color = C_DIM, linestyle = hline.style_dashed)
+h0   = hline(0, display = display.none)
+fill(h100, hOB, color = color.new(C_BEAR, 90), title = "Zona 0.8–1")
+fill(hOS, h0, color = color.new(C_BULL, 90), title = "Zona 0–0.2")
+
+plot(showRsi ? rsi : na, "RSI", color = color.new(C_GRAY, 35), linewidth = 1)
+plot(k, "%K", color = C_BULL, linewidth = 2)
+plot(d, "%D", color = C_BEAR, linewidth = 1)
+
+plotshape(longOK or shortOK ? k : na, "Gatillo con régimen", style = shape.circle, location = location.absolute, color = C_GOLD, size = size.tiny)
+plotshape(fadeLongOK or fadeShortOK ? k : na, "Gatillo fade", style = shape.diamond, location = location.absolute, color = C_GOLD, size = size.small)
+plotshape(showSilence and (silBear or silBull) ? k : na, "Silencio (contra régimen)", style = shape.xcross, location = location.absolute, color = color.new(C_GRAY, 30), size = size.tiny)
+
+color hullCol = hullUp ? C_BULL : C_BEAR
+pHull  = plot(showHull ? hull : na, "Hull", color = hullCol, linewidth = 2, force_overlay = true)
+pHull2 = plot(showHull and hullBand ? hull[2] : na, "Hull [2]", color = color.new(hullCol, 40), linewidth = 1, force_overlay = true)
+fill(pHull, pHull2, color = color.new(hullCol, hullTransp), title = "Banda Hull")
+
+barcolor(colorBars == "Régimen RSI" ? (regime == 1 ? C_BULL : regime == -1 ? C_BEAR : na) : colorBars == "Hull" ? hullCol : na)
+
+// ───────────────────── Tablero ────────────────────────────────────────
+divAgo(int sBull, int sBear) =>
+    int b = nz(sBull, 99999)
+    int s = nz(sBear, 99999)
+    b == 99999 and s == 99999 ? "—" : b <= s ? "▲ hace " + str.tostring(b) : "▼ hace " + str.tostring(s)
+
+var table tb = table.new(position.bottom_left, 2, 10, bgcolor = color.new(C_BG, 10), border_width = 0, force_overlay = true)
+if showTable and barstate.islast
+    string regTxt  = regime == 1 ? "Alcista · solo longs" : regime == -1 ? "Bajista · solo shorts" : "—"
+    color  regCol  = regime == 1 ? C_BULL : regime == -1 ? C_BEAR : C_GRAY
+    string rsiTxt  = str.tostring(rsi, "#.0") + (useHTF ? "  ·  HTF " + str.tostring(rsiReg, "#.0") : "")
+    string pbTxt   = regime == 1 ? (pbBull ? "Listo (RSI tocó ≤50)" : "Esperando") : regime == -1 ? (pbBear ? "Listo (RSI tocó ≥50)" : "Esperando") : "—"
+    string cascTxt = dnSt == 1 ? "Clímax ↓ · esperar agotamiento" : dnSt == 2 ? "Agotada ↓ · fade ▲ armado" : upSt == 1 ? "Clímax ↑ · esperar agotamiento" : upSt == 2 ? "Agotada ↑ · fade ▼ armado" : "—"
+    table.cell(tb, 0, 0, "Régimen", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 0, regTxt, text_color = regCol, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 0, 1, "RSI", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 1, rsiTxt, text_color = C_TEXT, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 0, 2, "SRSI %K", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 2, str.tostring(k / 100, "0.00"), text_color = C_TEXT, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 0, 3, "Pullback", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 3, pbTxt, text_color = C_TEXT, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 0, 4, "Cascada", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 4, cascTxt, text_color = dnSt > 0 or upSt > 0 ? C_GOLD : C_TEXT, text_size = size.small, text_halign = text.align_left)
+    string divTxt = "RSI " + divAgo(sinceBullDiv, sinceBearDiv) + "  ·  OBV " + divAgo(sinceBullObv, sinceBearObv)
+    string hullTxt = (hullUp ? "Alcista ▲" : hullDn ? "Bajista ▼" : "Plano") + (hullFilter ? (hullUp ? " · solo compras" : hullDn ? " · solo ventas" : " · sin señales") : "")
+    string trTxt = tDir == 1 ? "Long abierto · SL " + str.tostring(tStop, format.mintick) : tDir == -1 ? "Short abierto · SL " + str.tostring(tStop, format.mintick) : "Sin trade"
+    string stTxt = str.tostring(nTr) + " cerrados · TP " + str.tostring(nTP) + " · SL " + str.tostring(nSL) + " · Hull " + str.tostring(nHull) + " · " + (sumR >= 0 ? "+" : "−") + str.tostring(math.abs(sumR), "0.0") + "R"
+    table.cell(tb, 0, 8, "Trade", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 8, trTxt, text_color = tDir == 1 ? C_BULL : tDir == -1 ? C_BEAR : C_TEXT, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 0, 9, "Historial", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 9, stTxt, text_color = sumR >= 0 ? C_BULL : C_BEAR, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 0, 7, "Hull", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 7, hullTxt, text_color = hullUp ? C_BULL : hullDn ? C_BEAR : C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 0, 6, "Divergencias", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 6, divTxt, text_color = C_TEXT, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 0, 5, "Última señal", text_color = C_GRAY, text_size = size.small, text_halign = text.align_left)
+    table.cell(tb, 1, 5, lastSig, text_color = C_GOLD, text_size = size.small, text_halign = text.align_left)
+
+// ───────────────────── Alertas ────────────────────────────────────────
+alertcondition(longOK, "LONG (regla completa)", "BA Extremos · LONG en {{ticker}} {{interval}} · cierre {{close}}")
+alertcondition(shortOK, "SHORT (regla completa)", "BA Extremos · SHORT en {{ticker}} {{interval}} · cierre {{close}}")
+alertcondition(fadeLongOK, "FADE ▲ (cascada bajista agotada)", "BA Extremos · FADE LONG en {{ticker}} {{interval}}")
+alertcondition(fadeShortOK, "FADE ▼ (cascada alcista agotada)", "BA Extremos · FADE SHORT en {{ticker}} {{interval}}")
+alertcondition(evExhDn or evExhUp, "Cascada agotada (preparar fade)", "BA Extremos · cascada agotada en {{ticker}} {{interval}}")
+alertcondition(shiftUp or shiftDn, "Range shift", "BA Extremos · range shift en {{ticker}} {{interval}}")
+alertcondition(absUp or absDn, "Absorción", "BA Extremos · absorción en {{ticker}} {{interval}}")
+alertcondition(tradeClose, "Trade cerrado (TP, SL o Hull)", "BA Extremos · trade cerrado en {{ticker}} {{interval}}")
+alertcondition(hullUp and not hullUp[1], "Hull gira alcista", "BA Extremos · Hull alcista en {{ticker}} {{interval}}")
+alertcondition(hullDn and not hullDn[1], "Hull gira bajista", "BA Extremos · Hull bajista en {{ticker}} {{interval}}")
+alertcondition(bullDiv or bearDiv, "Divergencia RSI", "BA Extremos · divergencia RSI en {{ticker}} {{interval}}")
+alertcondition(bullObv or bearObv, "Divergencia OBV", "BA Extremos · divergencia OBV en {{ticker}} {{interval}}")
+alertcondition((bullDiv and nz(sinceBullObv, 9999) <= confWin) or (bullObv and nz(sinceBullDiv, 9999) <= confWin) or (bearDiv and nz(sinceBearObv, 9999) <= confWin) or (bearObv and nz(sinceBearDiv, 9999) <= confWin), "Divergencia RSI+OBV (confluencia)", "BA Extremos · divergencia RSI+OBV en {{ticker}} {{interval}}")
