@@ -12,6 +12,7 @@
 
 * [Contexto](secciones/contexto.md)
 * [Indicador](secciones/indicador.md)
+* [Aurora](secciones/aurora.md)
 * [Spaghetti](secciones/spaghetti.md)
 * [Liquidaciones](secciones/liquidaciones.md)
 * [Noticias](secciones/noticias.md)

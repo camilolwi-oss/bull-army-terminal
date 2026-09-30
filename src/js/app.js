@@ -231,11 +231,14 @@
 
   const LIBS = ['https://cdn.jsdelivr.net/npm/@luxalgo/vela@0.8.0/dist/vela.global.min.js', 'https://cdn.jsdelivr.net/npm/@luxalgo/vela-pinets@0.2.14/dist/vela-pinets.global.min.js'];
   const loadScript = (u) => new Promise((ok, ko) => { const s = document.createElement('script'); s.src = u; s.onload = ok; s.onerror = ko; document.head.append(s); });
+  // Vela y PineTS se descargan una sola vez y las comparten Indicador y Aurora.
+  let libsP = null;
+  const loadLibs = () => libsP = libsP || (async () => { for (const u of LIBS) await loadScript(u); })().catch((e) => { libsP = null; throw e; });
   let indStart = null;
   function startIndicator() {
     return indStart = indStart || (async () => {
       veil('Cargando el gráfico…');
-      try { for (const u of LIBS) await loadScript(u); }
+      try { await loadLibs(); }
       catch { indStart = null; veil('No se pudieron cargar las librerías del gráfico. Revisá la conexión y probá de nuevo.', true); return; }
       await liveReady;
       if (state.live && !CAT.ready) { try { await loadCatalog(); } catch {} }
@@ -251,7 +254,7 @@
       state.symbol = aliasKey(state.symbol);
       chart = new Vela.Vela('#chart', { ...opts, symbol:'hyperliquid:' + state.symbol, timeframe:state.tf, live:true });
       chart.data.registerProvider('hyperliquid', makeProvider());
-      renderPicker();
+      picker.render();
     } else {
       chart = new Vela.Vela('#chart', { ...opts, symbol:'BTCUSDC', timeframe:state.tf, data:snapBars(state.tf), live:false });
       $('symBtn').disabled = true; $('symLbl').textContent = 'BTC (demo)';
@@ -286,55 +289,64 @@
     if (scriptFor(state.tf) !== runningSrc) { handle.remove(); handle = null; await runScript(); }
     else handle.setInputs(inputValues());
   });
-  // ── Buscador de mercados ──────────────────────────────────────────────
-  const pk = { group:'all', q:'', items:[], sel:0 };
+  // ── Buscador de mercados (Indicador y Aurora) ─────────────────────────
   const nf = (v, o) => v.toLocaleString('es-AR', o);
   const fmtPx = (v) => !v ? '—' : v >= 1000 ? nf(v, { maximumFractionDigits:1 }) : v >= 1 ? nf(v, { maximumFractionDigits:4 }) : nf(v, { maximumSignificantDigits:4 });
   const fmtVol = (v) => !v ? '—' : v >= 1e9 ? nf(v / 1e9, { maximumFractionDigits:2 }) + ' B' : v >= 1e6 ? nf(v / 1e6, { maximumFractionDigits:1 }) + ' M' : v >= 1e3 ? nf(v / 1e3, { maximumFractionDigits:0 }) + ' K' : nf(v, { maximumFractionDigits:0 });
   const GTAG = { perp:'perp', spot:'spot', hip3:'hip-3' };
-  function renderPicker() {
-    $('symLbl').textContent = labelOf(state.symbol);
-    if (!CAT.ready) { $('symCount').textContent = 'No se pudo cargar el catálogo; se muestran los mercados principales.'; return; }
-    const q = pk.q.trim().toLowerCase();
-    pk.items = CAT.list.filter(m => (pk.group === 'all' || m.group === pk.group) && (!q || m.label.toLowerCase().includes(q) || m.real.toLowerCase().includes(q)));
-    if (q) pk.items.sort((a, b) => (b.label.toLowerCase().startsWith(q) - a.label.toLowerCase().startsWith(q)) || b.vol - a.vol);
-    pk.sel = Math.min(pk.sel, Math.max(0, pk.items.length - 1));
-    const shown = pk.items.slice(0, 300);
-    $('symList').innerHTML = shown.map((m, i) => {
-      const ch = m.prev ? (m.px / m.prev - 1) * 100 : 0;
-      return `<li role="option" data-a="${m.alias}" aria-selected="${i === pk.sel}" class="${m.alias === state.symbol ? 'cur' : ''}"><span><b>${m.label}</b><i>${GTAG[m.group]}</i></span><span>${fmtPx(m.px)}</span><span class="${ch > 0 ? 'up' : ch < 0 ? 'dn' : ''}">${m.prev ? (ch > 0 ? '+' : '') + nf(ch, { minimumFractionDigits:2, maximumFractionDigits:2 }) + '%' : '—'}</span><span>${fmtVol(m.vol)}</span></li>`;
-    }).join('') || '<li aria-disabled="true"><span>Sin resultados</span></li>';
-    const n = { perp:0, spot:0, hip3:0 }; CAT.list.forEach(m => n[m.group]++);
-    $('symCount').textContent = `${pk.items.length} de ${CAT.list.length} mercados · ${n.perp} perps · ${n.spot} spot · ${n.hip3} HIP-3 · ordenados por volumen 24h` + (pk.items.length > 300 ? ' · escribí para ver el resto' : '');
+  // prefix elige los elementos: '' → symBtn, pop, symQ…; 'au' → auSymBtn, auPop, auSymQ…
+  function makePicker(prefix, { current, onPick }) {
+    const el = (id) => $(prefix ? prefix + id[0].toUpperCase() + id.slice(1) : id);
+    const pk = { group:'all', q:'', items:[], sel:0 };
+    function render() {
+      el('symLbl').textContent = labelOf(current());
+      if (!CAT.ready) { el('symCount').textContent = 'No se pudo cargar el catálogo; se muestran los mercados principales.'; return; }
+      const q = pk.q.trim().toLowerCase(), cur = current();
+      pk.items = CAT.list.filter(m => (pk.group === 'all' || m.group === pk.group) && (!q || m.label.toLowerCase().includes(q) || m.real.toLowerCase().includes(q)));
+      if (q) pk.items.sort((a, b) => (b.label.toLowerCase().startsWith(q) - a.label.toLowerCase().startsWith(q)) || b.vol - a.vol);
+      pk.sel = Math.min(pk.sel, Math.max(0, pk.items.length - 1));
+      const shown = pk.items.slice(0, 300);
+      el('symList').innerHTML = shown.map((m, i) => {
+        const ch = m.prev ? (m.px / m.prev - 1) * 100 : 0;
+        return `<li role="option" data-a="${m.alias}" aria-selected="${i === pk.sel}" class="${m.alias === cur ? 'cur' : ''}"><span><b>${m.label}</b><i>${GTAG[m.group]}</i></span><span>${fmtPx(m.px)}</span><span class="${ch > 0 ? 'up' : ch < 0 ? 'dn' : ''}">${m.prev ? (ch > 0 ? '+' : '') + nf(ch, { minimumFractionDigits:2, maximumFractionDigits:2 }) + '%' : '—'}</span><span>${fmtVol(m.vol)}</span></li>`;
+      }).join('') || '<li aria-disabled="true"><span>Sin resultados</span></li>';
+      const n = { perp:0, spot:0, hip3:0 }; CAT.list.forEach(m => n[m.group]++);
+      el('symCount').textContent = `${pk.items.length} de ${CAT.list.length} mercados · ${n.perp} perps · ${n.spot} spot · ${n.hip3} HIP-3 · ordenados por volumen 24h` + (pk.items.length > 300 ? ' · escribí para ver el resto' : '');
+    }
+    function open(on) {
+      el('pop').hidden = !on; el('symBtn').setAttribute('aria-expanded', String(on));
+      if (on) { pk.sel = 0; pk.q = ''; el('symQ').value = ''; render(); setTimeout(() => el('symQ').focus(), 0); }
+    }
+    function pick(alias) {
+      if (!alias) return;
+      open(false);
+      if (alias === current()) return;
+      el('symLbl').textContent = labelOf(alias);
+      onPick(alias);
+    }
+    el('symBtn').addEventListener('click', () => open(el('pop').hidden));
+    el('symQ').addEventListener('input', () => { pk.q = el('symQ').value; pk.sel = 0; render(); });
+    el('symQ').addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault(); pk.sel = Math.max(0, Math.min(Math.min(pk.items.length, 300) - 1, pk.sel + (e.key === 'ArrowDown' ? 1 : -1)));
+        render(); const s = el('symList').querySelector('[aria-selected="true"]'); s && s.scrollIntoView({ block:'nearest' });
+      } else if (e.key === 'Enter') { e.preventDefault(); pick(pk.items[pk.sel]?.alias); }
+      else if (e.key === 'Escape') { open(false); el('symBtn').focus(); }
+    });
+    el('symF').addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      pk.group = b.dataset.g; pk.sel = 0;
+      el('symF').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      render(); el('symQ').focus();
+    });
+    el('symList').addEventListener('click', (e) => { const li = e.target.closest('li[data-a]'); li && pick(li.dataset.a); });
+    document.addEventListener('mousedown', (e) => { if (!el('pop').hidden && !el('symCtl').contains(e.target)) open(false); });
+    return { render };
   }
-  function openPicker(open) {
-    $('pop').hidden = !open; $('symBtn').setAttribute('aria-expanded', String(open));
-    if (open) { pk.sel = 0; pk.q = ''; $('symQ').value = ''; renderPicker(); setTimeout(() => $('symQ').focus(), 0); }
-  }
-  function pick(alias) {
-    if (!alias) return;
-    openPicker(false);
-    if (alias === state.symbol) return;
+  const picker = makePicker('', { current: () => state.symbol, onPick: (alias) => {
     state.symbol = alias; try { localStorage.setItem('baExtremosSym', alias); } catch {}
-    $('symLbl').textContent = labelOf(alias); switchMarket();
-  }
-  $('symBtn').addEventListener('click', () => openPicker($('pop').hidden));
-  $('symQ').addEventListener('input', () => { pk.q = $('symQ').value; pk.sel = 0; renderPicker(); });
-  $('symQ').addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault(); pk.sel = Math.max(0, Math.min(Math.min(pk.items.length, 300) - 1, pk.sel + (e.key === 'ArrowDown' ? 1 : -1)));
-      renderPicker(); const el = $('symList').querySelector('[aria-selected="true"]'); el && el.scrollIntoView({ block:'nearest' });
-    } else if (e.key === 'Enter') { e.preventDefault(); pick(pk.items[pk.sel]?.alias); }
-    else if (e.key === 'Escape') { openPicker(false); $('symBtn').focus(); }
-  });
-  $('symF').addEventListener('click', (e) => {
-    const b = e.target.closest('button'); if (!b) return;
-    pk.group = b.dataset.g; pk.sel = 0;
-    $('symF').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    renderPicker(); $('symQ').focus();
-  });
-  $('symList').addEventListener('click', (e) => { const li = e.target.closest('li[data-a]'); li && pick(li.dataset.a); });
-  document.addEventListener('mousedown', (e) => { if (!$('pop').hidden && !$('symCtl').contains(e.target)) openPicker(false); });
+    switchMarket();
+  } });
   window.addEventListener('resize', () => chart && chart.resize());
 
   // ── Ajustes (solo en este navegador) ───────────────────────────────────
@@ -369,7 +381,7 @@
 
   // ── Secciones ──────────────────────────────────────────────────────────
   let liveKnown; const liveReady = new Promise((r) => (liveKnown = r));
-  const VIEWS = { ctx:'#contexto', ind:'#indicador', spag:'#spaghetti', liq:'#liquidaciones', news:'#noticias' };
+  const VIEWS = { ctx:'#contexto', ind:'#indicador', aur:'#aurora', spag:'#spaghetti', liq:'#liquidaciones', news:'#noticias' };
   const mods = {};
   const snapBtc = () => { const m = (b) => ({ t:b.time, o:b.open, h:b.high, l:b.low, c:b.close, v:b.volume }); return { h1: snapBars('60').map(m), h4: snapBars('240').map(m) }; };
   const fromHash = () => Object.keys(VIEWS).find((k) => VIEWS[k] === location.hash) || 'ctx';
@@ -385,6 +397,7 @@
     await liveReady;
     if (!mods[id]) {
       if (id === 'ctx') mods.ctx = window.createContext({ live: state.live, hlPost, snapBtc });
+      if (id === 'aur') mods.aur = window.createAurora({ live: state.live, CAT, loadCatalog, loadLibs, makeProvider, makePicker, labelOf, aliasKey, THEME, TF_LABEL, snapBars, hasSnap: (tf) => !!SNAP[tf], fmtDate });
       if (id === 'spag') mods.spag = window.createSpaghetti({ live: state.live, CAT, loadCatalog, hlPost, snapshot: () => JSON.parse($('spagSnap').textContent) });
       if (id === 'liq') mods.liq = window.createLiqMap({ live: state.live, hlPost, snapshot: () => JSON.parse($('liqSnap').textContent) });
       if (id === 'news') mods.news = window.createNews({ settings, openSettings });

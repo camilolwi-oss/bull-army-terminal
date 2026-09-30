@@ -10,13 +10,13 @@ Todos los datos vienen de APIs **públicas y gratuitas**, consultadas directamen
 | **SoSoValue** (`api.sosovalue.xyz`) | Flujos netos diarios de los ETF spot de BTC de EE.UU. | Contexto |
 | **Tree News** (`news.treeofalpha.com`) | Noticias (últimas 200 + WebSocket en vivo). | Noticias |
 | **Servidor del calendario** (propio, opcional) | Eventos macro de la semana. | Noticias |
-| **jsDelivr** (`cdn.jsdelivr.net`) | Librerías Vela y PineTS. | Indicador |
+| **jsDelivr** (`cdn.jsdelivr.net`) | Librerías Vela y PineTS. | Indicador y Aurora |
 
 ## Cada cuánto se actualiza
 
 | Dato | Frecuencia |
 |---|---|
-| Gráfico del Indicador | En vivo (WebSocket). |
+| Gráficos del Indicador y de Aurora | En vivo (WebSocket). |
 | Spaghetti, serie de precio | En vivo (WebSocket de precios). |
 | Contexto | Cada 5 minutos, mientras la sección está abierta. |
 | Cierres diarios de las alts (Contexto) | Se guardan 1 hora en el navegador. |

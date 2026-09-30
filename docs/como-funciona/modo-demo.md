@@ -16,6 +16,7 @@ Si al arrancar la terminal no logra hablar con Hyperliquid, pasa a **modo demo**
 |---|---|
 | **Contexto** | Solo las tarjetas de BTC (sesgo, precio, volatilidad, operar/esperar, CME, ATR, horarios) con datos de muestra. Amplitud, alts, apalancamiento y ETF dicen *Necesita conexión en vivo*. |
 | **Indicador** | Solo BTC y solo las temporalidades que tienen datos de muestra. El buscador de mercados queda desactivado. |
+| **Aurora** | Solo BTC en 1H y 4H, igual que el Indicador. |
 | **Spaghetti** | Una muestra fija de 72 horas. |
 | **Liquidaciones** | Un escaneo de muestra. |
 | **Noticias** | Depende de Tree News, no de Hyperliquid: puede funcionar igual. |
@@ -35,7 +36,7 @@ Están en `src/data/` y son una foto fija tomada en un momento puntual:
 
 | Archivo | Sección |
 |---|---|
-| `indicador.json` | Velas de BTC por temporalidad (Indicador y Contexto). |
+| `indicador.json` | Velas de BTC por temporalidad (Indicador, Aurora y Contexto). |
 | `spaghetti.json` | Series horarias de varios activos. |
 | `liquidaciones.json` | Posiciones de las cuentas grandes. |
 

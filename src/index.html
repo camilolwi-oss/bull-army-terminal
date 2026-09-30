@@ -16,6 +16,7 @@
   <ul class="side-nav">
     <li><a class="side-item" href="#contexto" data-v="ctx" title="Contexto"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="lab">Contexto</span></a></li>
     <li><a class="side-item" href="#indicador" data-v="ind" title="Indicador"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v18M17 3v18"/><rect x="4.5" y="7" width="5" height="8" rx="1"/><rect x="14.5" y="5" width="5" height="10" rx="1"/></svg><span class="lab">Indicador</span></a></li>
+    <li><a class="side-item" href="#aurora" data-v="aur" title="Aurora"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18"/><path d="M6.5 18a5.5 5.5 0 0 1 11 0"/><path d="M12 5v3M4.9 9.9l2.1 2.1M19.1 9.9L17 12M2 14h2M20 14h2"/></svg><span class="lab">Aurora</span></a></li>
     <li><a class="side-item" href="#spaghetti" data-v="spag" title="Spaghetti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 9-9"/><path d="M3 11l6 3 5-5 7 5"/></svg><span class="lab">Spaghetti</span></a></li>
     <li><a class="side-item" href="#liquidaciones" data-v="liq" title="Liquidaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M9 20V4M14 20v-8M19 20v-5"/></svg><span class="lab">Liquidaciones</span></a></li>
     <li><a class="side-item" href="#noticias" data-v="news" title="Noticias"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="lab">Noticias</span></a></li>
@@ -235,6 +236,91 @@
         <li><div><b>Riesgo estructural</b><span>Stop en el swing, objetivo a 2R. Si la geometría no da 2R, no hay trade. Si el Hull gira en contra, el trade se cierra.</span></div></li>
       </ol>
       <p class="rule"><b>Regla de hierro:</b> el SRSI nunca opera contra el Hull ni contra el régimen del RSI. Con el filtro activo, el fade de cascada también respeta el Hull.</p>
+    </div>
+  </div>
+  </section>
+
+  <section id="panel-aur" aria-labelledby="h-aur" hidden>
+  <header class="view-head">
+    <h1 id="h-aur">Aurora · Hull Suite</h1>
+    <p class="sp-cap"><b>Cinco osciladores, flujo, volumen, divergencias y Order Blocks en un solo panel.</b> Con el Hull Suite sobre las velas para ver la tendencia.</p>
+  </header>
+  <div class="controls" role="group" aria-label="Mercado y temporalidad">
+    <div class="ctl picker" id="auSymCtl">
+      <span class="lbl">Mercado</span>
+      <button type="button" id="auSymBtn" class="sym-btn" aria-haspopup="listbox" aria-expanded="false"><span id="auSymLbl">BTC-PERP</span><span class="caret" aria-hidden="true">▾</span></button>
+      <div class="pop" id="auPop" hidden>
+        <input type="text" id="auSymQ" class="sym-q" role="combobox" aria-controls="auSymList" aria-expanded="true" aria-autocomplete="list" placeholder="Buscar entre todos los mercados…" aria-label="Buscar mercado" autocomplete="off" spellcheck="false">
+        <div class="seg filt" id="auSymF">
+          <button type="button" data-g="all" aria-pressed="true">Todos</button><button type="button" data-g="perp">Perps</button><button type="button" data-g="spot">Spot</button><button type="button" data-g="hip3">HIP-3</button>
+        </div>
+        <div class="rows-head"><span>Mercado</span><span>Precio</span><span>24h</span><span>Volumen 24h</span></div>
+        <ul class="rows" id="auSymList" role="listbox" aria-label="Mercados de Hyperliquid"></ul>
+        <p class="pop-foot" id="auSymCount">Cargando mercados…</p>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lbl">Temporalidad</span>
+      <div class="seg scroll" id="auTf">
+        <button type="button" data-tf="1">1m</button><button type="button" data-tf="5">5m</button><button type="button" data-tf="15">15m</button><button type="button" data-tf="30" aria-pressed="true">30m</button><button type="button" data-tf="60">1H</button><button type="button" data-tf="240">4H</button><button type="button" data-tf="360">6H</button><button type="button" data-tf="1D">1D</button><button type="button" data-tf="3D">3D</button><button type="button" data-tf="W">1W</button><button type="button" data-tf="M">1M</button>
+      </div>
+    </div>
+  </div>
+  <div class="controls" role="group" aria-label="Hull Suite">
+    <span class="lbl-row">Hull Suite</span>
+    <label class="tog"><input type="checkbox" id="auHull" checked> Mostrar</label>
+    <div class="seg" id="auHullMode" role="group" aria-label="Variante del Hull">
+      <button type="button" data-v="Hma" aria-pressed="true">HMA</button><button type="button" data-v="Ehma">EHMA</button><button type="button" data-v="Thma">THMA</button>
+    </div>
+    <label class="ctl"><span class="lbl">Longitud</span>
+      <select id="auHullLen"><option value="21">21</option><option value="34">34</option><option value="55" selected>55</option><option value="100">100</option><option value="180">180</option><option value="200">200</option></select>
+    </label>
+    <label class="tog"><input type="checkbox" id="auBars"> Colorear velas</label>
+  </div>
+  <div class="controls" role="group" aria-label="Aurora">
+    <span class="lbl-row">Aurora</span>
+    <label class="tog"><input type="checkbox" id="auFlow" checked> Flujo</label>
+    <label class="tog"><input type="checkbox" id="auVol" checked> Volumen</label>
+    <label class="tog"><input type="checkbox" id="auStrips" checked> Franjas</label>
+    <label class="tog"><input type="checkbox" id="auSig" checked> Giros</label>
+    <label class="tog"><input type="checkbox" id="auDiv" checked> Divergencias</label>
+    <label class="tog"><input type="checkbox" id="auDivPx" checked> Div. en el precio</label>
+    <label class="tog"><input type="checkbox" id="auOB" checked> Order Blocks</label>
+    <label class="tog"><input type="checkbox" id="auOBConf"> Solo OB con confluencia</label>
+    <label class="tog"><input type="checkbox" id="auGlow" checked> Glow</label>
+    <label class="tog"><input type="checkbox" id="auTbl" checked> Panel de lectura</label>
+  </div>
+
+  <div class="chartbox">
+    <div id="auChart"></div>
+    <div class="veil" id="auVeil"><span id="auVeilTxt">Ejecutando Aurora y el Hull Suite…</span></div>
+  </div>
+  <p class="note" id="auNote"></p>
+
+  <div class="read">
+    <div>
+      <h2>Cómo leer Aurora</h2>
+      <dl class="legend">
+        <div><dt><span class="chip c-au-bull">OSCILADOR</span></dt><dd>Promedio de <b>RSI, Estocástico, MFI, CCI y TSI</b> en escala ±100. <b>Cian</b> sube, <b>rosa</b> baja: es dirección, no orden.</dd></div>
+        <div><dt><span class="chip c-txt">+50 · −50</span></dt><dd>Sobrecompra y sobreventa. <b>No son señales</b>: importa cómo sale de la zona.</dd></div>
+        <div><dt><span class="chip c-au-strip">FRANJAS</span></dt><dd>Una fila por oscilador: arriba alcista, abajo bajista. <b>Cuatro o cinco encendidas</b> = consenso real.</dd></div>
+        <div><dt><span class="chip c-long">FLUJO</span></dt><dd>Dinero comprador (verde) o vendedor (rojo) según dónde cierran las velas, ponderado por volumen. <b>Confirma</b> el movimiento.</dd></div>
+        <div><dt><span class="chip c-gray">VOLUMEN</span></dt><dd>Columnas en la base: cuanto más opacas, <b>más volumen</b> que lo normal.</dd></div>
+        <div><dt><span class="chip c-txt bull">▲ ▼</span></dt><dd>Giro del momentum <b>en zona extrema</b> (bajo −50 o sobre +50). Aviso de agotamiento, no entrada.</dd></div>
+        <div><dt><span class="chip c-txt gold">● dorado</span></dt><dd><b>Divergencia</b>: precio y oscilador cuentan historias distintas. Línea punteada en ambos paneles.</dd></div>
+        <div><dt><span class="chip c-abs">OB ✓</span></dt><dd>Order Block nacido de un <b>BOS</b>. Borde dorado: con <b>confluencia</b> del oscilador en zona extrema.</dd></div>
+        <div><dt><span class="chip c-hull">HULL</span></dt><dd>Hull Suite de InSilico. <b>Verde</b>: tendencia alcista. <b>Rojo</b>: bajista.</dd></div>
+      </dl>
+    </div>
+    <div>
+      <h2>Cómo combinarlos</h2>
+      <ol class="steps">
+        <li><div><b>Precio sube · flujo verde · volumen alto</b><span>Movimiento con respaldo: hay compradores reales detrás.</span></div></li>
+        <li><div><b>Precio sube · flujo rojo</b><span>Subida sin compradores fuertes. Desconfiá, sobre todo cerca de una zona de oferta.</span></div></li>
+        <li><div><b>Precio cae · flujo verde</b><span>Caída sin vendedores fuertes: puede ser solo un retroceso.</span></div></li>
+        <li><div><b>Ruptura con volumen apagado</b><span>Poca participación: más chances de que falle.</span></div></li>
+      </ol>
+      <p class="rule"><b>Aurora no da entradas: da contexto.</b> Cuando el oscilador, el consenso, el flujo y el Hull no coinciden, lo más sano es esperar.</p>
     </div>
   </div>
   </section>
@@ -461,6 +547,8 @@
 <script type="application/json" id="liqSnap" data-src="data/liquidaciones.json"></script>
 <script type="application/json" id="spagSnap" data-src="data/spaghetti.json"></script>
 <script type="text/plain" id="pine" data-src="pine/extremos.pine"></script>
+<script type="text/plain" id="auroraPine" data-src="pine/aurora.pine"></script>
+<script type="text/plain" id="hullPine" data-src="pine/hull-suite.pine"></script>
 <script type="application/json" id="snap" data-src="data/indicador.json"></script>
 
 <!-- Scripts de la app, en orden de ejecución. js/loader.js los carga después de los datos. -->
@@ -472,6 +560,7 @@
 <script type="text/plain" data-app="js/contexto/calc.js"></script>
 <script type="text/plain" data-app="js/contexto/ui.js"></script>
 <script type="text/plain" data-app="js/noticias/ui.js"></script>
+<script type="text/plain" data-app="js/aurora/ui.js"></script>
 <script type="text/plain" data-app="js/app.js"></script>
 <script src="js/loader.js"></script>
 </body>

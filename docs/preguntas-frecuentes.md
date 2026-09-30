@@ -46,4 +46,4 @@ Borrá los datos del sitio en tu navegador (en Chrome: ícono del candado junto 
 
 ## ¿Funciona en el celular?
 
-Sí. El menú se abre con el botón **☰**. El gráfico del Indicador y el Spaghetti se aprovechan mejor en una pantalla grande.
+Sí. El menú se abre con el botón **☰**. Los gráficos del Indicador, Aurora y Spaghetti se aprovechan mejor en una pantalla grande.

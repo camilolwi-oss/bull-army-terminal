@@ -6,6 +6,7 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 |---|---|
 | **Contexto** | El estado del mercado de un vistazo: sesgo long/short de BTC, volatilidad, amplitud, alts contra BTC, apalancamiento, gap de CME, flujos de ETF, ATR y horarios de movimiento. |
 | **Indicador** | El indicador **Extremos** (Pine Script) ejecutado en el navegador sobre cualquier mercado de Hyperliquid, con señales, niveles de entrada/stop/TP e historial de trades. |
+| **Aurora** | Velas con el oscilador **Aurora** (cinco osciladores, flujo, volumen, divergencias y Order Blocks) y el **Hull Suite** de InSilico. |
 | **Spaghetti** | Todos los activos de Hyperliquid en un mismo gráfico para ver quién lidera y quién se queda. |
 | **Liquidaciones** | Mapa de los precios de liquidación de las cuentas más grandes de Hyperliquid. |
 | **Noticias** | Feed de Tree News en tiempo real y calendario macro de la semana. |
@@ -53,13 +54,14 @@ bull-army-terminal/
 │   ├── css/styles.css         Estilos (tema oscuro de Bull Army)
 │   ├── js/
 │   │   ├── loader.js          Carga datos y scripts en orden (solo en desarrollo)
-│   │   ├── app.js             Arranque, navegación, ajustes y sección Indicador
+│   │   ├── app.js             Arranque, navegación, ajustes, buscador de mercados y sección Indicador
 │   │   ├── contexto/          calc.js (cálculos puros) · ui.js (interfaz y datos)
+│   │   ├── aurora/            ui.js (gráfico con Aurora y el Hull Suite)
 │   │   ├── spaghetti/         calc.js · ui.js
 │   │   ├── liquidaciones/     calc.js · source.js (fuente de datos) · ui.js
 │   │   └── noticias/          ui.js (Tree News + calendario macro)
 │   ├── data/                  Datos de muestra para el modo demo (sin conexión)
-│   └── pine/extremos.pine     El indicador Extremos (también sirve para TradingView)
+│   └── pine/                  extremos.pine · aurora.pine · hull-suite.pine
 ├── scripts/
 │   ├── build.mjs              Genera el archivo único de dist/
 │   └── serve.mjs              Servidor local sin dependencias
@@ -73,7 +75,7 @@ bull-army-terminal/
 La guía completa, en español, está en [`docs/`](docs/README.md) y se publica como GitBook:
 
 - **Primeros pasos**: [abrir la terminal](docs/primeros-pasos/abrir-la-terminal.md), [la interfaz](docs/primeros-pasos/la-interfaz.md), [ajustes](docs/primeros-pasos/ajustes.md).
-- **Secciones**: [Contexto](docs/secciones/contexto.md), [Indicador](docs/secciones/indicador.md), [Spaghetti](docs/secciones/spaghetti.md), [Liquidaciones](docs/secciones/liquidaciones.md), [Noticias](docs/secciones/noticias.md).
+- **Secciones**: [Contexto](docs/secciones/contexto.md), [Indicador](docs/secciones/indicador.md), [Aurora](docs/secciones/aurora.md), [Spaghetti](docs/secciones/spaghetti.md), [Liquidaciones](docs/secciones/liquidaciones.md), [Noticias](docs/secciones/noticias.md).
 - **Indicador Extremos**: [la regla](docs/indicador-extremos/la-regla.md), [cómo leer el gráfico](docs/indicador-extremos/como-leer-el-grafico.md), [TradingView](docs/indicador-extremos/tradingview.md).
 - **Cómo funciona**: [arquitectura](docs/como-funciona/arquitectura.md), [fuentes de datos](docs/como-funciona/fuentes-de-datos.md), [modo demo](docs/como-funciona/modo-demo.md).
 - **Desarrollo**: [modificar el código](docs/desarrollo/modificar-el-codigo.md), [publicar](docs/desarrollo/publicar.md).

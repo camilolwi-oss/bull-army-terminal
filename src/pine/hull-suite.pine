@@ -1,0 +1,37 @@
+//@version=6
+// ══════════════════════════════════════════════════════════════════════
+//  Hull Suite by InSilico · versión Bull Army
+//  Media de Hull (HMA, EHMA o THMA) dibujada como banda sobre el precio:
+//  verde cuando sube, roja cuando baja. Acompaña a Aurora en la terminal.
+// ══════════════════════════════════════════════════════════════════════
+indicator("Hull Suite by InSilico", shorttitle = "Hull Suite", overlay = true)
+
+bool   showHull   = input.bool(true, "Mostrar Hull Suite")
+string hullMode   = input.string("Hma", "Variante", options = ["Hma", "Ehma", "Thma"])
+int    hullLen    = input.int(55, "Longitud", minval = 2, tooltip = "InSilico: 55 para entradas de swing, 180–200 como soporte/resistencia dinámico.")
+float  hullMult   = input.float(1.0, "Multiplicador de longitud", minval = 0.1, step = 0.1)
+bool   hullBand   = input.bool(true, "Mostrar como banda")
+int    hullTransp = input.int(40, "Transparencia de la banda", minval = 0, maxval = 100, step = 5)
+bool   colorBars  = input.bool(false, "Colorear velas según el Hull")
+color  cUp        = input.color(#00FF00, "Alcista", inline = "c")
+color  cDn        = input.color(#FF0000, "Bajista", inline = "c")
+
+f_hma(float src, int len) =>
+    ta.wma(2 * ta.wma(src, math.max(1, int(len / 2))) - ta.wma(src, len), math.max(1, int(math.round(math.sqrt(len)))))
+f_ehma(float src, int len) =>
+    ta.ema(2 * ta.ema(src, math.max(1, int(len / 2))) - ta.ema(src, len), math.max(1, int(math.round(math.sqrt(len)))))
+f_thma(float src, int len) =>
+    ta.wma(ta.wma(src, math.max(1, int(len / 3))) * 3 - ta.wma(src, math.max(1, int(len / 2))) - ta.wma(src, len), len)
+
+int   hLen   = math.max(2, int(hullLen * hullMult))
+float hull   = hullMode == "Ehma" ? f_ehma(close, hLen) : hullMode == "Thma" ? f_thma(close, math.max(2, int(hLen / 2))) : f_hma(close, hLen)
+bool  hullUp = hull > hull[2]
+color hCol   = hullUp ? cUp : cDn
+
+pHull  = plot(showHull ? hull : na, "Hull", color = hCol, linewidth = 2)
+pHull2 = plot(showHull and hullBand ? hull[2] : na, "Hull [2]", color = color.new(hCol, 40), linewidth = 1)
+fill(pHull, pHull2, color = color.new(hCol, hullTransp), title = "Banda Hull")
+barcolor(colorBars ? hCol : na)
+
+alertcondition(hullUp and not hullUp[1], "Hull gira alcista", "Hull Suite · alcista en {{ticker}} {{interval}}")
+alertcondition(not hullUp and hullUp[1], "Hull gira bajista", "Hull Suite · bajista en {{ticker}} {{interval}}")

@@ -1,7 +1,7 @@
 {
   "name": "bull-army-extremos",
   "version": "1.0.0",
-  "description": "Panel de trading de Bull Army: contexto de mercado, indicador Extremos, spaghetti, mapa de liquidaciones y noticias sobre datos de Hyperliquid.",
+  "description": "Panel de trading de Bull Army: contexto de mercado, indicador Extremos, Aurora con Hull Suite, spaghetti, mapa de liquidaciones y noticias sobre datos de Hyperliquid.",
   "private": true,
   "type": "module",
   "scripts": {

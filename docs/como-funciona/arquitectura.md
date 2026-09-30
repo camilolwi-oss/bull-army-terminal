@@ -18,12 +18,12 @@ flowchart LR
 
 | Pieza | Qué hace |
 |---|---|
-| **Vela** | La librería del gráfico del Indicador (velas, zoom, herramientas de dibujo). |
+| **Vela** | La librería de los gráficos del Indicador y de Aurora (velas, zoom, herramientas de dibujo). |
 | **PineTS** | Ejecuta el Pine Script en el navegador, dentro de un *Web Worker* para no trabar la página. |
-| **Módulos de sección** | Uno por sección (Contexto, Spaghetti, Liquidaciones, Noticias). Cada uno se crea recién cuando abrís su pestaña, así la terminal arranca rápido. |
+| **Módulos de sección** | Uno por sección (Contexto, Aurora, Spaghetti, Liquidaciones, Noticias). Cada uno se crea recién cuando abrís su pestaña, así la terminal arranca rápido. |
 | **`app.js`** | El núcleo: arranque, detección en vivo/demo, navegación, ajustes, límite de pedidos a Hyperliquid y la sección Indicador. |
 
-Vela y PineTS se descargan de jsDelivr en versiones fijas la primera vez que abrís el Indicador.
+Vela y PineTS se descargan de jsDelivr en versiones fijas la primera vez que abrís el Indicador o Aurora, y las comparten las dos secciones.
 
 ## Cálculo separado de la interfaz
 
@@ -52,11 +52,12 @@ bull-army-terminal/
 │   │   ├── loader.js          Carga datos y scripts (solo en desarrollo)
 │   │   ├── app.js             Núcleo + Indicador
 │   │   ├── contexto/          calc.js · ui.js
+│   │   ├── aurora/            ui.js (Aurora + Hull Suite)
 │   │   ├── spaghetti/         calc.js · ui.js
 │   │   ├── liquidaciones/     calc.js · source.js · ui.js
 │   │   └── noticias/          ui.js
 │   ├── data/                  Datos de muestra (modo demo)
-│   └── pine/extremos.pine     El indicador
+│   └── pine/                  extremos.pine · aurora.pine · hull-suite.pine
 ├── scripts/                   build.mjs · serve.mjs
 ├── docs/                      Esta documentación
 └── .github/workflows/         Publicación automática en GitHub Pages

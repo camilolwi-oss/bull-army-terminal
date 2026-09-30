@@ -4,12 +4,13 @@
 
 ## Menú lateral
 
-A la izquierda están las cinco secciones. Cada una tiene su propia dirección, así que podés guardarla en favoritos o compartirla:
+A la izquierda están las seis secciones. Cada una tiene su propia dirección, así que podés guardarla en favoritos o compartirla:
 
 | Sección | Dirección |
 |---|---|
 | Contexto (inicio) | `…/#contexto` |
 | Indicador | `…/#indicador` |
+| Aurora | `…/#aurora` |
 | Spaghetti | `…/#spaghetti` |
 | Liquidaciones | `…/#liquidaciones` |
 | Noticias | `…/#noticias` |
@@ -39,7 +40,7 @@ Las tarjetas de **Contexto** tienen un botón **?** en la esquina. Al tocarlo se
 
 La terminal guarda en tu navegador (no en ningún servidor):
 
-- El último mercado que elegiste en el Indicador y en Liquidaciones.
+- El último mercado y temporalidad que elegiste en el Indicador, en Aurora y en Liquidaciones.
 - Tus [ajustes](ajustes.md).
 - Resultados que tardan en calcularse, como el último escaneo de liquidaciones.
 

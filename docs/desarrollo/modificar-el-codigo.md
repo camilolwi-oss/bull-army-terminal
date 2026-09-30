@@ -52,7 +52,10 @@ Por eso `src/index.html` **no se abre con doble clic**: el navegador no deja lee
 | El mapa de liquidaciones | `src/js/liquidaciones/calc.js` |
 | De dónde salen las posiciones | `src/js/liquidaciones/source.js` |
 | Noticias o calendario | `src/js/noticias/ui.js` |
-| Navegación, ajustes, Indicador | `src/js/app.js` |
+| Navegación, ajustes, Indicador, buscador de mercados | `src/js/app.js` |
+| La sección Aurora (controles y gráfico) | `src/js/aurora/ui.js` |
+| El indicador Aurora | `src/pine/aurora.pine` |
+| El Hull Suite de la sección Aurora | `src/pine/hull-suite.pine` |
 | El indicador Extremos | `src/pine/extremos.pine` |
 
 ## Agregar un archivo JS
@@ -66,7 +69,9 @@ Por eso `src/index.html` **no se abre con doble clic**: el navegador no deja lee
 
 ## Cambiar el Pine Script
 
-La terminal lee `src/pine/extremos.pine` directamente. Después de editarlo, abrí la sección **Indicador** con `npm run dev` y revisá la consola del navegador.
+La terminal lee los archivos de `src/pine/` directamente: `extremos.pine` en la sección **Indicador**, y `aurora.pine` y `hull-suite.pine` en la sección **Aurora**. Después de editar uno, abrí su sección con `npm run dev` y revisá la consola del navegador.
+
+Los interruptores de cada sección le pasan valores a los `input` del script **por nombre de variable** (por ejemplo, `showOB` en Aurora). Si renombrás un input, actualizá también el JS de la sección.
 
 {% hint style="warning" %}
 PineTS no soporta el 100 % de Pine Script. Si usás funciones nuevas, verificá que funcionen **en la terminal y en TradingView**. En 6H y 3D la terminal quita las llamadas a `request.security()`, que PineTS no resuelve en esas temporalidades.
@@ -74,7 +79,7 @@ PineTS no soporta el 100 % de Pine Script. Si usás funciones nuevas, verificá 
 
 ## Antes de subir cambios
 
-- [ ] `npm run dev`: las cinco secciones cargan y la consola no muestra errores.
+- [ ] `npm run dev`: las seis secciones cargan y la consola no muestra errores.
 - [ ] El estado dice **En vivo · Hyperliquid**.
 - [ ] `npm run build` termina sin errores.
 - [ ] `npm run preview`: el archivo único funciona igual.
