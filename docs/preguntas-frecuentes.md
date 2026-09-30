@@ -14,7 +14,7 @@ No. La terminal solo **lee** datos públicos. No se conecta a ninguna billetera 
 
 ## ¿Es gratis?
 
-La terminal es exclusiva para miembros VIP de Bull Army. Las fuentes de datos que usa son públicas y la key de Tree News es gratis.
+La terminal es exclusiva para miembros VIP de Bull Army. Las fuentes de datos que usa son públicas y gratuitas; no hace falta ninguna key.
 
 ## Dice "Demo · datos de muestra". ¿Qué hago?
 

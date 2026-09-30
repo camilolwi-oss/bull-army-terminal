@@ -1,10 +1,12 @@
-# Publica la terminal en GitHub Pages con cada push a main.
+# Publica la terminal en GitHub Pages con cada push a main y cada hora (para renovar el calendario macro).
 # Dirección: https://camilolwi-oss.github.io/bull-army-terminal/
 name: Publicar en GitHub Pages
 
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '17 * * * *'   # cada hora, al minuto 17 (fuera de la hora en punto, cuando GitHub está más cargado)
   workflow_dispatch:
 
 permissions:
@@ -24,6 +26,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Calendario macro (ForexFactory)
+        # Si ForexFactory falla o limita los pedidos, se reutiliza el último calendario publicado.
+        run: |
+          node scripts/calendario.mjs src/calendario.json \
+            || curl -fsS "https://camilolwi-oss.github.io/bull-army-terminal/calendario.json" -o src/calendario.json \
+            || echo "Sin calendario en este deploy"
       - name: Armar la página, la lista de accesos y la PWA
         run: |
           npm run build

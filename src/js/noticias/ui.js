@@ -1,10 +1,12 @@
-// Noticias (Tree News) y calendario macro (servidor propio). Se crea al abrir la sección.
-// env: { settings() → { treeKey, calUrl }, openSettings() }
+// Noticias (Tree News) y calendario macro (ForexFactory). Se crea al abrir la sección.
+// Sin key: la API pública de Tree News se consulta cada minuto (gratis). Con key: WebSocket al instante.
+// El calendario es calendario.json, que GitHub Actions baja de ForexFactory cada hora y publica con la terminal.
+// env: { settings() → { treeKey }, openSettings() }
 window.createNews = function createNews(env) {
   'use strict';
   const $ = (id) => document.getElementById(id);
-  const REST = 'https://news.treeofalpha.com/api/news?limit=200', WS = 'wss://news.treeofalpha.com/ws';
-  const S = { items: [], ids: new Set(), filter: 'all', q: '', ws: null, retry: 0, fresh: new Set() };
+  const REST = 'https://news.treeofalpha.com/api/news?limit=200', WS = 'wss://news.treeofalpha.com/ws', POLL = 60000;
+  const S = { items: [], ids: new Set(), filter: 'all', q: '', ws: null, retry: 0, fresh: new Set(), poll: null };
   const nf = (v, d = 0) => v.toLocaleString('es-AR', { minimumFractionDigits:d, maximumFractionDigits:d });
   const hm = (t) => new Date(t).toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit', hourCycle:'h23' });
   const ago = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? 'recién' : m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.floor(m / 60)} h` : `hace ${Math.floor(m / 1440)} d`; };
@@ -73,23 +75,30 @@ window.createNews = function createNews(env) {
   let rq = false; const schedule = () => { if (!rq) { rq = true; requestAnimationFrame(() => { rq = false; render(); }); } };
 
   // ── Conexión ───────────────────────────────────────────────────────────
-  async function history() {
-    try { const j = await (await fetch(REST)).json(); add(j, false); render(); return true; }
+  async function history(isNew = false) {
+    try { const j = await (await fetch(REST, { cache: 'no-store' })).json(); if (add(j, isNew) || !isNew) render(); return true; }
     catch { return false; }
   }
+  // Sin key: consulta periódica a la API pública (gratis, las noticias llegan con 1–2 minutos de demora).
+  function poll() {
+    clearInterval(S.poll);
+    status('live', 'En vivo · se actualiza cada minuto');
+    S.poll = setInterval(async () => { if (!(await history(true))) status('off', 'Sin conexión · reintentando'); else status('live', 'En vivo · se actualiza cada minuto'); }, POLL);
+  }
   function connect() {
-    if (S.ws) { try { S.ws.close(); } catch {} }
+    if (S.ws) { const old = S.ws; S.ws = null; try { old.close(); } catch {} }
+    clearInterval(S.poll);
     const key = env.settings().treeKey;
+    if (!key) return poll();
     let ws;
     try { ws = new WebSocket(WS); } catch { status('off', 'Sin conexión'); return; }
     S.ws = ws;
     ws.onopen = () => {
       S.retry = 0;
-      if (key) { ws.send('login ' + key); status('live', 'En vivo'); }
-      else status('delayed', 'Demorado · cargá tu key en Ajustes');
+      ws.send('login ' + key); status('live', 'En vivo · al instante');
     };
     ws.onmessage = (e) => {
-      let m; try { m = JSON.parse(e.data); } catch { if (/invalid|error|denied/i.test(String(e.data))) status('delayed', 'Key inválida · revisá Ajustes'); return; }
+      let m; try { m = JSON.parse(e.data); } catch { if (/invalid|error|denied/i.test(String(e.data))) { status('delayed', 'Key inválida · se usa la versión gratis'); S.ws = null; try { ws.close(); } catch {} poll(); } return; }
       const arr = Array.isArray(m) ? m : [m];
       if (add(arr, true)) schedule();
     };
@@ -103,19 +112,15 @@ window.createNews = function createNews(env) {
   // ── Calendario macro ───────────────────────────────────────────────────
   const CAL = { events: [], t: 0 };
   async function loadCal() {
-    const url = env.settings().calUrl, box = $('nwMacro');
-    if (!url) {
-      box.textContent = '';
-      const d = document.createElement('div'); d.className = 'mc-setup';
-      const p = document.createElement('p'); p.textContent = 'El calendario sale de tu servidor propio (Cloudflare Worker). Cuando lo tengas publicado, pegá su dirección en Ajustes.';
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.textContent = 'Abrir Ajustes'; b.addEventListener('click', env.openSettings);
-      d.append(p, b); box.append(d); return;
-    }
+    const box = $('nwMacro');
     try {
-      const j = await (await fetch(url, { cache:'no-store' })).json();
-      CAL.events = (j.events || []).map((e) => ({ ...e, t: +new Date(e.date) })).filter((e) => isFinite(e.t)).sort((a, b) => a.t - b.t);
+      const r = await fetch('calendario.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) throw new Error(r.status);
+      const j = await r.json();
+      CAL.updated = j.updated;
+      CAL.events = (Array.isArray(j) ? j : j.events || []).map((e) => ({ ...e, t: +new Date(e.date) })).filter((e) => isFinite(e.t)).sort((a, b) => a.t - b.t);
       CAL.t = Date.now(); renderCal();
-    } catch { box.textContent = ''; const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No se pudo leer el servidor del calendario. Revisá la dirección en Ajustes.'; box.append(p); }
+    } catch { box.textContent = ''; const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'El calendario no está disponible en este momento. Se actualiza cada hora.'; box.append(p); }
   }
   const until = (ms) => { const m = Math.max(0, Math.round(ms / 60000)), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60; return d ? `${d} d ${h} h` : h ? `${h} h ${mm} min` : `${mm} min`; };
   function renderCal() {
@@ -153,7 +158,7 @@ window.createNews = function createNews(env) {
       li.append(tm, ev, inn); ul.append(li);
     }
     if (!up.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No quedan datos de EE.UU. de impacto medio o alto esta semana.'; box.append(p); }
-    const n = document.createElement('p'); n.className = 'sub'; n.textContent = 'Horas locales · P pronóstico · A anterior · Fuente: ForexFactory vía tu servidor.'; box.append(n);
+    const n = document.createElement('p'); n.className = 'sub'; n.textContent = 'Horas locales · P pronóstico · A anterior · Fuente: ForexFactory, se actualiza cada hora' + (CAL.updated ? ` (última: ${hm(CAL.updated)})` : '') + '.'; box.append(n);
   }
 
   // ── Controles ──────────────────────────────────────────────────────────
@@ -165,12 +170,12 @@ window.createNews = function createNews(env) {
 
   (async function start() {
     const ok = await history();
-    if (!ok) { status('off', 'Sin conexión'); const f = $('nwFeed'); f.textContent = ''; const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No se pudo conectar con Tree News. Abrí el archivo en tu navegador para ver las noticias.'; f.append(p); }
+    if (!ok) { status('off', 'Sin conexión'); const f = $('nwFeed'); f.textContent = ''; const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'No se pudo conectar con Tree News. Revisá tu conexión: se reintenta cada minuto.'; f.append(p); poll(); }
     else connect();
     loadCal();
   })();
   setInterval(() => { if (!$('panel-news').hidden) { render(); if (CAL.events.length) renderCal(); } }, 60000);
-  setInterval(() => { if (env.settings().calUrl) loadCal(); }, 30 * 60000);
+  setInterval(loadCal, 30 * 60000);
 
   return { show() { render(); }, hide() {}, reconnect() { connect(); loadCal(); } };
 };

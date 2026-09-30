@@ -13,3 +13,6 @@ desktop.ini
 .vscode/
 .idea/
 .claude/
+
+# Calendario macro: lo baja GitHub Actions al publicar (npm run calendario en desarrollo)
+src/calendario.json

@@ -351,17 +351,15 @@
 
   // ── Ajustes (solo en este navegador) ───────────────────────────────────
   const store = { get: (k) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
-  const settings = () => ({ treeKey: store.get('baTreeKey'), calUrl: store.get('baCalUrl') });
+  const settings = () => ({ treeKey: store.get('baTreeKey') });
   function openSettings() {
-    const s = settings(); $('setTree').value = s.treeKey; $('setCal').value = s.calUrl;
+    $('setTree').value = settings().treeKey;
     try { $('settings').showModal(); } catch { $('settings').setAttribute('open', ''); }
   }
   $('openSettings').addEventListener('click', openSettings);
   $('setCancel').addEventListener('click', () => $('settings').close());
   $('setForm').addEventListener('submit', () => {
-    const cal = $('setCal').value.trim();
     store.set('baTreeKey', $('setTree').value.trim());
-    store.set('baCalUrl', /^https:\/\//.test(cal) ? cal : '');
     mods.news && mods.news.reconnect();
   });
 

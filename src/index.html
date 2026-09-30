@@ -603,13 +603,9 @@
 <dialog class="settings" id="settings" aria-labelledby="h-set">
   <form method="dialog" id="setForm">
     <h2 id="h-set">Ajustes</h2>
-    <label>API key de Tree News
+    <label>API key de Tree News <span class="opt">(opcional)</span>
       <input type="password" id="setTree" autocomplete="off" spellcheck="false" placeholder="Pegá tu key">
-      <small>Se consigue gratis entrando con Discord en <a href="https://news.treeofalpha.com/" target="_blank" rel="noopener">news.treeofalpha.com</a>. Queda guardada solo en este navegador; nunca se escribe en el archivo.</small>
-    </label>
-    <label>Servidor del calendario
-      <input type="url" id="setCal" autocomplete="off" spellcheck="false" placeholder="https://bullarmy-calendario.tu-usuario.workers.dev">
-      <small>La dirección de tu Cloudflare Worker (ver server/LEEME.md).</small>
+      <small>Sin key las noticias ya se actualizan cada minuto, gratis. Con key llegan al instante: se consigue gratis entrando con Discord en <a href="https://news.treeofalpha.com/" target="_blank" rel="noopener">news.treeofalpha.com</a>. Queda guardada solo en este navegador.</small>
     </label>
     <div class="actions"><button type="button" class="btn" id="setCancel">Cancelar</button><button type="submit" class="btn primary" value="save">Guardar</button></div>
   </form>

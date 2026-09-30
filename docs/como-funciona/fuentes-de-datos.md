@@ -9,7 +9,7 @@ Todos los datos vienen de APIs **públicas y gratuitas**, consultadas directamen
 | **Binance Futures** (`fapi.binance.com`) | Open interest, relación long/short de cuentas y compras/ventas agresivas de BTCUSDT. | Contexto |
 | **SoSoValue** (`api.sosovalue.xyz`) | Flujos netos diarios de los ETF spot de BTC de EE.UU. | Contexto |
 | **Tree News** (`news.treeofalpha.com`) | Noticias (últimas 200 + WebSocket en vivo). | Noticias |
-| **Servidor del calendario** (propio, opcional) | Eventos macro de la semana. | Noticias |
+| **ForexFactory** (`nfs.faireconomy.media`) | Calendario macro de la semana. Lo descarga GitHub Actions cada hora y se publica como `calendario.json`. | Noticias |
 | **jsDelivr** (`cdn.jsdelivr.net`) | Librerías Vela y PineTS. | Indicador y Aurora |
 
 ## Cada cuánto se actualiza
@@ -23,8 +23,8 @@ Todos los datos vienen de APIs **públicas y gratuitas**, consultadas directamen
 | Cierres diarios de las alts (Contexto) | Se guardan 1 hora en el navegador. |
 | Ranking de cuentas (Liquidaciones) | Se guarda 24 horas. |
 | Posiciones (Liquidaciones) | Cuando tocás **Escanear**. |
-| Noticias | En vivo (o demorado sin key). |
-| Calendario macro | Cada 30 minutos. |
+| Noticias | Cada minuto (gratis, sin key) o al instante con key de Tree News. |
+| Calendario macro | ForexFactory se descarga cada hora; la terminal lo relee cada 30 minutos. |
 
 ## Límite de Hyperliquid
 

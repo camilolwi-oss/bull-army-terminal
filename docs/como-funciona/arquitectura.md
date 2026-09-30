@@ -10,7 +10,7 @@ flowchart LR
     U -->|open interest, long/short| BN[Binance Futures]
     U -->|flujos de ETF| SV[SoSoValue]
     U -->|noticias| TN[Tree News]
-    U -->|eventos macro| CAL[Servidor del calendario<br/>opcional]
+    U -->|calendario macro| CAL[calendario.json<br/>ForexFactory, cada hora]
     U -->|librerías del gráfico| CDN[jsDelivr]
 ```
 

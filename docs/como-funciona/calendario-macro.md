@@ -1,43 +1,35 @@
 # Calendario macro
 
-El panel **Macro esta semana** de la sección [Noticias](../secciones/noticias.md) no consulta una API pública directamente: lee los eventos desde **un servidor propio** (por ejemplo, un Cloudflare Worker) cuya dirección se carga en [Ajustes](../primeros-pasos/ajustes.md).
+El panel **Macro esta semana** de la sección [Noticias](../secciones/noticias.md) muestra los datos económicos de la semana. Funciona solo: no hace falta configurar nada ni tener un servidor propio.
 
-Así el calendario puede venir de cualquier fuente sin cambiar la terminal: el servidor solo tiene que devolver el formato de abajo.
+## De dónde sale
 
-## Qué tiene que devolver el servidor
+- La fuente es el calendario de **ForexFactory**, que es gratis y no pide key.
+- ForexFactory no deja que un navegador lo consulte directamente (no permite CORS). Por eso lo descarga **GitHub Actions**: la misma tarea que publica la terminal corre **cada hora**, baja el calendario de la semana y lo publica como `calendario.json`, junto a la terminal.
+- La terminal lee ese archivo al abrir Noticias y lo vuelve a leer cada 30 minutos. Al pie del panel se ve la hora de la última actualización.
 
-Un JSON con una lista `events`:
+Resultado: el calendario tiene como mucho **una hora de demora** en pronósticos o cambios de agenda. Los horarios de los eventos no se mueven, así que la cuenta regresiva siempre es exacta.
 
-```json
-{
-  "events": [
-    {
-      "title": "CPI m/m",
-      "country": "USD",
-      "date": "2026-10-14T08:30:00-04:00",
-      "impact": "High",
-      "forecast": "0.3%",
-      "previous": "0.4%"
-    }
-  ]
-}
-```
+## Qué muestra
 
-| Campo | Contenido |
-|---|---|
-| `title` | Nombre del evento. |
-| `country` | Moneda o país. La terminal muestra solo `"USD"`. |
-| `date` | Fecha y hora con zona horaria (formato ISO 8601). |
-| `impact` | `"High"`, `"Medium"` o `"Low"`. La terminal muestra `High` y `Medium`. |
-| `forecast` | Pronóstico (texto, puede ir vacío). |
-| `previous` | Dato anterior (texto, puede ir vacío). |
+- Solo eventos de **EE.UU.** (`USD`) de impacto **alto** y **medio**.
+- El próximo dato de impacto alto, con cuenta regresiva, pronóstico y dato anterior.
+- La lista de la semana, agrupada por día, en tu hora local.
 
-## Requisitos del servidor
+ForexFactory no publica el resultado real de cada dato en este archivo, solo el pronóstico y el anterior.
 
-- Responder a un `GET` en la dirección que cargás en Ajustes.
-- Permitir CORS con el encabezado `Access-Control-Allow-Origin: *`, porque la terminal lo llama desde el navegador.
-- La terminal lo vuelve a pedir cada 30 minutos; conviene que el servidor guarde la respuesta en caché.
+## Si falla la descarga
 
-{% hint style="warning" %}
-El código de este servidor **todavía no está en el repositorio**. Hasta que exista, el panel muestra un botón para abrir Ajustes y el resto de la sección Noticias funciona normalmente.
+ForexFactory limita la cantidad de pedidos. Si en una hora no responde, el deploy **reutiliza el último calendario publicado**, así el panel nunca queda vacío. Si tampoco hay uno anterior, el panel dice *"El calendario no está disponible en este momento"*.
+
+{% hint style="info" %}
+GitHub desactiva las tareas programadas de un repositorio público si pasan **60 días sin actividad** (sin commits). Si el calendario deja de actualizarse después de mucho tiempo sin cambios, entrá a la pestaña **Actions** del repo y reactivá la tarea **Publicar en GitHub Pages**.
 {% endhint %}
+
+## En desarrollo
+
+`src/calendario.json` no se sube al repo. Para verlo en local:
+
+```bash
+npm run calendario
+```

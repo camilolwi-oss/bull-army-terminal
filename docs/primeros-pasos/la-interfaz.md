@@ -19,7 +19,7 @@ A la izquierda están las siete secciones. Cada una tiene su propia dirección, 
 Al pie del menú:
 
 - **Unirte al Discord** y **Membresía**: enlaces a la comunidad de Bull Army.
-- **Ajustes**: la key de noticias y el servidor del calendario. Ver [Ajustes](ajustes.md).
+- **Ajustes**: la key opcional de noticias. Ver [Ajustes](ajustes.md).
 - **Salir · tu usuario**: cierra la sesión. Ver [Iniciar sesión e instalar](iniciar-sesion.md).
 - **Contraer menú**: deja solo los íconos para ganar espacio.
 

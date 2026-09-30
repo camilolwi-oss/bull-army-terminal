@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "node scripts/serve.mjs src",
     "build": "node scripts/build.mjs",
-    "preview": "node scripts/build.mjs && node scripts/serve.mjs dist bull-army-extremos.html"
+    "preview": "node scripts/build.mjs && node scripts/serve.mjs dist bull-army-extremos.html",
+    "calendario": "node scripts/calendario.mjs"
   },
   "engines": {
     "node": ">=18"

@@ -64,6 +64,8 @@ fs.writeFileSync(outFile, html);
 
 // Archivos que se sirven junto a la página
 const extra = ['app.dat', 'manifest.webmanifest', 'sw.js', ...fs.readdirSync(path.join(src, 'icons')).map((f) => 'icons/' + f)];
+// El calendario macro es opcional en el build: lo genera scripts/calendario.mjs (en el deploy, cada hora).
+if (fs.existsSync(path.join(src, 'calendario.json'))) extra.push('calendario.json');
 for (const rel of extra) {
   fs.mkdirSync(path.dirname(path.join(dist, rel)), { recursive: true });
   fs.copyFileSync(path.join(src, rel), path.join(dist, rel));

@@ -438,3 +438,4 @@ dialog.settings .primary{background:var(--gold);color:var(--gold-ink);border-col
 .ad-cols{display:grid;grid-template-columns:1.4fr 1fr;gap:28px}.ad-cols>*{display:flex;flex-direction:column;gap:12px}
 .ad-help{margin:0;font-size:13px;line-height:1.5;color:var(--muted)}.ad-help code{font-size:12px;color:var(--fg)}
 @media (max-width:900px){.ad-new,.ad-cols{grid-template-columns:minmax(0,1fr)}.ad-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.settings .opt{color:var(--faint);font-size:12px}
