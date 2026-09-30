@@ -36,7 +36,7 @@ Separarlos hace que las fórmulas sean fáciles de revisar y de probar sin abrir
 
 ## Arranque
 
-1. Se muestra la pantalla de acceso y se verifica el usuario contra la lista de accesos (`access.json`). La terminal no arranca hasta que la sesión es válida.
+1. Se muestra la pantalla de acceso y se verifica el usuario contra la lista de accesos (`app.dat`). La terminal no arranca hasta que la sesión es válida.
 1. Se prueba la conexión con Hyperliquid (una consulta chica con 4 segundos de límite).
 2. Si responde: **modo en vivo**. Si no: **[modo demo](modo-demo.md)** con el aviso y el motivo.
 3. Se abre la sección de la dirección (`#contexto` si no hay ninguna).
@@ -60,7 +60,7 @@ bull-army-terminal/
 │   │   ├── liquidaciones/     calc.js · source.js · ui.js
 │   │   └── noticias/          ui.js
 │   ├── data/                  Datos de muestra (modo demo)
-│   ├── access.json            Lista de accesos (contraseñas solo como hash)
+│   ├── app.dat                Lista de accesos codificada
 │   ├── manifest.webmanifest   PWA: nombre, colores e íconos
 │   ├── sw.js                  PWA: service worker (sin caché)
 │   ├── icons/                 Íconos de la app

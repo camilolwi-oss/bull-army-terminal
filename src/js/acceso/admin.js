@@ -1,11 +1,11 @@
 // Acceso · panel de Admin (se abre con #admin). Crea, revoca, reactiva y vence accesos.
-// Los cambios se guardan en src/access.json del repo: el panel los publica con un token de GitHub
+// Los cambios se guardan en src/app.dat del repo (codificado): el panel los publica con un token de GitHub
 // (guardado solo en este navegador) y el deploy los aplica en 1–2 minutos.
 window.BAAdmin = (() => {
   'use strict';
   const $ = (id) => document.getElementById(id);
   const C = window.BACripto;
-  const REPO = 'camilolwi-oss/bull-army-terminal', PATH = 'src/access.json', BRANCH = 'main';
+  const REPO = 'camilolwi-oss/bull-army-terminal', PATH = 'src/app.dat', BRANCH = 'main';
   const TOKEN_KEY = 'baGhToken';
   const TZ = '-03:00';                                  // los vencimientos cierran a las 23:59 de Argentina
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -47,7 +47,7 @@ window.BAAdmin = (() => {
   async function login(user, pass) {
     try { access = await window.BAGate.loadAccess(); } catch { throw new Error('No se pudo leer la lista de accesos. Revisá la conexión.'); }
     const iter = access.kdf.iter;
-    const ok = (await C.idOf(user)) === access.admin.id && C.same(await C.hash(pass, access.admin.salt, iter), access.admin.hash);
+    const ok = (await C.idOf(user)) === access.admin.id && C.same(await C.check(await C.proof(pass, access.admin.salt, iter)), access.admin.check);
     if (!ok) throw new Error('Usuario o contraseña de Admin incorrectos.');
     key = await C.aesKey(pass, access.roster.salt, iter);
     roster = await C.open(access.roster, key);
@@ -76,7 +76,7 @@ window.BAAdmin = (() => {
       <div class="ad-bar" id="adBar" ${dirty ? '' : 'hidden'}>
         <span><b>${dirty} ${dirty === 1 ? 'cambio' : 'cambios'} sin publicar.</b> Los usuarios los ven recién después de publicar.</span>
         <button class="btn primary" id="adPublish">Publicar en GitHub</button>
-        <button class="btn" id="adDownload">Descargar access.json</button>
+        <button class="btn" id="adDownload">Descargar app.dat</button>
       </div>
       ${flash ? `<div class="ad-flash">${flash}</div>` : ''}
       <section class="ad-card">
@@ -141,7 +141,7 @@ window.BAAdmin = (() => {
       if (userOf(id)) return alert(`Ya existe un acceso para "${user}".`);
       $('nwBtn').disabled = true; $('nwBtn').textContent = 'Creando…';
       const salt = C.salt();
-      access.users.push({ id, salt, hash: await C.hash(pass, salt, access.kdf.iter), exp, revoked: false });
+      access.users.push({ id, salt, check: await C.check(await C.proof(pass, salt, access.kdf.iter)), exp, revoked: false });
       roster.push({ id, user, exp, created: new Date().toISOString(), revoked: false, note });
       change(`Acceso creado para <b>${esc(user)}</b> hasta el ${fmt(exp)}. Contraseña: <code class="ad-secret">${esc(pass)}</code> <button class="btn" data-copy="${esc(pass)}">Copiar</button> — anotala ahora: después no se puede ver.`);
     });
@@ -159,7 +159,7 @@ window.BAAdmin = (() => {
           change(`${esc(r.user)}: acceso ${a === 'revoke' ? 'revocado' : 'reactivado'}.`);
         } else if (a === 'reset') {
           if (!confirm(`¿Generar una contraseña nueva para ${r.user}? La anterior deja de funcionar al publicar.`)) return;
-          const pass = C.genPassword(); u.salt = C.salt(); u.hash = await C.hash(pass, u.salt, access.kdf.iter);
+          const pass = C.genPassword(); u.salt = C.salt(); u.check = await C.check(await C.proof(pass, u.salt, access.kdf.iter));
           change(`Nueva contraseña para <b>${esc(r.user)}</b>: <code class="ad-secret">${esc(pass)}</code> <button class="btn" data-copy="${esc(pass)}">Copiar</button> — anotala ahora.`);
         } else if (a === 'delete') {
           if (!confirm(`¿Eliminar el acceso de ${r.user}? No se puede deshacer (podés revocarlo en su lugar).`)) return;
@@ -173,7 +173,7 @@ window.BAAdmin = (() => {
       e.preventDefault();
       const p1 = $('adNewPw').value, p2 = $('adNewPw2').value;
       if (p1 !== p2) return alert('Las contraseñas no coinciden.');
-      access.admin.salt = C.salt(); access.admin.hash = await C.hash(p1, access.admin.salt, access.kdf.iter);
+      access.admin.salt = C.salt(); access.admin.check = await C.check(await C.proof(p1, access.admin.salt, access.kdf.iter));
       access.roster.salt = C.salt(); key = await C.aesKey(p1, access.roster.salt, access.kdf.iter);
       change('Contraseña de Admin cambiada. Publicá para aplicarla (la anterior deja de funcionar).');
     });
@@ -181,8 +181,8 @@ window.BAAdmin = (() => {
     if (!bar.hidden) {
       $('adPublish').addEventListener('click', publish);
       $('adDownload').addEventListener('click', async () => {
-        const blob = new Blob([await serialize()], { type: 'application/json' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'access.json'; a.click();
+        const blob = new Blob([await serialize()], { type: 'application/octet-stream' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'app.dat'; a.click();
       });
     }
   }
@@ -190,7 +190,7 @@ window.BAAdmin = (() => {
   async function serialize() {
     access.roster = { salt: access.roster.salt, ...(await C.seal(roster, key)) };
     access.updated = new Date().toISOString();
-    return JSON.stringify(access, null, 2) + '\n';
+    return C.encode(access);
   }
   async function publish() {
     const token = $('adToken').value.trim();

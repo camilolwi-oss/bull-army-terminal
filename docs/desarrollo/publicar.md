@@ -9,7 +9,7 @@ La terminal se publica sola en:
 Cada `git push` a la rama `main` dispara la acción **Publicar en GitHub Pages** (`.github/workflows/pages.yml`), que:
 
 1. Ejecuta `npm run build`.
-2. Publica la página como `index.html` junto con `access.json`, el manifest, el service worker y los íconos.
+2. Publica la página como `index.html` junto con `app.dat`, el manifest, el service worker y los íconos.
 
 Tarda uno o dos minutos. El progreso se ve en la pestaña **Actions** del repositorio.
 
@@ -27,7 +27,7 @@ El contenido de `dist/` funciona en cualquier hosting de páginas estáticas (Ne
 
 ## Accesos
 
-La lista de usuarios (`src/access.json`) se edita desde el panel de Admin (`#admin`), que la publica en el repo. La guía está en `ADMIN.md`, en la raíz del repo.
+La lista de usuarios (`src/app.dat`) se edita desde el panel de Admin (`#admin`), que la publica en el repo. La guía está en `ADMIN.md`, en la raíz del repo.
 
 ## La documentación (GitBook)
 

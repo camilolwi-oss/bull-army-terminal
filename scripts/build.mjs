@@ -25,30 +25,45 @@ html = html.replace(/<link rel="stylesheet" href="(css\/[^"]+)">/g, (_, rel) => 
 // Datos y Pine Script → contenido del mismo <script>, sin data-src
 html = html.replace(/<script ([^>]*?) data-src="([^"]+)"><\/script>/g, (_, attrs, rel) => `<script ${attrs}>${read(rel)}</script>`);
 
-// Scripts de acceso (login y Admin) → <script> inline: corren apenas carga la página
-html = html.replace(/<script src="(js\/acceso\/[^"]+)"><\/script>/g, (_, rel) => `<script>\n${read(rel)}</script>`);
-
 // Scripts de la app → guardados sin ejecutar; el arranque los corre en orden recién después del login
 html = html.replace(/<script type="text\/plain" data-app="([^"]+)"><\/script>/g, (_, rel) => `<script type="text/x-app">\n${read(rel)}</script>`);
 
-// En lugar del cargador de desarrollo: esperar el login (BAGate.ready) y ejecutar la app
-const BOOT = `(async () => {
-  await window.BAGate.ready();
+// Acceso (login y Admin) + arranque, encerrados en UNA función anónima:
+// - las expresiones regulares cambian los globales window.BACripto/BAGate/BAAdmin por variables locales,
+//   así no quedan accesibles desde la consola del navegador;
+// - se quitan los comentarios de línea completa, que explicaban cómo funciona el control.
+// Es ocultamiento: sube la dificultad para saltear el login, no lo hace imposible.
+const ACCESO = [...html.matchAll(/<script src="(js\/acceso\/[^"]+)"><\/script>\n?/g)].map((m) => m[1]);
+const hide = (code) => code
+  .replace(/window\.(BACripto|BAGate|BAAdmin)\b/g, '$1')
+  .replace(/^\s*\/\/.*$\n?/gm, '');
+const BOOT = `(() => {
+'use strict';
+let BACripto, BAGate, BAAdmin;
+${ACCESO.map((rel) => hide(read(rel))).join('\n')}
+(async () => {
+  await BAGate.ready();
   for (const s of document.querySelectorAll('script[type="text/x-app"]')) {
     const n = document.createElement('script'); n.textContent = s.textContent; s.replaceWith(n);
   }
+})();
 })();`;
-html = html.replace(/<script src="js\/loader\.js"><\/script>\n?/, `<script>\n${BOOT}\n</script>\n`);
+if (/window\.BA(Cripto|Gate|Admin)/.test(BOOT)) throw new Error('Quedó un global de acceso sin ocultar');
+html = html.replace(/<script src="js\/acceso\/[^"]+"><\/script>\n?/g, '');
+html = html.replace(/<!-- Acceso: login[^]*?-->\n/, '');
+// Con una función (no un texto) para que los "$&" del código no se interpreten como patrones de reemplazo.
+html = html.replace(/<script src="js\/loader\.js"><\/script>\n?/, () => `<script>\n${BOOT}\n</script>\n`);
 html = html.replace(/<!-- Datos de respaldo[^]*?-->\n/, '').replace(/<!-- Scripts de la app[^]*?-->\n/, '');
 
-const left = count(/data-src=|data-app=|css\/styles\.css|js\/loader\.js|<script src="js\//g);
-if (left) throw new Error(`Quedaron ${left} referencias sin incrustar`);
+const PENDING = /data-src=|data-app=|css\/styles\.css|js\/loader\.js|<script src="js\//g;
+const left = count(PENDING);
+if (left) throw new Error(`Quedaron ${left} referencias sin incrustar: ${html.match(new RegExp('.{0,50}(' + PENDING.source + ').{0,30}', 'g')).join(' | ')}`);
 
 fs.mkdirSync(dist, { recursive: true });
 fs.writeFileSync(outFile, html);
 
 // Archivos que se sirven junto a la página
-const extra = ['access.json', 'manifest.webmanifest', 'sw.js', ...fs.readdirSync(path.join(src, 'icons')).map((f) => 'icons/' + f)];
+const extra = ['app.dat', 'manifest.webmanifest', 'sw.js', ...fs.readdirSync(path.join(src, 'icons')).map((f) => 'icons/' + f)];
 for (const rel of extra) {
   fs.mkdirSync(path.dirname(path.join(dist, rel)), { recursive: true });
   fs.copyFileSync(path.join(src, rel), path.join(dist, rel));

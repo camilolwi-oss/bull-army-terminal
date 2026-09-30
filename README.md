@@ -37,7 +37,7 @@ La terminal pide login también en desarrollo: usá un acceso válido (ver [ADMI
 | Comando | Qué hace |
 |---|---|
 | `npm run dev` | Sirve `src/` en <http://localhost:5173> para trabajar en el código. |
-| `npm run build` | Arma `dist/`: la página con todo incrustado (CSS, JS, datos y Pine Script) más `access.json`, el manifest, el service worker y los íconos de la PWA. |
+| `npm run build` | Arma `dist/`: la página con todo incrustado (CSS, JS, datos y Pine Script) más `app.dat`, el manifest, el service worker y los íconos de la PWA. |
 | `npm run preview` | Hace el build y sirve el archivo de `dist/` para probarlo. |
 
 Para usar otro puerto: `PORT=8080 npm run dev` (en PowerShell: `$env:PORT=8080; npm run dev`).
@@ -48,7 +48,7 @@ Para usar otro puerto: `PORT=8080 npm run dev` (en PowerShell: `$env:PORT=8080; 
 bull-army-terminal/
 ├── src/                       Código fuente del panel
 │   ├── index.html             Estructura de la página (todas las secciones)
-│   ├── access.json            Lista de accesos (contraseñas solo como hash)
+│   ├── app.dat                Lista de accesos codificada (sin contraseñas ni nombres legibles)
 │   ├── manifest.webmanifest   PWA · sw.js · icons/
 │   ├── css/styles.css         Estilos (tema oscuro de Bull Army)
 │   ├── js/

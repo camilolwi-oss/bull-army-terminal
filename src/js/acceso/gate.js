@@ -1,5 +1,5 @@
 // Acceso · pantalla de login. La terminal recién arranca cuando BAGate.ready() se resuelve.
-// La lista de accesos (access.json) se vuelve a leer al entrar, cada 10 minutos y al volver a la pestaña:
+// La lista de accesos (app.dat) se vuelve a leer al entrar, cada 10 minutos y al volver a la pestaña:
 // si el Admin revoca o vence un acceso, la sesión se cierra sola.
 // Aviso: sin servidor, este control vive en el navegador. Frena el acceso casual, no a alguien que lea el código.
 window.BAGate = (() => {
@@ -13,6 +13,8 @@ window.BAGate = (() => {
     del() { try { localStorage.removeItem(KEY); } catch {} }
   };
   const fmtDate = (iso) => new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  // Una sesión vale si su prueba coincide con el hash guardado: sin la contraseña no se puede fabricar.
+  const valid = async (sess, e) => !!(sess && e && sess.proof && C.same(await C.check(sess.proof), e.check));
   const status = (e, now = Date.now()) => (!e ? 'none' : e.revoked ? 'revoked' : Date.parse(e.exp) <= now ? 'expired' : 'ok');
   const why = (st, e) => st === 'expired' ? `Tu acceso venció el ${fmtDate(e.exp)}. Contactá a Bull Army para renovarlo.`
     : st === 'revoked' ? 'Tu acceso fue dado de baja. Contactá a Bull Army si creés que es un error.'
@@ -20,9 +22,9 @@ window.BAGate = (() => {
 
   async function loadAccess() {
     // El parámetro evita la caché del CDN de GitHub Pages: una revocación se ve apenas termina el deploy.
-    const r = await fetch('access.json?t=' + Date.now(), { cache: 'no-store' });
+    const r = await fetch('app.dat?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
+    return C.decode(await r.text());
   }
 
   function registerSW() {
@@ -55,14 +57,15 @@ window.BAGate = (() => {
     try {
       const access = await loadAccess();
       const id = await C.idOf(user), e = access.users.find((u) => u.id === id);
-      const good = !!e && C.same(await C.hash(pass, e.salt, access.kdf.iter), e.hash);
+      const p = e ? await C.proof(pass, e.salt, access.kdf.iter) : '';
+      const good = !!e && C.same(await C.check(p), e.check);
       const st = good ? status(e) : 'none';
       if (st !== 'ok') {
         if (++fails >= 5) { waitUntil = Date.now() + 30000; fails = 0; }
         return err(why(st, e));
       }
       fails = 0;
-      const sess = { id, user, exp: e.exp, at: Date.now() };
+      const sess = { id, user, exp: e.exp, proof: p, at: Date.now() };
       store.set(sess);
       $('gatePass').value = '';
       onLogin && onLogin(sess);
@@ -91,7 +94,7 @@ window.BAGate = (() => {
     const check = async () => {
       const sess = store.get(); if (!sess) return logout();
       let access; try { access = await loadAccess(); } catch { return; }   // sin conexión: se revisa la próxima vez
-      const e = access.users.find((u) => u.id === sess.id), st = status(e);
+      const e = access.users.find((u) => u.id === sess.id), st = (await valid(sess, e)) ? status(e) : 'revoked';
       if (st !== 'ok') logout(why(st === 'none' ? 'revoked' : st, e));
     };
     setInterval(check, RECHECK);
@@ -110,10 +113,10 @@ window.BAGate = (() => {
     const sess = store.get();
     if (sess) {
       if (access) {
-        const e = access.users.find((u) => u.id === sess.id), st = status(e);
+        const e = access.users.find((u) => u.id === sess.id), st = (await valid(sess, e)) ? status(e) : 'none';
         if (st === 'ok') { sess.exp = e.exp; store.set(sess); unlock(sess); watch(); return; }
-        store.del(); showLogin(why(st === 'none' ? 'revoked' : st, e));
-      } else if (Date.parse(sess.exp) > Date.now()) {
+        store.del(); showLogin(st === 'none' ? 'Tu sesión ya no es válida. Volvé a entrar.' : why(st, e));
+      } else if (sess.proof && Date.parse(sess.exp) > Date.now()) {
         unlock(sess); watch(); return;            // sin conexión: vale la sesión guardada hasta su vencimiento
       } else showLogin(why('expired', sess));
     } else showLogin(access ? '' : 'No se pudo verificar el acceso. Revisá tu conexión y recargá la página.');

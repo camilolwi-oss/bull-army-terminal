@@ -15,7 +15,7 @@ npm run dev
 | Comando | Qué hace |
 |---|---|
 | `npm run dev` | Sirve `src/` en <http://localhost:5173>. Recargá la página después de cada cambio. Pide login como la versión publicada: usá un acceso válido (el Admin puede crear uno de prueba en `#admin`). |
-| `npm run build` | Arma `dist/`: la página con todo adentro más `access.json`, el manifest, el service worker y los íconos. |
+| `npm run build` | Arma `dist/`: la página con todo adentro más `app.dat`, el manifest, el service worker y los íconos. |
 | `npm run preview` | Hace el build y sirve el resultado para probarlo. |
 
 Para usar otro puerto: `PORT=8080 npm run dev` (en PowerShell: `$env:PORT=8080; npm run dev`).
