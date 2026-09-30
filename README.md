@@ -10,6 +10,8 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 | **Liquidaciones** | Mapa de los precios de liquidación de las cuentas más grandes de Hyperliquid. |
 | **Noticias** | Feed de Tree News en tiempo real y calendario macro de la semana. |
 
+**Abrila en el navegador:** https://camilolwi-oss.github.io/bull-army-terminal/
+
 > Material educativo de Bull Army. **No es consejo financiero.**
 
 ## Inicio rápido
@@ -61,15 +63,20 @@ bull-army-terminal/
 ├── scripts/
 │   ├── build.mjs              Genera el archivo único de dist/
 │   └── serve.mjs              Servidor local sin dependencias
-├── docs/                      Documentación
+├── docs/                      Documentación (GitBook)
+├── .github/workflows/         Publicación automática en GitHub Pages
 └── dist/                      Salida del build (no se sube al repo)
 ```
 
 ## Documentación
 
-- **[Guía de uso](docs/guia-de-uso.md)**: cada sección del panel, los controles y los ajustes.
-- **[Indicador Extremos](docs/indicador-extremos.md)**: la regla de trading, cómo leer el gráfico y cómo usar el Pine Script en TradingView.
-- **[Desarrollo](docs/desarrollo.md)**: arquitectura, fuentes de datos, cómo modificar el código y cómo publicar.
+La guía completa, en español, está en [`docs/`](docs/README.md) y se publica como GitBook:
+
+- **Primeros pasos**: [abrir la terminal](docs/primeros-pasos/abrir-la-terminal.md), [la interfaz](docs/primeros-pasos/la-interfaz.md), [ajustes](docs/primeros-pasos/ajustes.md).
+- **Secciones**: [Contexto](docs/secciones/contexto.md), [Indicador](docs/secciones/indicador.md), [Spaghetti](docs/secciones/spaghetti.md), [Liquidaciones](docs/secciones/liquidaciones.md), [Noticias](docs/secciones/noticias.md).
+- **Indicador Extremos**: [la regla](docs/indicador-extremos/la-regla.md), [cómo leer el gráfico](docs/indicador-extremos/como-leer-el-grafico.md), [TradingView](docs/indicador-extremos/tradingview.md).
+- **Cómo funciona**: [arquitectura](docs/como-funciona/arquitectura.md), [fuentes de datos](docs/como-funciona/fuentes-de-datos.md), [modo demo](docs/como-funciona/modo-demo.md).
+- **Desarrollo**: [modificar el código](docs/desarrollo/modificar-el-codigo.md), [publicar](docs/desarrollo/publicar.md).
 
 ## Créditos
 
