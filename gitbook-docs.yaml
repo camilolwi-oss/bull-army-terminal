@@ -1,0 +1,11 @@
+$schema: https://api.gitbook.com/gitbook-docs.yaml
+site:
+  title: Aprendiendo Trading con CR
+  structure:
+    - type: space
+      key: space-1
+      title: Aprendiendo Trading con CR
+      path: aprendiendo-trading-con-cr
+      default: true
+      content:
+        directory: ./aprendiendo-trading-con-cr
