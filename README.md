@@ -17,8 +17,8 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 Necesitás [Node.js](https://nodejs.org) 18 o superior. No hay dependencias que instalar.
 
 ```bash
-git clone https://github.com/Camilolwi/bull-army-extremos.git
-cd bull-army-extremos
+git clone https://github.com/camilolwi-oss/bull-army-terminal.git
+cd bull-army-terminal
 npm run dev
 ```
 
@@ -45,7 +45,7 @@ Para usar otro puerto: `PORT=8080 npm run dev` (en PowerShell: `$env:PORT=8080; 
 ## Estructura del proyecto
 
 ```
-bull-army-extremos/
+bull-army-terminal/
 ├── src/                       Código fuente del panel
 │   ├── index.html             Estructura de la página (todas las secciones)
 │   ├── css/styles.css         Estilos (tema oscuro de Bull Army)
