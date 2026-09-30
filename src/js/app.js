@@ -341,7 +341,7 @@
     });
     el('symList').addEventListener('click', (e) => { const li = e.target.closest('li[data-a]'); li && pick(li.dataset.a); });
     document.addEventListener('mousedown', (e) => { if (!el('pop').hidden && !el('symCtl').contains(e.target)) open(false); });
-    return { render };
+    return { render, open };
   }
   const picker = makePicker('', { current: () => state.symbol, onPick: (alias) => {
     state.symbol = alias; try { localStorage.setItem('baExtremosSym', alias); } catch {}
@@ -381,9 +381,15 @@
 
   // ── Secciones ──────────────────────────────────────────────────────────
   let liveKnown; const liveReady = new Promise((r) => (liveKnown = r));
-  const VIEWS = { ctx:'#contexto', ind:'#indicador', aur:'#aurora', spag:'#spaghetti', liq:'#liquidaciones', news:'#noticias' };
+  const VIEWS = { ctx:'#contexto', ind:'#indicador', aur:'#aurora', grid:'#grid', spag:'#spaghetti', liq:'#liquidaciones', news:'#noticias' };
   const mods = {};
   const snapBtc = () => { const m = (b) => ({ t:b.time, o:b.open, h:b.high, l:b.low, c:b.close, v:b.volume }); return { h1: snapBars('60').map(m), h4: snapBars('240').map(m) }; };
+  // El Grid abre una celda en la sección Aurora con su mercado y temporalidad.
+  const openAurora = (alias, tf) => {
+    try { localStorage.setItem('baAuroraSym', alias); localStorage.setItem('baAuroraTf', tf); } catch {}
+    mods.aur && mods.aur.open(alias, tf);
+    location.hash = '#aurora';
+  };
   const fromHash = () => Object.keys(VIEWS).find((k) => VIEWS[k] === location.hash) || 'ctx';
   async function showView(id) {
     for (const v in VIEWS) {
@@ -397,6 +403,7 @@
     await liveReady;
     if (!mods[id]) {
       if (id === 'ctx') mods.ctx = window.createContext({ live: state.live, hlPost, snapBtc });
+      if (id === 'grid') mods.grid = window.createGrid({ live: state.live, CAT, loadCatalog, hlPost, makePicker, labelOf, openAurora });
       if (id === 'aur') mods.aur = window.createAurora({ live: state.live, CAT, loadCatalog, loadLibs, makeProvider, makePicker, labelOf, aliasKey, THEME, TF_LABEL, snapBars, hasSnap: (tf) => !!SNAP[tf], fmtDate });
       if (id === 'spag') mods.spag = window.createSpaghetti({ live: state.live, CAT, loadCatalog, hlPost, snapshot: () => JSON.parse($('spagSnap').textContent) });
       if (id === 'liq') mods.liq = window.createLiqMap({ live: state.live, hlPost, snapshot: () => JSON.parse($('liqSnap').textContent) });

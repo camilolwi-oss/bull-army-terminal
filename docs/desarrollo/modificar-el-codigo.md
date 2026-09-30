@@ -54,6 +54,8 @@ Por eso `src/index.html` **no se abre con doble clic**: el navegador no deja lee
 | Noticias o calendario | `src/js/noticias/ui.js` |
 | Navegación, ajustes, Indicador, buscador de mercados | `src/js/app.js` |
 | La sección Aurora (controles y gráfico) | `src/js/aurora/ui.js` |
+| El cálculo de Aurora y el Hull que usa el Grid | `src/js/aurora/calc.js` |
+| La sección Grid (celdas, alertas, WebSocket) | `src/js/grid/ui.js` |
 | El indicador Aurora | `src/pine/aurora.pine` |
 | El Hull Suite de la sección Aurora | `src/pine/hull-suite.pine` |
 | El indicador Extremos | `src/pine/extremos.pine` |
@@ -74,12 +76,16 @@ La terminal lee los archivos de `src/pine/` directamente: `extremos.pine` en la 
 Los interruptores de cada sección le pasan valores a los `input` del script **por nombre de variable** (por ejemplo, `showOB` en Aurora). Si renombrás un input, actualizá también el JS de la sección.
 
 {% hint style="warning" %}
+El **Grid** no ejecuta `aurora.pine`: usa la réplica en JavaScript de `src/js/aurora/calc.js`. Si cambiás la lógica de Aurora en el Pine, replicá el cambio ahí para que el Grid y la sección Aurora sigan mostrando lo mismo.
+{% endhint %}
+
+{% hint style="warning" %}
 PineTS no soporta el 100 % de Pine Script. Si usás funciones nuevas, verificá que funcionen **en la terminal y en TradingView**. En 6H y 3D la terminal quita las llamadas a `request.security()`, que PineTS no resuelve en esas temporalidades.
 {% endhint %}
 
 ## Antes de subir cambios
 
-- [ ] `npm run dev`: las seis secciones cargan y la consola no muestra errores.
+- [ ] `npm run dev`: las siete secciones cargan y la consola no muestra errores.
 - [ ] El estado dice **En vivo · Hyperliquid**.
 - [ ] `npm run build` termina sin errores.
 - [ ] `npm run preview`: el archivo único funciona igual.

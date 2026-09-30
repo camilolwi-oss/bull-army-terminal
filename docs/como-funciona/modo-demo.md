@@ -17,6 +17,7 @@ Si al arrancar la terminal no logra hablar con Hyperliquid, pasa a **modo demo**
 | **Contexto** | Solo las tarjetas de BTC (sesgo, precio, volatilidad, operar/esperar, CME, ATR, horarios) con datos de muestra. Amplitud, alts, apalancamiento y ETF dicen *Necesita conexión en vivo*. |
 | **Indicador** | Solo BTC y solo las temporalidades que tienen datos de muestra. El buscador de mercados queda desactivado. |
 | **Aurora** | Solo BTC en 1H y 4H, igual que el Indicador. |
+| **Grid** | No funciona: necesita conexión en vivo y muestra un aviso. |
 | **Spaghetti** | Una muestra fija de 72 horas. |
 | **Liquidaciones** | Un escaneo de muestra. |
 | **Noticias** | Depende de Tree News, no de Hyperliquid: puede funcionar igual. |

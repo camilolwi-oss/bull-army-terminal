@@ -17,6 +17,7 @@ Funciona en el navegador y no necesita cuenta ni instalación: toma los datos en
 | [**Contexto**](secciones/contexto.md) | Saber en qué mercado estás parado: sesgo de BTC, volatilidad, amplitud, alts contra BTC, apalancamiento, gap de CME, ETF y horarios. |
 | [**Indicador**](secciones/indicador.md) | Buscar entradas con el indicador Extremos sobre cualquier mercado de Hyperliquid. |
 | [**Aurora**](secciones/aurora.md) | Leer el contexto con el oscilador Aurora (cinco osciladores, flujo, volumen, divergencias y Order Blocks) y el Hull Suite sobre las velas. |
+| [**Grid**](secciones/grid.md) | Seguir de 4 a 25 mercados a la vez con velas, Aurora y Hull, con alertas visuales cuando Aurora marca algo. |
 | [**Spaghetti**](secciones/spaghetti.md) | Comparar todos los activos en un mismo gráfico: quién lidera y quién se queda. |
 | [**Liquidaciones**](secciones/liquidaciones.md) | Ver dónde se concentran los precios de liquidación de las cuentas grandes. |
 | [**Noticias**](secciones/noticias.md) | Enterarte de lo que mueve el mercado y de los datos macro de la semana. |

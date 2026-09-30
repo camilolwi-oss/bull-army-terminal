@@ -127,6 +127,12 @@ window.createAurora = function createAurora(env) {
 
   return {
     show() { if (!started) started = build(); else chart && chart.resize(); return started; },
-    hide() {}
+    hide() {},
+    // Desde el Grid: abre un mercado y temporalidad puntuales.
+    open(alias, tf) {
+      state.symbol = alias; state.tf = tf; store.set('baAuroraSym', alias); store.set('baAuroraTf', tf);
+      $('auSymLbl').textContent = env.labelOf(alias);
+      if (chart) switchMarket();
+    }
   };
 };

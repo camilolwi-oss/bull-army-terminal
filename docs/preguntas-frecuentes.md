@@ -44,6 +44,10 @@ No. Se guarda solo en tu navegador y se envía únicamente a Tree News. Ver [Aju
 
 Borrá los datos del sitio en tu navegador (en Chrome: ícono del candado junto a la dirección → **Configuración del sitio** → **Borrar datos**). Se pierden los ajustes, el último mercado elegido y el último escaneo de liquidaciones.
 
+## El Grid va lento o tarda en cargar
+
+En 5×5 la terminal pide velas de 25 mercados respetando el límite de Hyperliquid, que comparte con las otras secciones. Si además estás escaneando liquidaciones o usando Spaghetti con muchos activos, la carga tarda más. Probá un grid más chico o esperá unos segundos.
+
 ## ¿Funciona en el celular?
 
-Sí. El menú se abre con el botón **☰**. Los gráficos del Indicador, Aurora y Spaghetti se aprovechan mejor en una pantalla grande.
+Sí. El menú se abre con el botón **☰**. Los gráficos del Indicador, Aurora, el Grid y Spaghetti se aprovechan mejor en una pantalla grande.

@@ -17,6 +17,7 @@ Todos los datos vienen de APIs **públicas y gratuitas**, consultadas directamen
 | Dato | Frecuencia |
 |---|---|
 | Gráficos del Indicador y de Aurora | En vivo (WebSocket). |
+| Grid | En vivo (WebSocket de velas, una suscripción por celda). |
 | Spaghetti, serie de precio | En vivo (WebSocket de precios). |
 | Contexto | Cada 5 minutos, mientras la sección está abierta. |
 | Cierres diarios de las alts (Contexto) | Se guardan 1 hora en el navegador. |
