@@ -70,7 +70,7 @@ window.BAGate = (() => {
       $('gatePass').value = '';
       onLogin && onLogin(sess);
     } catch {
-      err('No se pudo verificar el acceso. Revisá tu conexión y probá de nuevo.');
+      err('No se pudo verificar el acceso. Recargá la página (Ctrl+F5) y revisá tu conexión.');
     } finally { btn.disabled = false; btn.textContent = 'Entrar'; }
   });
 

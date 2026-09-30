@@ -5,7 +5,9 @@ self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', (e) => {
   if (e.request.mode !== 'navigate') return;
-  e.respondWith(fetch(e.request).catch(() => new Response(
+  // "no-cache": el navegador revalida la página con el servidor en cada apertura, así nunca queda una versión
+  // vieja después de un deploy (GitHub Pages la deja 10 minutos en caché).
+  e.respondWith(fetch(e.request.url, { cache: 'no-cache', credentials: 'same-origin' }).catch(() => new Response(
     '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Bull Army Terminal</title>' +
     '<body style="margin:0;display:grid;place-items:center;height:100vh;background:#0B0B0C;color:#ECE9E2;font:16px system-ui;text-align:center">' +
     '<div><h1 style="font-size:22px">Sin conexión</h1><p style="color:#8E8B84">La terminal necesita internet para mostrar datos en vivo.</p></div>',

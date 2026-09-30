@@ -45,7 +45,7 @@ window.BAAdmin = (() => {
     });
   }
   async function login(user, pass) {
-    try { access = await window.BAGate.loadAccess(); } catch { throw new Error('No se pudo leer la lista de accesos. Revisá la conexión.'); }
+    try { access = await window.BAGate.loadAccess(); } catch { throw new Error('No se pudo leer la lista de accesos. Recargá la página con Ctrl+F5 (puede haber quedado una versión vieja en caché) y revisá la conexión.'); }
     const iter = access.kdf.iter;
     const ok = (await C.idOf(user)) === access.admin.id && C.same(await C.check(await C.proof(pass, access.admin.salt, iter)), access.admin.check);
     if (!ok) throw new Error('Usuario o contraseña de Admin incorrectos.');
