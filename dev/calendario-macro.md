@@ -8,7 +8,7 @@ El panel **Macro esta semana** de la sección [Noticias](../docs/secciones/notic
 - ForexFactory no deja que un navegador lo consulte directamente (no permite CORS). Por eso lo descarga **GitHub Actions**: la misma tarea que publica la terminal corre **cada hora**, baja el calendario de la semana y lo publica como `calendario.json`, junto a la terminal.
 - La terminal lee ese archivo al abrir Noticias y lo vuelve a leer cada 30 minutos. Al pie del panel se ve la hora de la última actualización.
 
-Resultado: el calendario tiene como mucho **una hora de demora** en pronósticos o cambios de agenda. Los horarios de los eventos no se mueven, así que la cuenta regresiva siempre es exacta.
+Resultado: el calendario se renueva varias veces por día. GitHub ejecuta las tareas programadas "cuando puede": aunque está pedida cada hora, en la práctica corre cada pocas horas (en octubre de 2026 se observó cada 6–7 horas). Además se renueva con cada cambio que se sube al repo. La demora afecta solo a pronósticos o cambios de agenda. Los horarios de los eventos no se mueven, así que la cuenta regresiva siempre es exacta.
 
 ## Qué muestra
 

@@ -23,7 +23,11 @@ Los estados son: **Activo**, **Vence pronto** (menos de 7 días), **Vencido** y 
 
 ## Publicar los cambios
 
-Los cambios quedan pendientes (barra dorada arriba) hasta que tocás **Publicar en GitHub**. El panel guarda la lista en `src/app.dat` del repo y GitHub Pages la publica: se aplica en **1–2 minutos**.
+**Un acceso nuevo (o una revocación) no funciona hasta que se publica.** El panel guarda la lista en `src/app.dat` del repo y GitHub Pages la publica en **1–2 minutos**.
+
+- **Con el token guardado** en el navegador, cada cambio **se publica solo**. La barra de arriba muestra *Publicando…*, después *Publicado. Esperando que se aplique…* y, cuando ya está en línea, **✅ Ya activo**: recién ahí el usuario puede entrar.
+- **Sin token**, la barra roja avisa que hay cambios sin publicar y que todavía no se aplican; ahí mismo se pega el token y se toca **Publicar ahora** (con *Recordar* tildado, de ahí en más publica solo).
+- Si cerrás la pestaña con cambios sin publicar, se pierden: el navegador te avisa antes.
 
 Para publicar hace falta un **token de GitHub** (una sola vez por navegador):
 

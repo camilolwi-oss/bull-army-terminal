@@ -73,11 +73,7 @@ window.BAAdmin = (() => {
         <div><b>${n('exp')}</b><span>Vencidos</span></div>
         <div><b>${n('rev')}</b><span>Revocados</span></div>
       </section>
-      <div class="ad-bar" id="adBar" ${dirty ? '' : 'hidden'}>
-        <span><b>${dirty} ${dirty === 1 ? 'cambio' : 'cambios'} sin publicar.</b> Los usuarios los ven recién después de publicar.</span>
-        <button class="btn primary" id="adPublish">Publicar en GitHub</button>
-        <button class="btn" id="adDownload">Descargar app.dat</button>
-      </div>
+      ${pubBar()}
       ${flash ? `<div class="ad-flash">${flash}</div>` : ''}
       <section class="ad-card">
         <h2>Nuevo acceso</h2>
@@ -111,10 +107,11 @@ window.BAAdmin = (() => {
       <section class="ad-card ad-cols">
         <div>
           <h2>Publicación</h2>
-          <p class="ad-help">Para publicar, el panel necesita un <b>token de GitHub</b> con permiso de escritura solo sobre el repo <code>${REPO}</code>.
-          Crealo en GitHub → Settings → Developer settings → Fine-grained tokens, con acceso a ese repo y el permiso <i>Contents: Read and write</i>.</p>
-          <label>Token de GitHub <input id="adToken" type="password" autocomplete="off" value="${esc(localStorage.getItem(TOKEN_KEY) || '')}" placeholder="github_pat_…"></label>
-          <label class="tog"><input type="checkbox" id="adRemember" ${localStorage.getItem(TOKEN_KEY) ? 'checked' : ''}> Recordar en este navegador</label>
+          ${savedToken()
+            ? `<p class="ad-help">✅ Token de GitHub guardado en este navegador: <b>cada cambio se publica solo</b> y se aplica en 1–2 minutos.</p>
+               <button type="button" class="btn" id="adForget">Olvidar el token</button>`
+            : `<p class="ad-help">Sin token guardado, los cambios quedan pendientes hasta que los publiques desde la barra de arriba.</p>`}
+          ${tokenHelp()}
         </div>
         <form id="adPw">
           <h2>Contraseña de Admin</h2>
@@ -130,7 +127,41 @@ window.BAAdmin = (() => {
 
   // ── Acciones ──────────────────────────────────────────────────────────
   const userOf = (id) => access.users.find((u) => u.id === id);
-  const change = (msg) => { dirty++; render(msg); };
+  const savedToken = () => { try { return localStorage.getItem(TOKEN_KEY) || ''; } catch { return ''; } };
+  // flash: último aviso (por ejemplo la contraseña recién creada); sigue visible mientras se publica.
+  // pub.state: idle · publishing · waiting (publicado, esperando el deploy) · live · slow · error
+  let flash = '', pub = { state: 'idle', msg: '' }, pubTimer = null;
+  const change = (msg) => {
+    dirty++; flash = msg; pub = { state: 'idle', msg: '' };
+    render(flash);
+    if (savedToken()) { clearTimeout(pubTimer); pubTimer = setTimeout(() => publish(savedToken()), 600); }
+  };
+  function tokenHelp() {
+    return `<details class="ad-help"><summary>¿Cómo creo el token de GitHub?</summary><ol>
+      <li>Abrí <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → nuevo token (fine-grained)</a> con tu cuenta.</li>
+      <li><b>Repository access</b>: <i>Only select repositories</i> → <code>${REPO.split('/')[1]}</code>.</li>
+      <li><b>Permissions</b> → <b>Contents</b>: <i>Read and write</i>.</li>
+      <li>Elegí un vencimiento, tocá <b>Generate token</b>, copialo y pegalo acá.</li></ol></details>`;
+  }
+  function pubBar() {
+    const n = `${dirty} ${dirty === 1 ? 'cambio' : 'cambios'}`;
+    if (pub.state === 'publishing') return `<div class="ad-bar">⏳ <b>Publicando ${n}…</b></div>`;
+    if (pub.state === 'error') return `<div class="ad-bar warn"><span>❌ <b>No se pudo publicar:</b> ${esc(pub.msg)} Los cambios <b>todavía no se aplican</b>.</span>
+      <button class="btn primary" id="adRetry">Reintentar</button><button class="btn" id="adForget2">Cambiar token</button></div>`;
+    if (dirty && savedToken()) return `<div class="ad-bar">⏳ <b>Publicando ${n}…</b></div>`;
+    if (dirty) return `<div class="ad-bar warn" id="adBar">
+        <span><b>⚠ ${n} sin publicar: todavía no se aplican.</b> Un acceso nuevo <b>no funciona</b> hasta que lo publiques.</span>
+        <label class="ad-tok">Token de GitHub <input id="adToken" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+        <label class="tog"><input type="checkbox" id="adRemember" checked> Recordar y publicar solo de ahora en más</label>
+        <button class="btn primary" id="adPublish">Publicar ahora</button>
+        <button class="btn" id="adDownload">Descargar app.dat</button>
+        ${tokenHelp()}
+      </div>`;
+    if (pub.state === 'waiting') return `<div class="ad-bar">⏳ <b>Publicado.</b> Esperando que se aplique en la terminal (1–2 minutos)…</div>`;
+    if (pub.state === 'live') return `<div class="ad-bar ok">✅ <b>Ya activo:</b> los cambios están en línea y los usuarios ya pueden usarlos.</div>`;
+    if (pub.state === 'slow') return `<div class="ad-bar warn">El cambio se publicó pero todavía no aparece en la terminal. Revisá la pestaña <b>Actions</b> del repo en GitHub.</div>`;
+    return '';
+  }
   function wire() {
     $('nwGen').addEventListener('click', () => { $('nwPass').value = C.genPassword(); });
     $('adNew').addEventListener('submit', async (e) => {
@@ -177,14 +208,20 @@ window.BAAdmin = (() => {
       access.roster.salt = C.salt(); key = await C.aesKey(p1, access.roster.salt, access.kdf.iter);
       change('Contraseña de Admin cambiada. Publicá para aplicarla (la anterior deja de funcionar).');
     });
-    const bar = $('adBar');
-    if (!bar.hidden) {
-      $('adPublish').addEventListener('click', publish);
-      $('adDownload').addEventListener('click', async () => {
-        const blob = new Blob([await serialize()], { type: 'application/octet-stream' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'app.dat'; a.click();
-      });
-    }
+    const on = (id, fn) => { const el = $(id); if (el) el.addEventListener('click', fn); };
+    on('adPublish', () => {
+      const token = $('adToken').value.trim();
+      if (!token) { $('adToken').focus(); return alert('Pegá el token de GitHub para publicar.'); }
+      if ($('adRemember').checked) { try { localStorage.setItem(TOKEN_KEY, token); } catch {} }
+      publish(token);
+    });
+    on('adDownload', async () => {
+      const blob = new Blob([await serialize()], { type: 'application/octet-stream' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'app.dat'; a.click();
+    });
+    on('adRetry', () => publish(savedToken() || ($('adToken') && $('adToken').value.trim())));
+    const forget = () => { try { localStorage.removeItem(TOKEN_KEY); } catch {} pub = { state: 'idle', msg: '' }; render(flash); };
+    on('adForget', forget); on('adForget2', forget);
   }
 
   async function serialize() {
@@ -192,25 +229,39 @@ window.BAAdmin = (() => {
     access.updated = new Date().toISOString();
     return C.encode(access);
   }
-  async function publish() {
-    const token = $('adToken').value.trim();
-    if (!token) return alert('Pegá el token de GitHub en "Publicación".');
-    try { $('adRemember').checked ? localStorage.setItem(TOKEN_KEY, token) : localStorage.removeItem(TOKEN_KEY); } catch {}
-    const btn = $('adPublish'); btn.disabled = true; btn.textContent = 'Publicando…';
+  let publishing = false, again = false;
+  async function publish(token) {
+    if (publishing) { again = true; return; }                  // un cambio mientras se publica: se publica de nuevo al terminar
+    if (!token) { pub = { state: 'error', msg: 'Falta el token de GitHub.' }; return render(flash); }
+    publishing = true; pub = { state: 'publishing', msg: '' }; render(flash);
+    const sent = dirty;
     const api = `https://api.github.com/repos/${REPO}/contents/${PATH}`;
     const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
     try {
       const cur = await fetch(`${api}?ref=${BRANCH}`, { headers, cache: 'no-store' });
-      if (!cur.ok) throw new Error(cur.status === 401 || cur.status === 403 || cur.status === 404 ? 'El token no es válido o no tiene acceso al repo.' : `GitHub respondió ${cur.status}.`);
+      if (!cur.ok) throw new Error(cur.status === 401 || cur.status === 403 || cur.status === 404 ? 'el token no es válido, venció o no tiene acceso al repo.' : `GitHub respondió ${cur.status}.`);
       const { sha } = await cur.json();
       const content = btoa(unescape(encodeURIComponent(await serialize())));
+      const expected = access.updated;
       const put = await fetch(api, { method: 'PUT', headers, body: JSON.stringify({ message: 'Accesos: actualización desde el panel de Admin', content, sha, branch: BRANCH }) });
-      if (!put.ok) throw new Error(put.status === 409 ? 'El archivo cambió en GitHub mientras editabas. Recargá el panel.' : `GitHub respondió ${put.status} al guardar.`);
-      dirty = 0;
-      render('Publicado. Los cambios se aplican en 1–2 minutos, cuando termina el deploy.');
+      if (!put.ok) throw new Error(put.status === 409 ? 'el archivo cambió en GitHub mientras editabas; recargá el panel.' : `GitHub respondió ${put.status} al guardar.`);
+      dirty = Math.max(0, dirty - sent);
+      pub = { state: 'waiting', msg: '' }; publishing = false; render(flash);
+      if (again || dirty) { again = false; return publish(token); }
+      waitLive(expected);
     } catch (e) {
-      alert('No se pudo publicar: ' + e.message);
-      btn.disabled = false; btn.textContent = 'Publicar en GitHub';
+      publishing = false; again = false;
+      pub = { state: 'error', msg: e.message }; render(flash);
+    }
+  }
+  // Después de publicar: se relee la lista de la terminal hasta que aparece la versión nueva.
+  async function waitLive(expected) {
+    const t0 = Date.now();
+    while (pub.state === 'waiting') {
+      await new Promise((r) => setTimeout(r, 10000));
+      if (pub.state !== 'waiting') return;
+      try { if ((await window.BAGate.loadAccess()).updated >= expected) { pub = { state: 'live', msg: '' }; return render(flash); } } catch {}
+      if (Date.now() - t0 > 5 * 60000) { pub = { state: 'slow', msg: '' }; return render(flash); }
     }
   }
 

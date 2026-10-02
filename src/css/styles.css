@@ -439,3 +439,11 @@ dialog.settings .primary{background:var(--gold);color:var(--gold-ink);border-col
 .ad-help{margin:0;font-size:13px;line-height:1.5;color:var(--muted)}.ad-help code{font-size:12px;color:var(--fg)}
 @media (max-width:900px){.ad-new,.ad-cols{grid-template-columns:minmax(0,1fr)}.ad-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .settings .opt{color:var(--faint);font-size:12px}
+.ad-bar.warn{border-color:var(--bear);background:color-mix(in srgb,var(--bear) 14%,var(--bg))}
+.ad-bar.ok{border-color:var(--bull);background:color-mix(in srgb,var(--bull) 14%,var(--bg))}
+.ad-tok{flex:1 1 260px;flex-direction:row!important;align-items:center;gap:8px!important}
+.ad-tok input{height:36px!important}
+.ad-bar details{flex-basis:100%}
+.ad-help summary{cursor:pointer;color:var(--gold)}
+.ad-help ol{margin:8px 0 0;padding-left:20px;line-height:1.6}
+.ad-help a{color:var(--gold)}
