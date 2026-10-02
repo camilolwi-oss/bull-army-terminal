@@ -10,30 +10,24 @@
 | **CCI** (*Commodity Channel Index*) | Oscilador que mide cuánto se aleja el precio de su media. Uno de los cinco de Aurora. |
 | **CHoCH** (*Change of Character*) | Primer quiebre de estructura en contra de la tendencia; suele usarse como confirmación de giro en temporalidad menor. |
 | **CMF** (*Chaikin Money Flow*) | Flujo de dinero: dónde cierran las velas dentro de su rango, ponderado por volumen. Es la línea de flujo de Aurora. |
-| **CVD** (*Cumulative Volume Delta*) | El delta acumulado vela a vela: muestra si a lo largo del tiempo dominan las compras o las ventas agresivas. |
 | **Cross / Isolated** | Tipos de margen. En **cross**, todo el saldo de la cuenta respalda la posición. En **isolated**, solo el margen asignado a esa posición. |
-| **Delta** | Compras agresivas menos ventas agresivas (operaciones que toman la liquidez del libro) en una vela o en un nivel de precio. |
 | **Divergencia** | El precio marca un extremo nuevo y el indicador (RSI u OBV) no lo acompaña. Advierte que el movimiento pierde fuerza. |
 | **Failure swing** | Patrón de Wilder en el RSI: el RSI no logra superar su extremo anterior y luego rompe su mínimo (o máximo) intermedio. |
 | **Fade** | Operar en contra de un movimiento que se agotó; en la terminal, el rebote después de una cascada. |
-| **Footprint** | Vela dividida en niveles de precio que muestra cuánto se compró y vendió agresivamente en cada nivel. |
 | **Funding** | Pago periódico entre longs y shorts de un perpetuo para mantener su precio cerca del spot. Positivo: pagan los longs. |
 | **Gap de CME** | Diferencia de precio entre el cierre del viernes y la reapertura del domingo de los futuros de Bitcoin de CME. |
 | **HIP-3** | Mercados perpetuos de Hyperliquid creados por terceros, distintos de los perps principales. |
 | **Hull Suite** | Indicador de tendencia de InSilico basado en la media móvil de Hull. Verde: tendencia alcista. Rojo: bajista. |
 | **MFI** (*Money Flow Index*) | Un RSI que pondera el precio por el volumen. Uno de los cinco de Aurora. |
-| **Naked POC** | POC de una vela al que el precio todavía no volvió. Suele funcionar como imán o zona de reacción. |
 | **OBV** (*On-Balance Volume*) | Volumen acumulado: suma el volumen de las velas alcistas y resta el de las bajistas. |
 | **Order Block** (OB) | Zona de la última vela contraria antes de un impulso que rompe la estructura. De **demanda** (alcista) o de **oferta** (bajista). |
 | **Open interest** | Valor total de las posiciones abiertas en un mercado de futuros. |
 | **Perp** (perpetuo) | Futuro sin vencimiento. Es el mercado principal de Hyperliquid. |
-| **POC** (*Point of Control*) | El nivel de precio con más volumen operado dentro de una vela o un rango. |
 | **R** / **R:R** | **R** es el riesgo de un trade (distancia de la entrada al stop). **2R** = ganar el doble de lo arriesgado. **R:R** es la relación riesgo/beneficio. |
 | **Range shift** | Cambio de régimen del RSI: rompe 60 hacia arriba o pierde 40 hacia abajo. |
 | **Régimen** | El rango en el que vive el RSI según la tendencia (Cardwell): 40–80 en tendencia alcista, 20–60 en bajista. |
 | **RSI** (*Relative Strength Index*) | Oscilador de momentum de 0 a 100. |
 | **SMA / EMA** | Media móvil simple / exponencial. |
 | **SRSI** (*Stochastic RSI*) | El estocástico aplicado al RSI. Sus líneas %K y %D van de 0 a 1 (o de 0 a 100) y marcan los extremos de corto plazo. |
-| **VWAP** | Precio promedio ponderado por volumen desde un ancla (inicio del día, semana, mes, trimestre o año). |
 | **TSI** (*True Strength Index*) | Oscilador de momentum con doble suavizado. Uno de los cinco de Aurora. |
 | **UTC** | Hora universal coordinada. Argentina está en UTC−3: las 12:00 UTC son las 9:00 en Buenos Aires. |

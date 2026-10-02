@@ -6,7 +6,7 @@ Todos los datos vienen de APIs **públicas y gratuitas**, consultadas directamen
 |---|---|---|
 | **Hyperliquid API** (`api.hyperliquid.xyz`) | Velas, lista de mercados (perps, spot, HIP-3), precios, volumen, funding y estado de cuentas. Velas en vivo por WebSocket. | Todas las secciones |
 | **Hyperliquid stats** (`stats-data.hyperliquid.xyz`) | Ranking público de cuentas por valor. | Liquidaciones |
-| **Binance Futures** (`fapi.binance.com`, `fstream.binance.com`) | Open interest, relación long/short y compras/ventas agresivas de BTCUSDT (Contexto). Para Order Flow: velas con volumen comprador (`klines`), operaciones (`aggTrades`, hasta 40 pedidos de 1000 hacia atrás), open interest (`openInterestHist` y `openInterest`) y en vivo por WebSocket (`aggTrade` y `kline`). | Contexto · Order Flow |
+| **Binance Futures** (`fapi.binance.com`) | Open interest, relación long/short de cuentas y compras/ventas agresivas de BTCUSDT. | Contexto |
 | **SoSoValue** (`api.sosovalue.xyz`) | Flujos netos diarios de los ETF spot de BTC de EE.UU. | Contexto |
 | **Tree News** (`news.treeofalpha.com`) | Noticias (últimas 200 + WebSocket en vivo). | Noticias |
 | **ForexFactory** (`nfs.faireconomy.media`) | Calendario macro de la semana. Lo descarga GitHub Actions cada hora y se publica como `calendario.json`. | Noticias |

@@ -8,7 +8,6 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 | **Indicador** | El indicador **Extremos** (Pine Script) ejecutado en el navegador sobre cualquier mercado de Hyperliquid, con señales, niveles de entrada/stop/TP e historial de trades. |
 | **Aurora** | Velas con el oscilador **Aurora** (cinco osciladores, flujo, volumen, divergencias y Order Blocks) y el **Hull Suite** de InSilico. |
 | **Grid** | Screener de 2×2 a 5×5 con velas, **Aurora** y **Hull** en vivo por celda, activos a elección (perps, spot o HIP-3) y alertas visuales. |
-| **Order Flow** | Footprint (mapa de delta o perfil de volumen) con naked POC, CVD, open interest y VWAP diario, semanal, mensual, trimestral y anual. Binance con historia; Hyperliquid en vivo. |
 | **Spaghetti** | Todos los activos de Hyperliquid en un mismo gráfico para ver quién lidera y quién se queda. |
 | **Liquidaciones** | Mapa de los precios de liquidación de las cuentas más grandes de Hyperliquid. |
 | **Noticias** | Feed de Tree News en tiempo real y calendario macro de la semana. |
@@ -59,7 +58,6 @@ bull-army-terminal/
 │   │   ├── contexto/          calc.js (cálculos puros) · ui.js (interfaz y datos)
 │   │   ├── aurora/            calc.js (réplica de Aurora y el Hull) · ui.js (gráfico)
 │   │   ├── grid/              ui.js (screener en grilla)
-│   │   ├── orderflow/         calc.js (footprint, CVD, VWAP) · ui.js
 │   │   ├── spaghetti/         calc.js · ui.js
 │   │   ├── liquidaciones/     calc.js · source.js (fuente de datos) · ui.js
 │   │   └── noticias/          ui.js (Tree News + calendario macro)

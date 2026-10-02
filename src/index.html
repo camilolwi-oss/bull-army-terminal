@@ -39,7 +39,6 @@
     <li><a class="side-item" href="#indicador" data-v="ind" title="Indicador"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v18M17 3v18"/><rect x="4.5" y="7" width="5" height="8" rx="1"/><rect x="14.5" y="5" width="5" height="10" rx="1"/></svg><span class="lab">Indicador</span></a></li>
     <li><a class="side-item" href="#aurora" data-v="aur" title="Aurora"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18"/><path d="M6.5 18a5.5 5.5 0 0 1 11 0"/><path d="M12 5v3M4.9 9.9l2.1 2.1M19.1 9.9L17 12M2 14h2M20 14h2"/></svg><span class="lab">Aurora</span></a></li>
     <li><a class="side-item" href="#grid" data-v="grid" title="Grid"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg><span class="lab">Grid</span></a></li>
-    <li><a class="side-item" href="#orderflow" data-v="of" title="Order Flow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v18M17 3v18"/><path d="M4 7h3M4 11h3M4 15h3M17 6h3M17 10h3M17 14h3M17 18h3"/></svg><span class="lab">Order Flow</span></a></li>
     <li><a class="side-item" href="#spaghetti" data-v="spag" title="Spaghetti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 9-9"/><path d="M3 11l6 3 5-5 7 5"/></svg><span class="lab">Spaghetti</span></a></li>
     <li><a class="side-item" href="#liquidaciones" data-v="liq" title="Liquidaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M9 20V4M14 20v-8M19 20v-5"/></svg><span class="lab">Liquidaciones</span></a></li>
     <li><a class="side-item" href="#noticias" data-v="news" title="Noticias"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="lab">Noticias</span></a></li>
@@ -398,56 +397,6 @@
   <div class="gd-toast" id="gdToast" role="status" hidden><span id="gdToastTxt"></span><button type="button" class="btn" id="gdUndo">Deshacer</button></div>
   </section>
 
-  <section id="panel-of" class="of" aria-labelledby="h-of" hidden>
-  <header class="view-head">
-    <h1 id="h-of">Order Flow</h1>
-    <p class="sp-cap"><b>Footprint, CVD y open interest.</b> Dónde compran y venden agresivamente dentro de cada vela, con naked POC y VWAP anclados.</p>
-  </header>
-  <div class="controls" role="group" aria-label="Mercado y temporalidad">
-    <div class="ctl picker" id="ofSymCtl">
-      <span class="lbl">Mercado</span>
-      <button type="button" id="ofSymBtn" aria-haspopup="listbox" aria-expanded="false"><span id="ofSymLbl">BTC-PERP</span><span class="caret" aria-hidden="true">▾</span></button>
-      <div class="pop" id="ofPop" hidden>
-        <input type="text" id="ofSymQ" role="combobox" aria-controls="ofSymList" aria-expanded="true" aria-autocomplete="list" placeholder="Buscar entre todos los mercados…" aria-label="Buscar mercado" autocomplete="off" spellcheck="false">
-        <div class="seg filt" id="ofSymF">
-          <button type="button" data-g="all" aria-pressed="true">Todos</button><button type="button" data-g="perp">Perps</button><button type="button" data-g="spot">Spot</button><button type="button" data-g="hip3">HIP-3</button>
-        </div>
-        <div class="rows-head"><span>Mercado</span><span>Precio</span><span>24h</span><span>Volumen 24h</span></div>
-        <ul class="rows" id="ofSymList" role="listbox" aria-label="Mercados de Hyperliquid"></ul>
-        <p class="pop-foot" id="ofSymCount">Cargando mercados…</p>
-      </div>
-    </div>
-    <div class="ctl">
-      <span class="lbl">Temporalidad</span>
-      <div class="seg" id="ofTf">
-        <button type="button" data-tf="1m" aria-pressed="true">1m</button><button type="button" data-tf="3m">3m</button><button type="button" data-tf="5m">5m</button><button type="button" data-tf="15m">15m</button><button type="button" data-tf="30m">30m</button><button type="button" data-tf="1h">1H</button>
-      </div>
-    </div>
-    <div class="ctl">
-      <span class="lbl">Footprint</span>
-      <div class="seg" id="ofMode">
-        <button type="button" data-m="delta" aria-pressed="true">Mapa de delta</button><button type="button" data-m="profile">Perfil de volumen</button>
-      </div>
-    </div>
-  </div>
-  <div class="controls" role="group" aria-label="Capas">
-    <label class="tog"><input type="checkbox" id="ofNaked" checked> Naked POC</label>
-    <label class="tog"><input type="checkbox" id="ofCvd" checked> CVD</label>
-    <label class="tog"><input type="checkbox" id="ofOi" checked> Open interest</label>
-    <div class="ctl of-vwap" id="ofVwap">
-      <span class="lbl">VWAP</span>
-      <label class="chipchk d"><input type="checkbox" value="D" checked><span>Diario</span></label>
-      <label class="chipchk w"><input type="checkbox" value="W"><span>Semanal</span></label>
-      <label class="chipchk m"><input type="checkbox" value="M"><span>Mensual</span></label>
-      <label class="chipchk q"><input type="checkbox" value="Q"><span>Trimestral</span></label>
-      <label class="chipchk y"><input type="checkbox" value="Y"><span>Anual</span></label>
-    </div>
-  </div>
-  <p class="note" id="ofStatus"></p>
-  <div class="chartbox"><canvas id="ofCv"></canvas></div>
-  <p class="note">Rueda del mouse: zoom · arrastrar: moverse en el tiempo · doble clic: volver al presente. Pasá el mouse por una celda para ver compras y ventas de ese nivel.</p>
-  </section>
-
   <section id="panel-spag" class="spag" aria-labelledby="h-spag" hidden>
     <header class="view-head">
       <h1 id="h-spag">Spaghetti</h1>
@@ -687,8 +636,6 @@
 <script type="text/plain" data-app="js/aurora/calc.js"></script>
 <script type="text/plain" data-app="js/aurora/ui.js"></script>
 <script type="text/plain" data-app="js/grid/ui.js"></script>
-<script type="text/plain" data-app="js/orderflow/calc.js"></script>
-<script type="text/plain" data-app="js/orderflow/ui.js"></script>
 <script type="text/plain" data-app="js/app.js"></script>
 <script src="js/loader.js"></script>
 </body>
