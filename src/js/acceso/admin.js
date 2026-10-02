@@ -215,6 +215,9 @@ window.BAAdmin = (() => {
       if ($('adRemember').checked) { try { localStorage.setItem(TOKEN_KEY, token); } catch {} }
       publish(token);
     });
+    // Enter en el campo del token también publica.
+    const tok = $('adToken');
+    if (tok) tok.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('adPublish').click(); } });
     on('adDownload', async () => {
       const blob = new Blob([await serialize()], { type: 'application/octet-stream' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'app.dat'; a.click();
