@@ -1,4 +1,4 @@
-// Scanner · plano cartesiano con los 50 perps de más volumen. Tres vistas: Reversión (estiramiento
+// Scanner · plano cartesiano con todos los perps de crypto y HIP-3 de Hyperliquid. Tres vistas: Reversión (estiramiento
 // contra giro), Rotación contra BTC (tipo RRG) y Puntaje (alcista contra bajista). Solo velas cerradas.
 // env: { live, CAT, loadCatalog, hlPost, labelOf, openAurora(alias, tf) }
 window.createScanner = function createScanner(env) {
@@ -8,7 +8,9 @@ window.createScanner = function createScanner(env) {
   const WS_URL = 'wss://api.hyperliquid.xyz/ws', BF = 'https://fapi.binance.com';
   const IV_MS = { '5m': 3e5, '15m': 9e5, '30m': 18e5, '1h': 36e5, '4h': 144e5, '1d': 864e5 };
   const TF_AURORA = { '5m': '5', '15m': '15', '30m': '30', '1h': '60', '4h': '240', '1d': '1D' };
-  const UNIVERSE = 50, BARS = 150, TAIL = 5, BINANCE_TOP = 15;   // 150 velas: Aurora necesita ~60 para calentar
+  const BARS = 150, TAIL = 5, BINANCE_TOP = 15;   // 150 velas: Aurora necesita ~60 para calentar
+  const PER_MIN = 45;                              // historiales por minuto que permite Hyperliquid (peso ~23 c/u, 1100 por minuto)
+  const UNI = { all: (m) => m.group === 'perp' || m.group === 'hip3', perp: (m) => m.group === 'perp', hip3: (m) => m.group === 'hip3' };
   const COL = { bg: '#0B0B0C', line: '#25252A', axis: '#3A3936', text: '#8E8B84', fg: '#ECE9E2', bull: '#29E6C9', bear: '#FF4F7B', gold: '#C9A227', grey: '#5B5953' };
   const MODES = {
     rev: {
@@ -28,69 +30,106 @@ window.createScanner = function createScanner(env) {
   // ── Estado ─────────────────────────────────────────────────────────────
   const KEY = 'baScanner';
   let saved = null; try { saved = JSON.parse(localStorage.getItem(KEY)); } catch {}
-  const st = { mode: 'rev', tf: '15m', tails: true, names: true, ...(saved || {}) };
+  const st = { mode: 'rev', tf: '15m', uni: 'all', tails: true, names: true, ...(saved || {}) };
   if (!MODES[st.mode]) st.mode = 'rev';
   if (!IV_MS[st.tf]) st.tf = '15m';
+  if (!UNI[st.uni]) st.uni = 'all';
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch {} };
 
-  const data = new Map();    // alias → { k:[velas], res, flow, err }
-  let universe = [], funding = new Map(), ws = null, wsTimer = null, visible = false, token = 0;
-  let loaded = 0, lastCalc = 0, binanceAt = 0, binSet = null, pts = [], hover = null, drawQueued = false, calcTimer = null, binTimer = null;
+  // data: alias → { k:[velas], res, flow, dirty, stale }. Se conserva al cambiar de universo; se vacía al cambiar de temporalidad.
+  const data = new Map(), byCoin = new Map();
+  let universe = [], inUni = new Set(), need = [], queue = [], funding = new Map(), fundingAt = new Map();
+  let ws = null, wsTimer = null, visible = false, started = false, token = 0, loaderToken = -1, waiters = [];
+  let lastCalc = 0, binanceAt = 0, binSet = null, pts = [], hover = null, drawQueued = false, calcTimer = null, binTimer = null;
   const real = (alias) => env.CAT.realOf.get(alias) || alias;
-  const nameOf = (alias) => { const m = env.CAT.byAlias.get(alias); return m ? m.real : alias; };
+  const market = (alias) => env.CAT.byAlias.get(alias);
+  const nameOf = (alias) => { const m = market(alias); return m ? m.real : alias; };
   const toK = (x) => ({ t: +x.t, o: +x.o, h: +x.h, l: +x.l, c: +x.c, v: +x.v });
   const closedOf = (k) => { const now = Date.now(), ms = IV_MS[st.tf]; let n = k.length; while (n && k[n - 1].t + ms > now) n--; return k.slice(0, n); };
 
   // ── Datos de Hyperliquid ───────────────────────────────────────────────
+  // Funding de cada dex (el principal y los HIP-3), como mucho una vez cada 30 minutos.
   async function loadFunding() {
-    try {
-      const [meta, ctx] = await env.hlPost({ type: 'metaAndAssetCtxs' });
-      funding = new Map(meta.universe.map((u, i) => [u.name, +(ctx[i] || {}).funding]));
-    } catch {}
+    const dexes = [...new Set(need.map((a) => (market(a) || {}).dex || ''))];
+    await Promise.all(dexes.filter((d) => !(Date.now() - (fundingAt.get(d) || 0) < 30 * 60000)).map(async (dex) => {
+      try {
+        const [meta, ctx] = await env.hlPost(dex ? { type: 'metaAndAssetCtxs', dex } : { type: 'metaAndAssetCtxs' });
+        meta.universe.forEach((u, i) => funding.set(u.name, +(ctx[i] || {}).funding));
+        fundingAt.set(dex, Date.now());
+      } catch {}
+    }));
   }
+  const subscribe = (alias) => { if (ws && ws.readyState === 1) ws.send(JSON.stringify({ method: 'subscribe', subscription: { type: 'candle', coin: real(alias), interval: st.tf } })); };
   async function loadOne(alias, my) {
     const now = Date.now();
     try {
       const rows = await env.hlPost({ type: 'candleSnapshot', req: { coin: real(alias), interval: st.tf, startTime: now - BARS * IV_MS[st.tf], endTime: now } });
       if (my !== token) return;
-      data.set(alias, { k: (rows || []).map(toK), res: null, flow: null });
-    } catch { if (my === token) data.set(alias, { k: [], err: true }); }
-    loaded++;
+      const had = data.has(alias) && !data.get(alias).err;
+      data.set(alias, { k: (rows || []).map(toK), res: null, flow: null, dirty: true, stale: false });
+      byCoin.set(real(alias), alias);
+      if (!had) subscribe(alias);
+    } catch { if (my === token && !data.has(alias)) data.set(alias, { k: [], res: null, dirty: false, stale: false, err: true }); }
   }
-  async function loadAll() {
-    const my = ++token;
-    data.clear(); loaded = 0; pts = []; binanceAt = 0;
-    universe = env.CAT.list.filter((m) => m.group === 'perp').slice(0, UNIVERSE).map((m) => m.alias);
-    if (!universe.includes('BTC')) universe.unshift('BTC');
-    status(); draw();
-    await loadFunding();
-    let i = 0;
-    await Promise.all(Array.from({ length: 4 }, async () => {
-      while (i < universe.length && my === token) { await loadOne(universe[i++], my); if (my === token) { status(); schedule(300); } }
+  // Carga en orden de volumen, de a 3, y se pausa mientras el Scanner no está a la vista (para no frenar al resto).
+  const whenVisible = () => (visible ? null : new Promise((r) => waiters.push(r)));
+  async function runLoader() {
+    if (loaderToken === token) return;
+    const my = loaderToken = token;
+    await Promise.all(Array.from({ length: 3 }, async () => {
+      for (;;) {
+        if (my !== token) return;
+        const w = whenVisible(); if (w) await w;
+        if (my !== token) return;
+        const alias = queue.shift();
+        if (!alias) return;
+        const d = data.get(alias);
+        if (d && !d.stale && !d.err) continue;
+        await loadOne(alias, my);
+        if (my === token) { status(); schedule(800); if (!binanceAt && data.size >= 60) refreshBinance(); }   // confirma los primeros candidatos sin esperar a todos
+      }
     }));
     if (my !== token) return;
-    openWs(); compute(); refreshBinance();
+    loaderToken = -1;
+    if (queue.length) return runLoader();
+    compute(); refreshBinance();
+  }
+  function setUniverse() {
+    universe = env.CAT.list.filter(UNI[st.uni]).map((m) => m.alias);   // ya viene ordenado por volumen
+    inUni = new Set(universe);
+    need = [...new Set(['BTC', ...universe])];                           // BTC siempre: es la referencia de Rotación
+    queue = need.filter((a) => { const d = data.get(a); return !d || d.err; });
+    hover = null;
+    loadFunding(); status(); ranking(); draw();
+    runLoader();
+  }
+  function restart() {
+    token++; loaderToken = -1;
+    data.clear(); byCoin.clear(); pts = []; binanceAt = 0; lastCalc = 0;
+    closeWs(); openWs(); setUniverse();
   }
 
-  // Velas en vivo por WebSocket: cuando abre una vela nueva, la anterior quedó cerrada y se recalcula.
+  // Velas en vivo por WebSocket (sigue abierto aunque no se vea el Scanner, así no hay que volver a pedir historia).
+  // Cuando abre una vela nueva, la anterior quedó cerrada y se recalcula ese mercado.
   function openWs() {
-    closeWs();
-    const w = new WebSocket(WS_URL); ws = w;
+    const w = new WebSocket(WS_URL), my = token; ws = w;
     w.onopen = () => {
-      universe.forEach((a) => w.send(JSON.stringify({ method: 'subscribe', subscription: { type: 'candle', coin: real(a), interval: st.tf } })));
+      for (const [a, d] of data) if (!d.err) subscribe(a);
       wsTimer = setInterval(() => { try { w.send('{"method":"ping"}'); } catch {} }, 50000);
     };
     w.onmessage = (e) => {
       let m; try { m = JSON.parse(e.data); } catch { return; }
       if (m.channel !== 'candle' || !m.data || m.data.i !== st.tf) return;
-      const alias = universe.find((a) => real(a) === m.data.s);
-      const d = alias && data.get(alias);
+      const alias = byCoin.get(m.data.s), d = alias && data.get(alias);
       if (!d || !d.k.length) return;
       const c = toK(m.data), last = d.k[d.k.length - 1];
-      if (c.t === last.t) d.k[d.k.length - 1] = c;
-      else if (c.t > last.t) { d.k.push(c); if (d.k.length > BARS + 20) d.k.shift(); schedule(1500); planBinance(); }
+      if (c.t === last.t) { d.k[d.k.length - 1] = c; return; }
+      if (c.t < last.t) return;
+      if (c.t > last.t + 1.5 * IV_MS[st.tf]) { if (!d.stale) { d.stale = true; queue.push(alias); runLoader(); } return; }   // hubo un corte: pedir de nuevo
+      d.k.push(c); if (d.k.length > BARS + 20) d.k.shift();
+      d.dirty = true; schedule(1500); planBinance();
     };
-    w.onclose = () => { if (ws === w) { ws = null; clearInterval(wsTimer); if (visible) setTimeout(() => visible && !ws && openWs(), 5000); } };
+    w.onclose = () => { if (ws === w) { ws = null; clearInterval(wsTimer); setTimeout(() => my === token && !ws && openWs(), 5000); } };
   }
   function closeWs() { const w = ws; ws = null; clearInterval(wsTimer); if (w) try { w.close(); } catch {} }
 
@@ -101,11 +140,17 @@ window.createScanner = function createScanner(env) {
   }
   const bsym = (alias) => { const r = real(alias); return (/^k[A-Z]/.test(r) ? '1000' + r.slice(1) : r) + 'USDT'; };
   function planBinance() { clearTimeout(binTimer); binTimer = setTimeout(refreshBinance, 20000); }   // OI de Binance se publica unos segundos después del cierre
+  let binBusy = false;
   async function refreshBinance() {
+    if (binBusy) return;
+    binBusy = true;
+    try { await refreshBinanceNow(); } finally { binBusy = false; }
+  }
+  async function refreshBinanceNow() {
     const my = token, set = await binanceSymbols();
-    const ranked = [...data.entries()].filter(([a, d]) => d.res && set.has(bsym(a)))
+    const ranked = [...data.entries()].filter(([a, d]) => d.res && inUni.has(a) && set.has(bsym(a)))
       .sort((p, q) => Math.max(q[1].res.bull, q[1].res.bear) - Math.max(p[1].res.bull, p[1].res.bear)).slice(0, BINANCE_TOP);
-    for (const d of data.values()) d.flow = null;
+    for (const d of data.values()) if (d.flow) { d.flow = null; d.dirty = true; }
     await Promise.all(ranked.map(async ([alias, d]) => {
       const k = closedOf(d.k); if (k.length < 40) return;
       const sym = bsym(alias), ms = IV_MS[st.tf];
@@ -121,19 +166,24 @@ window.createScanner = function createScanner(env) {
         const o = F.oiSeries(times, b.ends, new Map(oi.map((r) => [+r.timestamp, +r.sumOpenInterest])), ms, null);
         // Las señales se guardan por hora de vela: los índices cambian cuando entra una vela nueva.
         const osc = A.compute(k).osc, byT = (e) => ({ ...e, t: times[e.i] });
+        d.dirty = true;
         d.flow = { sym, arrows: F.arrows(b, o.dOi, k.length).map(byT), divs: F.cvdDivergences(k.map((x) => x.h), k.map((x) => x.l), b.cvd, osc, k.length).map(byT) };
       } catch {}
     }));
     if (my !== token) return;
     binanceAt = Date.now();
+    loadFunding();
     compute();
   }
 
   // ── Cálculo ────────────────────────────────────────────────────────────
   function schedule(ms) { clearTimeout(calcTimer); calcTimer = setTimeout(compute, ms); }
   function compute() {
-    const btc = data.get('BTC'), btcK = btc ? closedOf(btc.k) : [];
+    // Solo se recalculan los mercados con datos nuevos; si cambió BTC, todos (es la referencia de Rotación).
+    const btc = data.get('BTC'), btcK = btc ? closedOf(btc.k) : [], all = !!(btc && btc.dirty);
     for (const [alias, d] of data) {
+      if (!all && !d.dirty) continue;
+      d.dirty = false;
       const k = closedOf(d.k);
       if (k.length < 60) { d.res = null; continue; }
       const a = A.compute(k), hull = A.hull(k.map((x) => x.c)), ax = S.axes(k, a);
@@ -156,10 +206,10 @@ window.createScanner = function createScanner(env) {
   // ── Plano ──────────────────────────────────────────────────────────────
   const cv = $('scCv');
   function range(mode) {
-    if (mode === 'rev') return { x0: -100, x1: 100, y0: -100, y1: 100, cx: 0, cy: 0 };
-    if (mode === 'score') return { x0: 0, x1: 100, y0: 0, y1: 100, cx: 40, cy: 40 };
+    if (mode === 'rev') return { x0: -108, x1: 108, y0: -108, y1: 108, cx: 0, cy: 0 };
+    if (mode === 'score') return { x0: -4, x1: 104, y0: -4, y1: 104, cx: 40, cy: 40 };
     let mx = 0.5, my = 0.5;
-    for (const d of data.values()) if (d.res) for (const p of d.res.path) { const [x, y] = p.rrg; if (Number.isFinite(x)) mx = Math.max(mx, Math.abs(x)); if (Number.isFinite(y)) my = Math.max(my, Math.abs(y)); }
+    for (const [a, d] of data) if (d.res && inUni.has(a)) for (const p of d.res.path) { const [x, y] = p.rrg; if (Number.isFinite(x)) mx = Math.max(mx, Math.abs(x)); if (Number.isFinite(y)) my = Math.max(my, Math.abs(y)); }
     return { x0: -mx * 1.15, x1: mx * 1.15, y0: -my * 1.15, y1: my * 1.15, cx: 0, cy: 0 };
   }
   // Lado al que se inclina el punto (para el color y el tamaño).
@@ -201,17 +251,18 @@ window.createScanner = function createScanner(env) {
     g.font = '11px ui-monospace, monospace'; g.fillStyle = COL.text; g.textAlign = 'center';
     g.fillText(`${M.lo}  ←  ${M.x}  →  ${M.hi}`, L + pw / 2, H - 14);
     g.save(); g.translate(16, T + ph / 2); g.rotate(-Math.PI / 2); g.fillText(`${M.ylo}  ←  ${M.y}  →  ${M.yhi}`, 0, 0); g.restore();
-    const fmtAx = (v) => (st.mode === 'rrg' ? (v > 0 ? '+' : '') + v.toFixed(1) + '%' : Math.round(v));
+    const fmtAx = (v) => (st.mode === 'rrg' ? (v > 0 ? '+' : '') + v.toFixed(1) + '%' : Math.max(st.mode === 'score' ? 0 : -100, Math.min(100, Math.round(v))));
     g.textAlign = 'center'; [R.x0, R.cx, R.x1].forEach((v, i) => g.fillText(fmtAx(v), i === 0 ? L + 14 : i === 2 ? L + pw - 16 : X(v), T + ph + 14));
     g.textAlign = 'right'; [R.y0, R.cy, R.y1].forEach((v, i) => g.fillText(fmtAx(v), L - 6, i === 0 ? T + ph - 2 : i === 2 ? T + 10 : Y(v) + 4));
 
     // Puntos: primero los chicos, al final los mejores (quedan arriba).
     pts = [];
-    const items = [...data.entries()].filter(([, d]) => d.res && Number.isFinite(d.res.path[d.res.path.length - 1][st.mode][0]))
+    const items = [...data.entries()].filter(([a, d]) => d.res && inUni.has(a) && Number.isFinite(d.res.path[d.res.path.length - 1][st.mode][0]))
       .map(([alias, d]) => { const s = lean(d), score = s > 0 ? d.res.bull : d.res.bear; return { alias, d, s, score }; })
       .sort((p, q) => p.score - q.score);
-    // Cola y nombre solo para los 14 mejores (y el punto bajo el mouse): con 50 colas no se lee nada.
-    const labelSet = new Set(items.slice(-14).map((x) => x.alias)), names = [];
+    // Cola y nombre solo para los 7 mejores de cada lado (y el punto bajo el mouse): con 300 colas no se lee nada.
+    const top = (side) => items.filter((x) => x.s === side).slice(-7).map((x) => x.alias);
+    const labelSet = new Set([...top(1), ...top(-1)]), names = [];
     // En Rotación el color es el del cuadrante; en las otras vistas, el lado al que se inclina si el puntaje alcanza.
     const rrgCol = ([x, y]) => (x < 0 ? (y >= 0 ? COL.bull : COL.grey) : (y >= 0 ? COL.gold : COL.bear));
     for (const it of items) {
@@ -290,7 +341,7 @@ window.createScanner = function createScanner(env) {
   cv.addEventListener('click', (e) => { const { best } = hit(e); if (best) env.openAurora(best.alias, TF_AURORA[st.tf]); });
 
   function ranking() {
-    const rows = [...data.entries()].filter(([, d]) => d.res);
+    const rows = [...data.entries()].filter(([a, d]) => d.res && inUni.has(a));
     const list = (side) => rows.map(([alias, d]) => ({ alias, d, s: side > 0 ? d.res.bull : d.res.bear }))
       .filter((x) => x.s >= 20).sort((p, q) => q.s - p.s).slice(0, 5)
       .map(({ alias, d, s }) => {
@@ -305,10 +356,13 @@ window.createScanner = function createScanner(env) {
   }));
   function status() {
     const hm = (t) => new Date(t).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-    const parts = [];
-    if (loaded < universe.length) parts.push(`Cargando ${loaded}/${universe.length} mercados…`);
-    else if (lastCalc) parts.push(`<b>${[...data.values()].filter((d) => d.res).length} perps</b> de más volumen · ${st.tf.toUpperCase()} · velas cerradas · actualizado ${hm(lastCalc)}`);
-    if (binanceAt) parts.push(`Binance: ${[...data.values()].filter((d) => d.flow).length} candidatos confirmados (anillo dorado)`);
+    const ready = universe.filter((a) => data.has(a)).length, left = universe.length - ready, parts = [];
+    const shown = universe.filter((a) => (data.get(a) || {}).res);
+    const nP = shown.filter((a) => (market(a) || {}).group === 'perp').length, nH = shown.length - nP;
+    if (left > 0) parts.push(`Cargando <b>${ready}/${universe.length}</b> mercados, de mayor a menor volumen · faltan ~${Math.max(1, Math.ceil(left / PER_MIN))} min${visible ? '' : ' (en pausa)'}`);
+    else if (lastCalc) parts.push(`<b>${shown.length} mercados</b> (${nP} perps · ${nH} HIP-3) · ${st.tf.toUpperCase()} · velas cerradas · actualizado ${hm(lastCalc)}`);
+    const nBin = [...data.entries()].filter(([a, d]) => d.flow && inUni.has(a)).length;
+    if (binanceAt && nBin) parts.push(`Binance: ${nBin} candidatos confirmados (anillo dorado)`);
     $('scStatus').innerHTML = parts.join(' · ');
   }
 
@@ -316,31 +370,35 @@ window.createScanner = function createScanner(env) {
   function syncControls() {
     document.querySelectorAll('#scMode button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === st.mode)));
     document.querySelectorAll('#scTf button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tf === st.tf)));
+    document.querySelectorAll('#scUni button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.u === st.uni)));
     $('scTails').checked = st.tails; $('scNames').checked = st.names;
   }
   $('scMode').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || b.dataset.m === st.mode) return; st.mode = b.dataset.m; save(); syncControls(); draw(); });
   $('scTf').addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b || b.dataset.tf === st.tf) return;
-    st.tf = b.dataset.tf; save(); syncControls(); closeWs(); loadAll();
+    st.tf = b.dataset.tf; save(); syncControls(); if (started) restart();
+  });
+  $('scUni').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b || b.dataset.u === st.uni) return;
+    st.uni = b.dataset.u; save(); syncControls(); if (started) setUniverse();
   });
   $('scTails').addEventListener('change', (e) => { st.tails = e.target.checked; save(); draw(); });
   $('scNames').addEventListener('change', (e) => { st.names = e.target.checked; save(); draw(); });
   window.addEventListener('resize', () => visible && draw());
   syncControls();
 
-  let started = false, hiddenAt = 0;
   return {
     async show() {
       visible = true; draw();
+      waiters.splice(0).forEach((r) => r());   // reanuda la carga si estaba en pausa
       if (!env.live) { status(); return; }
       if (!started) {
         started = true;
         if (!env.CAT.ready) { try { await env.loadCatalog(); } catch {} }
-        loadAll();
-      } else if (hiddenAt && Date.now() - hiddenAt > IV_MS[st.tf]) loadAll();   // se perdió al menos una vela: datos nuevos
-      else if (!ws && universe.length) { openWs(); schedule(500); }
-      hiddenAt = 0;
+        openWs(); setUniverse();
+      } else status();
     },
-    hide() { if (visible) hiddenAt = Date.now(); visible = false; closeWs(); tip.hidden = true; }
+    // El WebSocket sigue abierto: los datos se mantienen al día y al volver no hay que recargar.
+    hide() { visible = false; tip.hidden = true; }
   };
 };

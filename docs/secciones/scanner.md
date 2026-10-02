@@ -1,10 +1,10 @@
 ---
-description: Los 50 perps de más volumen en un plano, para encontrar los mejores momentos de reversión.
+description: Todos los perps de crypto y HIP-3 de Hyperliquid en un plano, para encontrar los mejores momentos de reversión.
 ---
 
 # Scanner
 
-Ubica los **50 perps de más volumen de Hyperliquid** en un plano cartesiano. Cada punto es un mercado y su posición responde dos preguntas: **¿qué tan estirado está?** y **¿ya empezó a girar?** Los mejores candidatos a reversión quedan en dos esquinas.
+Ubica **todos los perps de crypto y los mercados HIP-3 de Hyperliquid** (más de 300) en un plano cartesiano. Cada punto es un mercado y su posición responde dos preguntas: **¿qué tan estirado está?** y **¿ya empezó a girar?** Los mejores candidatos a reversión quedan en dos esquinas.
 
 ![Scanner en la vista Reversión](../.gitbook/assets/scanner.png)
 
@@ -17,6 +17,7 @@ El Scanner **no da entradas: muestra dónde mirar.** Hacé clic en un punto para
 | Control | Qué hace |
 |---|---|
 | **Vista** | Reversión, Rotación vs BTC o Puntaje: tres formas de leer el mismo grupo de mercados. |
+| **Mercados** | **Todos**, solo **Perps** de crypto o solo **HIP-3** (acciones, índices, materias primas y otros mercados de los dex HIP-3). |
 | **Temporalidad** | 5m, 15m, 30m, 1H, 4H o 1D. |
 | **Colas** | El recorrido de las últimas 5 velas cerradas de los mejores candidatos. |
 | **Nombres** | Los nombres de los mejores candidatos sobre el plano. |
@@ -79,8 +80,17 @@ Las dos condiciones de Binance se revisan para los **15 mejores candidatos** que
 A la derecha, **Top alcistas** y **Top bajistas** muestran los 5 mejores de cada lado con sus tres motivos principales.
 
 {% hint style="info" %}
-**Nada se repinta.** Todo se calcula con **velas cerradas** y se actualiza solo cuando cierra cada vela. Al abrir el Scanner, la primera carga puede tardar alrededor de un minuto: son 50 mercados y Hyperliquid limita la cantidad de pedidos.
+**Nada se repinta.** Todo se calcula con **velas cerradas** y se actualiza solo cuando cierra cada vela.
 {% endhint %}
+
+## La primera carga
+
+Hyperliquid permite pedir el historial de unos **45 mercados por minuto**, así que la primera carga completa tarda **unos 7 minutos** con *Todos* (unos 4 con *Perps* y 3 con *HIP-3*). Para que sea útil desde el principio:
+
+- Los mercados se cargan **de mayor a menor volumen**: los más líquidos aparecen en el primer minuto.
+- Arriba del plano se ve el avance y cuánto falta.
+- Si salís del Scanner, la carga **se pausa** para no frenar el resto de la terminal, y sigue cuando volvés.
+- Una vez cargado, se mantiene al día en vivo: volver al Scanner o cambiar entre *Todos*, *Perps* y *HIP-3* es instantáneo. Cambiar la **temporalidad** sí vuelve a cargar todo.
 
 ![Detalle de un mercado al pasar el mouse](../.gitbook/assets/scanner-detalle.png)
 

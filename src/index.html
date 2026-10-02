@@ -417,13 +417,19 @@
   <section id="panel-scan" class="sc" aria-labelledby="h-scan" hidden>
   <header class="view-head">
     <h1 id="h-scan">Scanner · Reversiones</h1>
-    <p class="sp-cap"><b>Los 50 perps de más volumen en un plano: quién está estirado y quién ya empezó a girar.</b> Cada punto es un mercado; su cola muestra las últimas 5 velas cerradas.</p>
+    <p class="sp-cap"><b>Todos los perps de crypto y HIP-3 de Hyperliquid en un plano: quién está estirado y quién ya empezó a girar.</b> Cada punto es un mercado; su cola muestra las últimas 5 velas cerradas.</p>
   </header>
   <div class="controls" role="group" aria-label="Scanner">
     <div class="ctl">
       <span class="lbl">Vista</span>
       <div class="seg scroll" id="scMode">
         <button type="button" data-m="rev" aria-pressed="true">Reversión</button><button type="button" data-m="rrg">Rotación vs BTC</button><button type="button" data-m="score">Puntaje</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lbl">Mercados</span>
+      <div class="seg scroll" id="scUni">
+        <button type="button" data-u="all" aria-pressed="true">Todos</button><button type="button" data-u="perp">Perps</button><button type="button" data-u="hip3">HIP-3</button>
       </div>
     </div>
     <div class="ctl">

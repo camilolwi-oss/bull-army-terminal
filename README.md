@@ -8,7 +8,7 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 | **Indicador** | El indicador **Extremos** (Pine Script) ejecutado en el navegador sobre cualquier mercado de Hyperliquid, con señales, niveles de entrada/stop/TP e historial de trades. |
 | **Aurora** | Velas con el oscilador **Aurora** (cinco osciladores, flujo, volumen, divergencias y Order Blocks), el **Hull Suite** de InSilico, el flujo de **Binance Futures** (delta, CVD y open interest, con flechas delta/OI y divergencias CVD sin repintar) y **VWAP** diario, semanal, mensual, trimestral y anual. |
 | **Grid** | Screener de 2×2 a 5×5 con velas, **Aurora** y **Hull** en vivo por celda, activos a elección (perps, spot o HIP-3) y alertas visuales. |
-| **Scanner** | Plano cartesiano con los 50 perps de más volumen: vistas Reversión (estiramiento vs giro), Rotación vs BTC (tipo RRG) y Puntaje, con colas de 5 velas, ranking alcista/bajista y confirmación de Binance para los 15 mejores. |
+| **Scanner** | Plano cartesiano con todos los perps de crypto y HIP-3 (filtro Todos/Perps/HIP-3, carga por volumen y en pausa cuando no se ve): vistas Reversión (estiramiento vs giro), Rotación vs BTC (tipo RRG) y Puntaje, con colas de 5 velas, ranking alcista/bajista y confirmación de Binance para los 15 mejores. |
 | **Spaghetti** | Todos los activos de Hyperliquid en un mismo gráfico para ver quién lidera y quién se queda. |
 | **Liquidaciones** | Mapa de los precios de liquidación de las cuentas más grandes de Hyperliquid. |
 | **Noticias** | Feed de Tree News en tiempo real y calendario macro de la semana. |
