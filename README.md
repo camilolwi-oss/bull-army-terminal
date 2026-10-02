@@ -66,20 +66,17 @@ bull-army-terminal/
 ├── scripts/
 │   ├── build.mjs              Arma dist/ (página + accesos + PWA)
 │   └── serve.mjs              Servidor local sin dependencias
-├── docs/                      Documentación (GitBook)
+├── docs/                      Guía para usuarios (GitBook)
+├── dev/                       Documentación técnica (no se publica)
 ├── .github/workflows/         Publicación automática en GitHub Pages
 └── dist/                      Salida del build (no se sube al repo)
 ```
 
 ## Documentación
 
-La guía completa, en español, está en [`docs/`](docs/README.md) y se publica como GitBook:
+**Para usuarios** (se publica como GitBook): [`docs/`](docs/README.md) — cómo entrar, cada sección, el indicador Extremos, modo demo, preguntas frecuentes y glosario.
 
-- **Primeros pasos**: [abrir la terminal](docs/primeros-pasos/abrir-la-terminal.md), [la interfaz](docs/primeros-pasos/la-interfaz.md), [ajustes](docs/primeros-pasos/ajustes.md).
-- **Secciones**: [Contexto](docs/secciones/contexto.md), [Indicador](docs/secciones/indicador.md), [Aurora](docs/secciones/aurora.md), [Grid](docs/secciones/grid.md), [Spaghetti](docs/secciones/spaghetti.md), [Liquidaciones](docs/secciones/liquidaciones.md), [Noticias](docs/secciones/noticias.md).
-- **Indicador Extremos**: [la regla](docs/indicador-extremos/la-regla.md), [cómo leer el gráfico](docs/indicador-extremos/como-leer-el-grafico.md), [TradingView](docs/indicador-extremos/tradingview.md).
-- **Cómo funciona**: [arquitectura](docs/como-funciona/arquitectura.md), [fuentes de datos](docs/como-funciona/fuentes-de-datos.md), [modo demo](docs/como-funciona/modo-demo.md).
-- **Desarrollo**: [modificar el código](docs/desarrollo/modificar-el-codigo.md), [publicar](docs/desarrollo/publicar.md).
+**Para desarrollo** (no se publica en el GitBook): [`dev/`](dev/) — [arquitectura](dev/arquitectura.md), [fuentes de datos y límites](dev/fuentes-de-datos.md), [calendario macro](dev/calendario-macro.md), [modificar el código](dev/modificar-el-codigo.md) y [publicar](dev/publicar.md). La administración de accesos está en [ADMIN.md](ADMIN.md).
 
 ## Créditos
 

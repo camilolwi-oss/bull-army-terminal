@@ -32,7 +32,7 @@ Arriba a la derecha:
 | Estado | Significado |
 |---|---|
 | 🟢 **En vivo · se actualiza cada minuto** | Modo gratis, sin configurar nada: la terminal consulta Tree News cada minuto. Las noticias llegan con 1–2 minutos de demora. |
-| 🟢 **En vivo · al instante** | Con tu key de Tree News cargada en [Ajustes](../primeros-pasos/ajustes.md) (opcional): llegan en el momento. |
+| 🟢 **En vivo · al instante** | Con tu key de Tree News cargada en [Ajustes](../README.md#ajustes) (opcional): llegan en el momento. |
 | 🟡 **Key inválida · se usa la versión gratis** | La key no funcionó; la terminal sigue con el modo gratis. |
 | 🔴 **Sin conexión · reintentando** | No se pudo consultar Tree News; reintenta cada minuto. |
 
@@ -43,4 +43,4 @@ El panel de la derecha muestra los datos económicos de **EE.UU.** de impacto **
 - **Próximo dato fuerte**: cuenta regresiva al próximo evento de impacto alto, con el pronóstico y el dato anterior.
 - **Lista de la semana**, agrupada por día: hora, evento y cuánto falta. Los de impacto alto llevan un punto rojo.
 
-Funciona solo, sin configurar nada. Los datos vienen de ForexFactory y se renuevan cada hora; al pie se ve la hora de la última actualización. Ver [Calendario macro](../como-funciona/calendario-macro.md).
+Funciona solo, sin configurar nada. Los datos vienen de ForexFactory y se renuevan cada hora; al pie se ve la hora de la última actualización.

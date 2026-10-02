@@ -4,7 +4,7 @@ description: El indicador Extremos ejecutado en vivo sobre cualquier mercado de 
 
 # Indicador
 
-Muestra el gráfico de cualquier mercado de Hyperliquid con el indicador **Extremos** aplicado. Es el mismo Pine Script que se usa en TradingView, ejecutado dentro del navegador.
+Muestra el gráfico de cualquier mercado de Hyperliquid con el indicador **Extremos** aplicado. Se calcula en vivo, directamente en la terminal.
 
 ![Sección Indicador](../.gitbook/assets/indicador.png)
 
@@ -41,7 +41,7 @@ Qué niveles de entrada, stop y objetivo se dibujan:
 
 ## Interruptores
 
-Cada interruptor cambia una opción del Pine Script y el gráfico se recalcula al instante.
+Cada interruptor cambia una opción del indicador y el gráfico se recalcula al instante.
 
 | Interruptor | Encendido | Por defecto |
 |---|---|---|
@@ -55,7 +55,7 @@ Cada interruptor cambia una opción del Pine Script y el gráfico se recalcula a
 | **Div. OBV** | Marca divergencias del OBV (volumen). | Sí |
 
 {% hint style="warning" %}
-**Régimen diario** no está disponible en **6H** ni en **3D**: el motor que ejecuta Pine en el navegador no puede pedir datos de otra temporalidad en esas dos. El interruptor se desactiva solo.
+**Régimen diario** no está disponible en **6H** ni en **3D**: en esas dos temporalidades la terminal no puede combinar datos de otra temporalidad. El interruptor se desactiva solo.
 {% endhint %}
 
 ## Cuánto tarda

@@ -61,7 +61,7 @@ Encima de la fórmula se puede aplicar una **métrica**:
 | Métrica | Qué hace |
 |---|---|
 | **Ninguna** | Deja la fórmula tal cual. |
-| **RSI** | RSI de Wilder de la serie (como `ta.rsi` en TradingView). |
+| **RSI** | RSI de Wilder de la serie. |
 | **SMA** | Media móvil simple. |
 | **EMA** | Media móvil exponencial. |
 
@@ -88,5 +88,5 @@ El botón **Replay** muestra un control debajo del gráfico. Con **▶** se repr
 Arriba del gráfico, un titular resume el resultado (por ejemplo, *"PUMP lidera con +21,89 % y LIT queda último con −14,18 %"*) y debajo, la configuración elegida.
 
 {% hint style="info" %}
-Con muchos activos o ventanas largas, la terminal puede mostrar *"Esperando el límite de pedidos de Hyperliquid"*. Es normal: completa la carga sola en unos segundos. Ver [Fuentes de datos y límites](../como-funciona/fuentes-de-datos.md).
+Con muchos activos o ventanas largas, la terminal puede mostrar *"Esperando el límite de pedidos de Hyperliquid"*. Es normal: completa la carga sola en unos segundos.
 {% endhint %}

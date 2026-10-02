@@ -96,13 +96,13 @@ El número al lado (por ejemplo **2v**) indica hace cuántas velas ocurrió; sin
 Una señal en la **vela actual** puede desaparecer si la vela cierra distinto. Las alertas son para saber **dónde mirar**, no para entrar: abrí el activo en Aurora y seguí el [checklist](aurora.md).
 {% endhint %}
 
-## Cómo funciona
+## Bueno saber
 
-- Cada celda pide las últimas **300 velas** de su mercado. Las primeras sirven para que Aurora arranque asentado; se dibujan hasta las últimas 150, según el ancho de la celda.
-- Aurora y el Hull se calculan en la terminal con una **réplica en JavaScript** de los scripts de Pine, verificada contra ellos: el oscilador, los giros, las divergencias, los Order Blocks y el Hull dan los mismos valores.
-- Las velas se actualizan **en vivo** por una sola conexión WebSocket a Hyperliquid, con una suscripción por mercado.
-- Si la pestaña queda oculta más de un minuto, al volver se recargan todas las velas para no perder datos.
-- El Grid necesita conexión en vivo: en [modo demo](../como-funciona/modo-demo.md) muestra un aviso.
+- Cada celda muestra hasta las últimas **150 velas**, según su ancho.
+- Aurora y el Hull son los **mismos** que en la sección [Aurora](aurora.md): los valores, las señales y los Order Blocks coinciden.
+- Las velas se actualizan **en vivo**.
+- Si dejás la pestaña en segundo plano más de un minuto, al volver se recarga todo para no perder datos.
+- El Grid necesita conexión en vivo: en [modo demo](../modo-demo.md) muestra un aviso.
 
 ## Consejos
 

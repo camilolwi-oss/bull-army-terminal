@@ -95,7 +95,7 @@ Entradas y salidas netas diarias de los **ETF spot de Bitcoin de EE.UU.**, segú
 
 ## ATR · movimiento típico por día
 
-El **ATR** (Average True Range) de 14 períodos: cuánto se mueve BTC en una vela típica. Se calcula igual que `ta.atr` de TradingView.
+El **ATR** (Average True Range) de 14 períodos: cuánto se mueve BTC en una vela típica.
 
 - El número grande es el **ATR diario**, en dólares y en porcentaje del precio.
 - La barra dorada muestra **qué parte del rango diario normal ya se usó hoy** (rango de hoy ÷ ATR diario). Más del 100 %: hoy ya se movió más que un día típico.

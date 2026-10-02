@@ -38,7 +38,7 @@ Separarlos hace que las fórmulas sean fáciles de revisar y de probar sin abrir
 
 1. Se muestra la pantalla de acceso y se verifica el usuario contra la lista de accesos (`app.dat`). La terminal no arranca hasta que la sesión es válida.
 1. Se prueba la conexión con Hyperliquid (una consulta chica con 4 segundos de límite).
-2. Si responde: **modo en vivo**. Si no: **[modo demo](modo-demo.md)** con el aviso y el motivo.
+2. Si responde: **modo en vivo**. Si no: **[modo demo](../docs/modo-demo.md)** con el aviso y el motivo.
 3. Se abre la sección de la dirección (`#contexto` si no hay ninguna).
 4. Cada vez que abrís otra sección, se crea su módulo (solo la primera vez).
 
@@ -70,4 +70,4 @@ bull-army-terminal/
 └── .github/workflows/         Publicación automática en GitHub Pages
 ```
 
-Cómo se arma el archivo único a partir de estas piezas: ver [Modificar el código](../desarrollo/modificar-el-codigo.md).
+Cómo se arma el archivo único a partir de estas piezas: ver [Modificar el código](modificar-el-codigo.md).

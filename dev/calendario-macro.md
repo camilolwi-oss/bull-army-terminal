@@ -1,6 +1,6 @@
 # Calendario macro
 
-El panel **Macro esta semana** de la sección [Noticias](../secciones/noticias.md) muestra los datos económicos de la semana. Funciona solo: no hace falta configurar nada ni tener un servidor propio.
+El panel **Macro esta semana** de la sección [Noticias](../docs/secciones/noticias.md) muestra los datos económicos de la semana. Funciona solo: no hace falta configurar nada ni tener un servidor propio.
 
 ## De dónde sale
 
