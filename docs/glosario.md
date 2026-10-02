@@ -29,6 +29,7 @@
 | **R** / **R:R** | **R** es el riesgo de un trade (distancia de la entrada al stop). **2R** = ganar el doble de lo arriesgado. **R:R** es la relación riesgo/beneficio. |
 | **Range shift** | Cambio de régimen del RSI: rompe 60 hacia arriba o pierde 40 hacia abajo. |
 | **Régimen** | El rango en el que vive el RSI según la tendencia (Cardwell): 40–80 en tendencia alcista, 20–60 en bajista. |
+| **RRG** (*Relative Rotation Graph*) | Gráfico de rotación: ubica cada activo según su fuerza relativa contra una referencia (BTC) y el momentum de esa fuerza. Los activos suelen rotar en sentido horario. |
 | **RSI** (*Relative Strength Index*) | Oscilador de momentum de 0 a 100. |
 | **SMA / EMA** | Media móvil simple / exponencial. |
 | **SRSI** (*Stochastic RSI*) | El estocástico aplicado al RSI. Sus líneas %K y %D van de 0 a 1 (o de 0 a 100) y marcan los extremos de corto plazo. |
