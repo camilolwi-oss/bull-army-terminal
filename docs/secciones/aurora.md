@@ -1,5 +1,5 @@
 ---
-description: Velas con el oscilador Aurora y el Hull Suite, sobre cualquier mercado de Hyperliquid.
+description: Velas con el oscilador Aurora, el Hull Suite, el flujo de Binance (delta, CVD y open interest) y VWAP anclados.
 ---
 
 # Aurora
@@ -8,6 +8,7 @@ Muestra las velas de cualquier mercado de Hyperliquid con dos indicadores de Bul
 
 - **Aurora**, en un panel debajo del precio: cinco osciladores, flujo de dinero, volumen, divergencias y Order Blocks en una sola lectura.
 - **Hull Suite** de InSilico, sobre las velas: la tendencia en verde o rojo.
+- **Flujo de Binance**: delta de volumen, CVD y open interest en paneles propios, con flechas y divergencias sobre el precio, y **VWAP** diario, semanal, mensual, trimestral y anual.
 
 ![Sección Aurora](../.gitbook/assets/aurora.png)
 
@@ -44,6 +45,19 @@ Funcionan igual que en la sección [Indicador](indicador.md): el buscador tiene 
 | **Solo OB con confluencia** | Oculta los OB que no nacieron en zona extrema. |
 | **Glow** | El brillo alrededor de la línea principal. |
 | **Panel de lectura** | El cuadro con el resumen del estado actual. |
+
+### Flujo · Binance y VWAP
+
+| Control | Qué muestra |
+|---|---|
+| **Delta** | Panel con el delta de volumen de cada vela. |
+| **CVD** | Panel con el delta acumulado. |
+| **Open interest** | Panel con los contratos abiertos. |
+| **Flechas delta/OI** | Las flechas verdes y rojas sobre las velas. |
+| **Divergencias CVD** | Las etiquetas *Absorción* y *Agotamiento* sobre las velas. |
+| **VWAP** | Diario, Semanal, Mensual, Trimestral y Anual: cada botón prende su línea, con su color. |
+
+Todo se explica en [Flujo de Binance](#flujo-de-binance). Los paneles también se pueden cerrar desde la **✕** de su leyenda: el interruptor se apaga solo.
 
 ## Cómo se lee
 
@@ -130,6 +144,62 @@ El Hull aporta la **estructura de tendencia** que Aurora no mide:
 - **Hull verde**: buscá contexto de compra. Priorizá OB de demanda, triángulos cian y divergencias alcistas.
 - **Hull rojo**: buscá contexto de venta. Priorizá OB de oferta, triángulos rosas y divergencias bajistas.
 - Una señal de Aurora **contra el color del Hull** suele ser solo un retroceso.
+
+## Flujo de Binance
+
+![Aurora con delta, CVD, open interest, flechas y VWAP](../.gitbook/assets/aurora-flujo.png)
+
+### De dónde salen los datos
+
+Hyperliquid no publica qué parte del volumen fue compra o venta agresiva ni la historia del open interest. Por eso el **delta, el CVD y el open interest** se toman de **Binance Futures**, el mercado con más volumen:
+
+- Aparecen **solo en los mercados que también cotizan en Binance Futures** (BTC, ETH, SOL y la mayoría de los perps). En los demás (HIP-3, spot, listados nuevos) esos paneles no se muestran y la nota debajo del gráfico lo avisa.
+- Las velas siguen siendo las de Hyperliquid; el flujo de Binance se acomoda a cada vela.
+- El **VWAP** se calcula con las velas de Hyperliquid, así que funciona en **cualquier mercado**.
+
+### Los paneles
+
+| Panel | Qué muestra |
+|---|---|
+| **Delta** | Compras agresivas menos ventas agresivas de cada vela (en la moneda del mercado). Verde: dominaron las compras; rojo: las ventas. |
+| **CVD** | El delta acumulado. Si sube, dominan los compradores agresivos; si baja, los vendedores. Importa **su dirección**, no el número. |
+| **Open interest** | Contratos abiertos al cierre de cada vela. Sube: entran posiciones nuevas. Baja: se cierran posiciones. |
+
+### Las flechas
+
+Se marcan en velas **cerradas** con **más del doble del volumen promedio** de las 20 anteriores:
+
+| Flecha | Condición | Lectura |
+|---|---|---|
+| 🟢 **Verde** (debajo de la vela) | Delta **negativo** y open interest que **sube** | Venta agresiva que abre shorts con mucho volumen. Si el precio no cae, esos shorts quedan atrapados. |
+| 🔴 **Roja** (encima de la vela) | Delta **positivo** y open interest que **baja** | La compra viene de shorts que cierran, no de longs nuevos. Suba sin compradores reales detrás. |
+
+### Las divergencias del CVD
+
+Comparan dos giros seguidos del precio con el CVD en esos mismos giros. Se marcan **solo cuando Aurora está en su extremo**: en sobrecompra (+50) para las bajistas y en sobreventa (−50) para las alcistas. Las demás se omiten.
+
+| Etiqueta | Precio | CVD | Lectura |
+|---|---|---|---|
+| 🔴 **Absorción** (arriba) | Máximo más bajo | Máximo más alto | Los compradores empujan y el precio no sube: alguien vende contra ellos. |
+| 🔴 **Agotamiento** (arriba) | Máximo más alto | Máximo más bajo | La suba sigue, pero con menos compradores agresivos. |
+| 🟢 **Absorción** (abajo) | Mínimo más alto | Mínimo más bajo | Los vendedores empujan y el precio no baja: alguien compra contra ellos. |
+| 🟢 **Agotamiento** (abajo) | Mínimo más bajo | Mínimo más alto | La caída sigue, pero con menos vendedores agresivos. |
+
+Pasá el mouse sobre una etiqueta para ver su explicación.
+
+{% hint style="info" %}
+**Nada se repinta.** Las flechas y las divergencias usan solo velas cerradas. Una divergencia necesita **3 velas cerradas después del giro** para confirmarlo: aparece con ese atraso, en la vela del giro, y una vez dibujada no se mueve ni desaparece.
+{% endhint %}
+
+### Los VWAP
+
+El precio promedio ponderado por volumen desde el inicio del **día, semana (lunes), mes, trimestre o año**, en hora UTC. Funcionan como imanes y como soporte o resistencia: el precio arriba del VWAP muestra control comprador en ese período; abajo, vendedor. Un VWAP solo aparece en temporalidades más cortas que su período (el diario no se muestra en velas de 1 día).
+
+### Límites
+
+- En **1 minuto** Binance no da open interest por vela: la línea usa los datos de 5 minutos y **no hay flechas**.
+- Binance guarda el open interest de los **últimos 30 días**: en temporalidades altas, las velas más viejas no tienen OI ni flechas.
+- Las velas de 3 días y 1 semana de Binance no coinciden con las de Hyperliquid: se arman sumando velas diarias.
 
 ## Checklist para operar
 

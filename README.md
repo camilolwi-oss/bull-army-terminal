@@ -6,7 +6,7 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 |---|---|
 | **Contexto** | El estado del mercado de un vistazo: sesgo long/short de BTC, volatilidad, amplitud, alts contra BTC, apalancamiento, gap de CME, flujos de ETF, ATR y horarios de movimiento. |
 | **Indicador** | El indicador **Extremos** (Pine Script) ejecutado en el navegador sobre cualquier mercado de Hyperliquid, con señales, niveles de entrada/stop/TP e historial de trades. |
-| **Aurora** | Velas con el oscilador **Aurora** (cinco osciladores, flujo, volumen, divergencias y Order Blocks) y el **Hull Suite** de InSilico. |
+| **Aurora** | Velas con el oscilador **Aurora** (cinco osciladores, flujo, volumen, divergencias y Order Blocks), el **Hull Suite** de InSilico, el flujo de **Binance Futures** (delta, CVD y open interest, con flechas delta/OI y divergencias CVD sin repintar) y **VWAP** diario, semanal, mensual, trimestral y anual. |
 | **Grid** | Screener de 2×2 a 5×5 con velas, **Aurora** y **Hull** en vivo por celda, activos a elección (perps, spot o HIP-3) y alertas visuales. |
 | **Spaghetti** | Todos los activos de Hyperliquid en un mismo gráfico para ver quién lidera y quién se queda. |
 | **Liquidaciones** | Mapa de los precios de liquidación de las cuentas más grandes de Hyperliquid. |
@@ -56,7 +56,8 @@ bull-army-terminal/
 │   │   ├── acceso/            Login, sesión y panel de Admin
 │   │   ├── app.js             Arranque, navegación, ajustes, buscador de mercados y sección Indicador
 │   │   ├── contexto/          calc.js (cálculos puros) · ui.js (interfaz y datos)
-│   │   ├── aurora/            calc.js (réplica de Aurora y el Hull) · ui.js (gráfico)
+│   │   ├── aurora/            calc.js (réplica de Aurora y el Hull) · flujo.js (delta, CVD, OI, señales, VWAP)
+│   │   │                      flujo-vela.js (datos de Binance e indicadores nativos de Vela) · ui.js (gráfico)
 │   │   ├── grid/              ui.js (screener en grilla)
 │   │   ├── spaghetti/         calc.js · ui.js
 │   │   ├── liquidaciones/     calc.js · source.js (fuente de datos) · ui.js

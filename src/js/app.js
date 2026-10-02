@@ -402,7 +402,7 @@
     if (!mods[id]) {
       if (id === 'ctx') mods.ctx = window.createContext({ live: state.live, hlPost, snapBtc });
       if (id === 'grid') mods.grid = window.createGrid({ live: state.live, CAT, loadCatalog, hlPost, makePicker, labelOf, openAurora });
-      if (id === 'aur') mods.aur = window.createAurora({ live: state.live, CAT, loadCatalog, loadLibs, makeProvider, makePicker, labelOf, aliasKey, THEME, TF_LABEL, snapBars, hasSnap: (tf) => !!SNAP[tf], fmtDate });
+      if (id === 'aur') mods.aur = window.createAurora({ live: state.live, hlPost, CAT, loadCatalog, loadLibs, makeProvider, makePicker, labelOf, aliasKey, THEME, TF_LABEL, snapBars, hasSnap: (tf) => !!SNAP[tf], fmtDate });
       if (id === 'spag') mods.spag = window.createSpaghetti({ live: state.live, CAT, loadCatalog, hlPost, snapshot: () => JSON.parse($('spagSnap').textContent) });
       if (id === 'liq') mods.liq = window.createLiqMap({ live: state.live, hlPost, snapshot: () => JSON.parse($('liqSnap').textContent) });
       if (id === 'news') mods.news = window.createNews({ settings, openSettings });

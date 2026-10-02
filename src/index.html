@@ -313,6 +313,22 @@
     <label class="tog"><input type="checkbox" id="auGlow" checked> Glow</label>
     <label class="tog"><input type="checkbox" id="auTbl" checked> Panel de lectura</label>
   </div>
+  <div class="controls" role="group" aria-label="Flujo de Binance y VWAP">
+    <span class="lbl-row">Flujo · Binance</span>
+    <label class="tog"><input type="checkbox" id="auDelta" checked> Delta</label>
+    <label class="tog"><input type="checkbox" id="auCvd" checked> CVD</label>
+    <label class="tog"><input type="checkbox" id="auOi" checked> Open interest</label>
+    <label class="tog"><input type="checkbox" id="auArrows" checked> Flechas delta/OI</label>
+    <label class="tog"><input type="checkbox" id="auCvdDiv" checked> Divergencias CVD</label>
+    <div class="vwap-chips" id="auVwap" role="group" aria-label="VWAP anclados">
+      <span class="lbl">VWAP</span>
+      <label class="chipchk d"><input type="checkbox" value="D" checked><span>Diario</span></label>
+      <label class="chipchk w"><input type="checkbox" value="W"><span>Semanal</span></label>
+      <label class="chipchk m"><input type="checkbox" value="M"><span>Mensual</span></label>
+      <label class="chipchk q"><input type="checkbox" value="Q"><span>Trimestral</span></label>
+      <label class="chipchk y"><input type="checkbox" value="Y"><span>Anual</span></label>
+    </div>
+  </div>
 
   <div class="chartbox">
     <div id="auChart"></div>
@@ -634,6 +650,8 @@
 <script type="text/plain" data-app="js/contexto/ui.js"></script>
 <script type="text/plain" data-app="js/noticias/ui.js"></script>
 <script type="text/plain" data-app="js/aurora/calc.js"></script>
+<script type="text/plain" data-app="js/aurora/flujo.js"></script>
+<script type="text/plain" data-app="js/aurora/flujo-vela.js"></script>
 <script type="text/plain" data-app="js/aurora/ui.js"></script>
 <script type="text/plain" data-app="js/grid/ui.js"></script>
 <script type="text/plain" data-app="js/app.js"></script>

@@ -75,6 +75,16 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .chartbox{position:relative;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--bg)}
 #chart{height:clamp(560px,78vh,920px)}
 #auChart{height:clamp(640px,86vh,1000px)}
+#auChart.flow{height:clamp(820px,118vh,1400px)}
+.vwap-chips{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+.vwap-chips .lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);margin-right:2px}
+.chipchk{--c:var(--gold);cursor:pointer;user-select:none}
+.chipchk input{position:absolute;opacity:0;pointer-events:none}
+.chipchk span{display:inline-block;padding:5px 10px;border-radius:5px;border:1px solid color-mix(in srgb,var(--c) 55%,transparent);color:var(--c);font:600 12px/1 var(--f-mono);transition:background .15s,color .15s}
+.chipchk input:checked+span{background:var(--c);color:#0B0B0E}
+.chipchk input:focus-visible+span{outline:2px solid var(--c);outline-offset:2px}
+.chipchk input:disabled+span{opacity:.35;cursor:not-allowed}
+.chipchk.d{--c:#C9A227}.chipchk.w{--c:#29E6C9}.chipchk.m{--c:#9085E9}.chipchk.q{--c:#FF4F7B}.chipchk.y{--c:#ECE9E2}
 .veil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);font-family:var(--f-mono);font-size:13px;color:var(--muted);letter-spacing:.04em;transition:opacity .3s}
 .veil.off{opacity:0;pointer-events:none}
 .veil .err{color:var(--bear);max-width:60ch;padding:0 20px;text-align:center}
