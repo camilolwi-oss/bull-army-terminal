@@ -4,7 +4,7 @@ description: Guía de la terminal de trading de Bull Army sobre datos en vivo de
 
 # Bull Army Terminal
 
-La **Bull Army Terminal** reúne en una sola pantalla todo lo que un trader de Bull Army mira antes de operar: el contexto del mercado, el indicador **Extremos**, **Aurora**, un screener de varios mercados, la comparación entre activos, el mapa de liquidaciones y las noticias. Todo con datos en vivo de [Hyperliquid](https://hyperliquid.xyz).
+La **Bull Army Terminal** reúne en una sola pantalla todo lo que un trader de Bull Army mira antes de operar: el contexto del mercado, el indicador **Extremos**, **Aurora**, un screener de varios mercados, el **order flow**, la comparación entre activos, el mapa de liquidaciones y las noticias. Todo con datos en vivo de [Hyperliquid](https://hyperliquid.xyz).
 
 ![Sección Contexto de la terminal](.gitbook/assets/contexto.png)
 
@@ -51,6 +51,7 @@ En el menú lateral están las secciones. Cada una tiene su propia dirección, a
 | [**Indicador**](secciones/indicador.md) | Buscar entradas con el indicador Extremos sobre cualquier mercado de Hyperliquid. |
 | [**Aurora**](secciones/aurora.md) | Leer el contexto con el oscilador Aurora (cinco osciladores, flujo, volumen, divergencias y Order Blocks) y el Hull Suite sobre las velas. |
 | [**Grid**](secciones/grid.md) | Seguir de 4 a 25 mercados a la vez, con alertas visuales cuando Aurora marca algo. |
+| [**Order Flow**](secciones/orderflow.md) | Ver dónde compran y venden agresivamente dentro de cada vela (footprint), con CVD, open interest, naked POC y VWAP anclados. |
 | [**Spaghetti**](secciones/spaghetti.md) | Comparar todos los activos en un mismo gráfico: quién lidera y quién se queda. |
 | [**Liquidaciones**](secciones/liquidaciones.md) | Ver dónde se concentran los precios de liquidación de las cuentas grandes. |
 | [**Noticias**](secciones/noticias.md) | Enterarte de lo que mueve el mercado y de los datos macro de la semana. |
