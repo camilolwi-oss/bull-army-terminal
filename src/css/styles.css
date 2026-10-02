@@ -52,11 +52,11 @@ input[type=text]{width:11ch}
 button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .spacer{flex:1}
 .picker{position:relative}
-#symBtn,#auSymBtn{display:inline-flex;align-items:center;gap:10px;font:600 13px/1 var(--f-mono);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:0 10px;height:33px;min-width:150px;justify-content:space-between;cursor:pointer}
-#symBtn:disabled,#auSymBtn:disabled{color:var(--faint);cursor:not-allowed}
-#symBtn .caret,#auSymBtn .caret{color:var(--gold)}
+#symBtn,#auSymBtn,#nvSymBtn{display:inline-flex;align-items:center;gap:10px;font:600 13px/1 var(--f-mono);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:0 10px;height:33px;min-width:150px;justify-content:space-between;cursor:pointer}
+#symBtn:disabled,#auSymBtn:disabled,#nvSymBtn:disabled{color:var(--faint);cursor:not-allowed}
+#symBtn .caret,#auSymBtn .caret,#nvSymBtn .caret{color:var(--gold)}
 .pop{position:absolute;z-index:30;top:calc(100% + 6px);left:0;width:min(560px,calc(100vw - 2*var(--gutter)));background:var(--surface);border:1px solid var(--line);border-radius:4px;box-shadow:0 18px 40px rgba(0,0,0,.55);padding:10px;display:flex;flex-direction:column;gap:8px}
-.pop #symQ,.pop #auSymQ,.pop #gdSymQ{width:100%;height:36px;font-size:14px}
+.pop #symQ,.pop #auSymQ,.pop #gdSymQ,.pop #nvSymQ{width:100%;height:36px;font-size:14px}
 .filt button{padding:7px 10px;font-size:12px}
 .rows-head,.rows li{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) 64px minmax(0,.9fr);gap:10px;align-items:center}
 .rows-head{font:11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:0 8px}
@@ -75,6 +75,26 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
 .chartbox{position:relative;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--bg)}
 #chart{height:clamp(560px,78vh,920px)}
 #auChart{height:clamp(640px,86vh,1000px)}
+#nvChart{height:clamp(640px,84vh,980px)}
+
+.nv-cut{font:12px var(--f-mono);color:var(--muted)}.nv-cut b{color:var(--gold)}
+.nv-cards{display:grid;grid-template-columns:1fr 1fr 2fr;gap:10px;margin:12px 0}
+.nv-card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.nv-k{font:11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.nv-card b{font:600 15px var(--f-mono)}.nv-card span{font-size:12px;color:var(--muted)}
+.nv-chips{display:flex;gap:6px;flex-wrap:wrap}.nv-chips i{font:600 11px var(--f-mono);font-style:normal;border:1px solid var(--line);border-radius:3px;padding:2px 6px;color:var(--fg)}
+.nv-chips .s-alta{color:var(--gold);border-color:var(--gold)}.nv-chips .s-media{color:#29E6C9;border-color:#29E6C9}
+.nv-stat{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.nv-stat span{display:flex;flex-direction:column;gap:2px;font-size:11px}
+.nv .sup{color:#29E6C9}.nv .res{color:#FF4F7B}.nv .up{color:#1DB978}.nv .dn{color:#D8344F}.nv .gold{color:var(--gold)}.nv .dim{color:var(--faint)}
+.nv-empty{margin:0;font-size:12px;color:var(--faint)}
+.nv-tables{display:grid;grid-template-columns:1fr 1.3fr;gap:10px}
+.nv-tbl{background:var(--surface);border:1px solid var(--line);border-radius:4px;overflow:auto;max-height:420px}
+.nv-tbl h2{font:600 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin:0;padding:10px 12px;border-bottom:1px solid var(--line)}
+.nv-tbl table{width:100%;border-collapse:collapse;font:12px var(--f-mono)}
+.nv-tbl th{text-align:left;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:7px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface)}
+.nv-tbl td{padding:6px 10px;border-bottom:1px solid color-mix(in srgb,var(--line) 50%,transparent);white-space:nowrap}
+.nv-tag{font-size:10px;border:1px solid currentColor;border-radius:3px;padding:1px 6px}
+@media (max-width:1000px){.nv-cards{grid-template-columns:1fr 1fr}.nv-wide{grid-column:span 2}.nv-tables{grid-template-columns:1fr}.nv-stat{grid-template-columns:repeat(3,1fr)}}
 #auChart.flow{height:clamp(820px,118vh,1400px)}
 .vwap-chips{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
 .vwap-chips .lbl{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--muted);margin-right:2px}

@@ -11,6 +11,7 @@
 | **CCI** (*Commodity Channel Index*) | Oscilador que mide cuánto se aleja el precio de su media. Uno de los cinco de Aurora. |
 | **CHoCH** (*Change of Character*) | Primer quiebre de estructura en contra de la tendencia; suele usarse como confirmación de giro en temporalidad menor. |
 | **CMF** (*Chaikin Money Flow*) | Flujo de dinero: dónde cierran las velas dentro de su rango, ponderado por volumen. Es la línea de flujo de Aurora. |
+| **Confluencia** | Varios niveles (de Fibonacci, en Niveles) que caen en la misma zona de precio. Más niveles = zona más fuerte. |
 | **Cross / Isolated** | Tipos de margen. En **cross**, todo el saldo de la cuenta respalda la posición. En **isolated**, solo el margen asignado a esa posición. |
 | **CVD** (*Cumulative Volume Delta*) | El delta acumulado vela a vela: si sube dominan las compras agresivas; si baja, las ventas. |
 | **Delta** | Compras agresivas menos ventas agresivas (operaciones que toman la liquidez del libro) en una vela. |
@@ -21,11 +22,13 @@
 | **Gap de CME** | Diferencia de precio entre el cierre del viernes y la reapertura del domingo de los futuros de Bitcoin de CME. |
 | **HIP-3** | Mercados perpetuos de Hyperliquid creados por terceros, distintos de los perps principales. |
 | **Hull Suite** | Indicador de tendencia de InSilico basado en la media móvil de Hull. Verde: tendencia alcista. Rojo: bajista. |
+| **Limpieza** (de banda) | El precio atraviesa una zona entera, cierra del otro lado y vuelve a entrar. Señal de Niveles con stop detrás del barrido. |
 | **MFI** (*Money Flow Index*) | Un RSI que pondera el precio por el volumen. Uno de los cinco de Aurora. |
 | **OBV** (*On-Balance Volume*) | Volumen acumulado: suma el volumen de las velas alcistas y resta el de las bajistas. |
 | **Order Block** (OB) | Zona de la última vela contraria antes de un impulso que rompe la estructura. De **demanda** (alcista) o de **oferta** (bajista). |
 | **Open interest** | Valor total de las posiciones abiertas en un mercado de futuros. |
 | **Perp** (perpetuo) | Futuro sin vencimiento. Es el mercado principal de Hyperliquid. |
+| **Pinchazo** | El precio toca una zona y cierra afuera, del lado del que venía. Señal de Niveles con stop detrás de la mecha. |
 | **R** / **R:R** | **R** es el riesgo de un trade (distancia de la entrada al stop). **2R** = ganar el doble de lo arriesgado. **R:R** es la relación riesgo/beneficio. |
 | **Range shift** | Cambio de régimen del RSI: rompe 60 hacia arriba o pierde 40 hacia abajo. |
 | **Régimen** | El rango en el que vive el RSI según la tendencia (Cardwell): 40–80 en tendencia alcista, 20–60 en bajista. |

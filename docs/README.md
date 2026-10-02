@@ -4,7 +4,7 @@ description: Guía de la terminal de trading de Bull Army sobre datos en vivo de
 
 # Bull Army Terminal
 
-La **Bull Army Terminal** reúne en una sola pantalla todo lo que un trader de Bull Army mira antes de operar: el contexto del mercado, el indicador **Extremos**, **Aurora**, un screener de varios mercados, un scanner de reversiones, la comparación entre activos, el mapa de liquidaciones y las noticias. Todo con datos en vivo de [Hyperliquid](https://hyperliquid.xyz).
+La **Bull Army Terminal** reúne en una sola pantalla todo lo que un trader de Bull Army mira antes de operar: el contexto del mercado, el indicador **Extremos**, **Aurora**, un screener de varios mercados, un scanner de reversiones, zonas de confluencia, la comparación entre activos, el mapa de liquidaciones y las noticias. Todo con datos en vivo de [Hyperliquid](https://hyperliquid.xyz).
 
 ![Sección Contexto de la terminal](.gitbook/assets/contexto.png)
 
@@ -52,6 +52,7 @@ En el menú lateral están las secciones. Cada una tiene su propia dirección, a
 | [**Aurora**](secciones/aurora.md) | Leer el contexto con el oscilador Aurora (cinco osciladores, flujo, volumen, divergencias y Order Blocks) y el Hull Suite sobre las velas. |
 | [**Grid**](secciones/grid.md) | Seguir de 4 a 25 mercados a la vez, con alertas visuales cuando Aurora marca algo. |
 | [**Scanner**](secciones/scanner.md) | Ver en un plano cuáles de todos los perps de crypto y HIP-3 están estirados y empezando a girar: los mejores momentos de reversión. |
+| [**Niveles**](secciones/niveles.md) | Zonas de confluencia Fibonacci ancladas en extremos de Aurora, con línea de corte, señales de pinchazo y limpieza y su contador histórico. |
 | [**Spaghetti**](secciones/spaghetti.md) | Comparar todos los activos en un mismo gráfico: quién lidera y quién se queda. |
 | [**Liquidaciones**](secciones/liquidaciones.md) | Ver dónde se concentran los precios de liquidación de las cuentas grandes. |
 | [**Noticias**](secciones/noticias.md) | Enterarte de lo que mueve el mercado y de los datos macro de la semana. |

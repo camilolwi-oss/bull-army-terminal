@@ -9,6 +9,7 @@
 * [Aurora](secciones/aurora.md)
 * [Grid](secciones/grid.md)
 * [Scanner](secciones/scanner.md)
+* [Niveles](secciones/niveles.md)
 * [Spaghetti](secciones/spaghetti.md)
 * [Liquidaciones](secciones/liquidaciones.md)
 * [Noticias](secciones/noticias.md)

@@ -40,6 +40,7 @@
     <li><a class="side-item" href="#aurora" data-v="aur" title="Aurora"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 18h18"/><path d="M6.5 18a5.5 5.5 0 0 1 11 0"/><path d="M12 5v3M4.9 9.9l2.1 2.1M19.1 9.9L17 12M2 14h2M20 14h2"/></svg><span class="lab">Aurora</span></a></li>
     <li><a class="side-item" href="#grid" data-v="grid" title="Grid"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg><span class="lab">Grid</span></a></li>
     <li><a class="side-item" href="#scanner" data-v="scan" title="Scanner"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><circle cx="7" cy="7.5" r="1.6"/><circle cx="16.5" cy="16" r="1.6"/><circle cx="17" cy="6.5" r="1"/><circle cx="7.5" cy="16.5" r="1"/></svg><span class="lab">Scanner</span></a></li>
+    <li><a class="side-item" href="#niveles" data-v="niv" title="Niveles"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg><span class="lab">Niveles</span></a></li>
     <li><a class="side-item" href="#spaghetti" data-v="spag" title="Spaghetti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 9-9"/><path d="M3 11l6 3 5-5 7 5"/></svg><span class="lab">Spaghetti</span></a></li>
     <li><a class="side-item" href="#liquidaciones" data-v="liq" title="Liquidaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M9 20V4M14 20v-8M19 20v-5"/></svg><span class="lab">Liquidaciones</span></a></li>
     <li><a class="side-item" href="#noticias" data-v="news" title="Noticias"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="lab">Noticias</span></a></li>
@@ -458,6 +459,61 @@
   </div>
   </section>
 
+<section id="panel-niv" class="nv" aria-labelledby="h-niv" hidden>
+  <header class="view-head">
+    <h1 id="h-niv">Niveles</h1>
+    <p class="sp-cap"><b>Zonas de confluencia Fibonacci, solo de impulsos que terminaron con Aurora en sobrecompra o sobreventa.</b> Más puntos = más niveles en la misma zona. Mové el corte para ver qué sabía el sistema en una fecha.</p>
+  </header>
+  <div class="controls" role="group" aria-label="Mercado y temporalidad">
+    <div class="ctl picker" id="nvSymCtl">
+      <span class="lbl">Mercado</span>
+      <button type="button" id="nvSymBtn" class="sym-btn" aria-haspopup="listbox" aria-expanded="false"><span id="nvSymLbl">BTC-PERP</span><span class="caret" aria-hidden="true">▾</span></button>
+      <div class="pop" id="nvPop" hidden>
+        <input type="text" id="nvSymQ" class="sym-q" role="combobox" aria-controls="nvSymList" aria-expanded="true" aria-autocomplete="list" placeholder="Buscar entre todos los mercados…" aria-label="Buscar mercado" autocomplete="off" spellcheck="false">
+        <div class="seg filt" id="nvSymF">
+          <button type="button" data-g="all" aria-pressed="true">Todos</button><button type="button" data-g="perp">Perps</button><button type="button" data-g="spot">Spot</button><button type="button" data-g="hip3">HIP-3</button>
+        </div>
+        <div class="rows-head"><span>Mercado</span><span>Precio</span><span>24h</span><span>Volumen 24h</span></div>
+        <ul class="rows" id="nvSymList" role="listbox" aria-label="Mercados de Hyperliquid"></ul>
+        <p class="pop-foot" id="nvSymCount">Cargando mercados…</p>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lbl">Temporalidad</span>
+      <div class="seg scroll" id="nvTf">
+        <button type="button" data-tf="1D">1D</button><button type="button" data-tf="240">4H</button><button type="button" data-tf="60" aria-pressed="true">1H</button><button type="button" data-tf="15">15m</button><button type="button" data-tf="5">5m</button>
+      </div>
+    </div>
+    <label class="ctl"><span class="lbl">Puntos mínimos</span>
+      <select id="nvMin"><option value="6">6</option><option value="8">8</option><option value="10" selected>10</option><option value="12">12</option><option value="15">15</option></select>
+    </label>
+    <button type="button" class="btn" id="nvToday">Hoy</button>
+  </div>
+  <div class="controls" role="group" aria-label="Opciones">
+    <label class="tog"><input type="checkbox" id="nvHide" checked> Ocultar trabajadas</label>
+    <label class="tog"><input type="checkbox" id="nvMtf" checked> Zonas de 1D</label>
+    <label class="tog"><input type="checkbox" id="nvSig" checked> Señales</label>
+    <label class="tog"><input type="checkbox" id="nvAur" checked> Panel Aurora</label>
+    <span class="spacer"></span>
+    <span class="nv-cut" id="nvCut"></span>
+  </div>
+  <div class="chartbox">
+    <div id="nvChart"></div>
+    <div class="veil" id="nvVeil"><span id="nvVeilTxt">Cargando…</span></div>
+  </div>
+  <p class="note" id="nvNote"></p>
+  <div class="nv-cards">
+    <div class="nv-card" id="nvActive"></div>
+    <div class="nv-card" id="nvReact"></div>
+    <div class="nv-card nv-wide" id="nvStats"></div>
+  </div>
+  <div class="nv-tables">
+    <div class="nv-tbl"><h2>Zonas al corte</h2><table><thead><tr><th>Tipo</th><th>Rango</th><th>Pts</th><th>Fibo</th><th>Estado</th><th>Dist.</th></tr></thead><tbody id="nvZones"></tbody></table></div>
+    <div class="nv-tbl"><h2>Últimas señales</h2><table><thead><tr><th>Vela</th><th>Señal</th><th>Entrada</th><th>Stop</th><th>Objetivo</th><th>R:R</th><th>Resultado</th></tr></thead><tbody id="nvSigs"></tbody></table></div>
+  </div>
+  <p class="note">Pinchazo (P): toca la zona y cierra afuera; stop detrás de la mecha. Limpieza (L): atraviesa la zona entera y vuelve; stop detrás del barrido. Objetivo: la zona opuesta más cercana. Verde = llegó al objetivo, rojo = stop, dorado = abierta. Material educativo, no es consejo financiero.</p>
+  </section>
+
   <section id="panel-spag" class="spag" aria-labelledby="h-spag" hidden>
     <header class="view-head">
       <h1 id="h-spag">Spaghetti</h1>
@@ -701,6 +757,8 @@
 <script type="text/plain" data-app="js/grid/ui.js"></script>
 <script type="text/plain" data-app="js/scanner/calc.js"></script>
 <script type="text/plain" data-app="js/scanner/ui.js"></script>
+<script type="text/plain" data-app="js/niveles/calc.js"></script>
+<script type="text/plain" data-app="js/niveles/ui.js"></script>
 <script type="text/plain" data-app="js/app.js"></script>
 <script src="js/loader.js"></script>
 </body>
