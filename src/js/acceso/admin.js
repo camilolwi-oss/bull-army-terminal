@@ -247,7 +247,9 @@ window.BAAdmin = (() => {
       const content = btoa(unescape(encodeURIComponent(await serialize())));
       const expected = access.updated;
       const put = await fetch(api, { method: 'PUT', headers, body: JSON.stringify({ message: 'Accesos: actualización desde el panel de Admin', content, sha, branch: BRANCH }) });
-      if (!put.ok) throw new Error(put.status === 409 ? 'el archivo cambió en GitHub mientras editabas; recargá el panel.' : `GitHub respondió ${put.status} al guardar.`);
+      if (!put.ok) throw new Error(put.status === 409 ? 'el archivo cambió en GitHub mientras editabas; recargá el panel.'
+        : put.status === 403 || put.status === 404 ? 'el token puede leer el repo pero no escribir en él: en GitHub, editá el token y poné Contents en "Read and write" (o elegí el repo bull-army-terminal en Repository access).'
+        : `GitHub respondió ${put.status} al guardar.`);
       dirty = Math.max(0, dirty - sent);
       pub = { state: 'waiting', msg: '' }; publishing = false; render(flash);
       if (again || dirty) { again = false; return publish(token); }
