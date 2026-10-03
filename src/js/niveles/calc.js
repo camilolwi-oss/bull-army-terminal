@@ -145,6 +145,8 @@
   //  · Pinchazo: la vela entra en la zona y cierra afuera, del lado del que vino.
   //  · Limpieza: el precio cerró del otro lado de la zona y vuelve a cerrar adentro o del lado original.
   // Una señal por zona: la de su primera visita después de formarse (la que más respeta el precio).
+  // Con `o.hull` (serie del Hull Suite) se descartan las señales contra su tendencia: compras solo con el
+  // Hull alcista (hull > hull de 2 velas atrás, la misma regla que colorea el Hull) y ventas solo bajista.
   // Stop detrás del extremo (mecha o barrido) y objetivo en la zona opuesta más cercana (o 3R si no hay).
   function signals(k, imps, P, o, minPts) {
     const out = [], confs = [...new Set(imps.map((m) => m.conf))].sort((a, b) => a - b);
@@ -180,6 +182,10 @@
         if (!kind) { if (c.l <= z.hi && c.h >= z.lo && !swept.has(z.id + 'd') && !swept.has(z.id + 'u')) used.add(z.id); continue; }
         const long = stop < c.c, entry = c.c, risk = Math.abs(entry - stop);
         if (!(risk > 0)) continue;
+        if (o.hull) {
+          const h = o.hull[i], h2 = o.hull[i - 2];
+          if (!ok(h) || !ok(h2) || (long ? h <= h2 : h >= h2)) { used.add(z.id); continue; }   // contra el Hull: se descarta (la visita cuenta igual)
+        }
         const opp = zones.filter((x) => (long ? x.lo > entry + risk * 0.5 : x.hi < entry - risk * 0.5)).sort((a, b) => (long ? a.lo - b.lo : b.hi - a.hi))[0];
         const target = opp ? (long ? opp.lo : opp.hi) : entry + (long ? 3 : -3) * risk;
         out.push({ i, t: c.t, kind, long, entry, stop, target, rr: Math.abs(target - entry) / risk, zone: { lo: z.lo, hi: z.hi, pts: z.pts }, ...outcome(k, i, long, entry, stop, target, o.horizon) });

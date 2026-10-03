@@ -5,7 +5,7 @@ window.createNiveles = function createNiveles(env) {
   'use strict';
   const $ = (id) => document.getElementById(id);
   const N = window.NivelesMath, A = window.AuroraMath;
-  const AURORA = $('auroraPine').textContent;
+  const AURORA = $('auroraPine').textContent, HULL = $('hullPine').textContent;
   const TFS = { '1D': '1d', 240: '4h', 60: '1h', 15: '15m', 5: '5m' };
   const IV_MS = { '1d': 864e5, '4h': 144e5, '1h': 36e5, '15m': 9e5, '5m': 3e5 };
   const C = { sup: '#29E6C9', res: '#FF4F7B', gold: '#C9A227', grey: '#5B5953', up: '#1DB978', dn: '#D8344F', fg: '#ECE9E2', txt: '#0B0B0E' };
@@ -15,11 +15,11 @@ window.createNiveles = function createNiveles(env) {
     get() { try { return JSON.parse(localStorage.getItem('baNiveles')) || {}; } catch { return {}; } },
     set(v) { try { localStorage.setItem('baNiveles', JSON.stringify(v)); } catch {} }
   };
-  const st = { symbol: 'BTC', tf: '60', minPts: 10, hideWorked: true, mtf: true, sigs: true, aurora: true, ...store.get() };
+  const st = { symbol: 'BTC', tf: '60', minPts: 10, hideWorked: true, mtf: true, sigs: true, aurora: true, hull: true, ...store.get() };
   if (!TFS[st.tf]) st.tf = '60';
-  const save = () => store.set({ symbol: st.symbol, tf: st.tf, minPts: st.minPts, hideWorked: st.hideWorked, mtf: st.mtf, sigs: st.sigs, aurora: st.aurora });
+  const save = () => store.set({ symbol: st.symbol, tf: st.tf, minPts: st.minPts, hideWorked: st.hideWorked, mtf: st.mtf, sigs: st.sigs, aurora: st.aurora, hull: st.hull });
 
-  let chart = null, hNat = null, hAur = null, started = null, visible = false, rev = 0;
+  let chart = null, hNat = null, hAur = null, hHull = null, started = null, visible = false, rev = 0;
   let data = { key: '', k: [], osc: [], d1: null }, cut = null, model = null, ws = null, wsTimer = null, loadTok = 0;
   const iv = () => TFS[st.tf];
   const real = (alias) => env.CAT.realOf.get(alias) || alias;
@@ -77,16 +77,17 @@ window.createNiveles = function createNiveles(env) {
   function recompute(fresh) {
     const k = closed(data.raw, IV_MS[iv()]);
     if (k.length < 120) { model = null; $('nvNote').textContent = 'Este mercado no tiene historia suficiente en esta temporalidad.'; render(); return; }
-    if (fresh || k.length !== data.k.length) { data.k = k; data.osc = A.compute(k).osc; }
+    if (fresh || k.length !== data.k.length) { data.k = k; data.osc = A.compute(k).osc; data.hull = A.hull(k.map((x) => x.c), 55, 'Hma'); }
     const at = cut == null ? k.length - 1 : Math.min(cut, k.length - 1);
-    const opt = { minPts: st.minPts, hideWorked: st.hideWorked };
+    // Las señales siempre respetan la tendencia del Hull Suite (HMA 55, la misma que se dibuja).
+    const opt = { minPts: st.minPts, hideWorked: st.hideWorked, hull: data.hull };
     const r = N.analyze(k, data.osc, iv(), at, opt);
     // Zonas diarias al mismo corte (solo las que ya existían en esa fecha).
     let d1 = null;
     if (st.mtf && data.d1) {
       const dk = closed(data.d1, IV_MS['1d']), t = k[at].t;
       let j = dk.length - 1; while (j >= 0 && dk[j].t + IV_MS['1d'] > t + IV_MS[iv()]) j--;
-      if (j > 120) d1 = N.analyze(dk, A.compute(dk).osc, '1d', j, { ...opt, minPts: Math.max(st.minPts, 10) }).zones;
+      if (j > 120) d1 = N.analyze(dk, A.compute(dk).osc, '1d', j, { minPts: Math.max(st.minPts, 10), hideWorked: st.hideWorked }).zones;
     }
     model = { alias: st.symbol, k, at, r, d1 };
     render();
@@ -125,11 +126,11 @@ window.createNiveles = function createNiveles(env) {
     if (st.sigs) {
       const rng = (i) => { let s = 0, n = 0; for (let q = Math.max(0, i - 13); q <= i; q++) { s += k[q].h - k[q].l; n++; } return s / n; };
       for (const s of r.sigs) {
-        const col = s.res === 'objetivo' ? C.up : s.res === 'stop' ? C.dn : C.gold, b = k[s.i];
+        const col = s.long ? '#22F07A' : '#FF3B5C', b = k[s.i];   // corona verde (compra) o roja (venta), bien visibles sobre las zonas
         const tip = `${s.kind === 'pinchazo' ? 'Pinchazo' : 'Limpieza'} ${s.long ? 'alcista' : 'bajista'} · entrada ${fmt(s.entry)} · stop ${fmt(s.stop)} · objetivo ${fmt(s.target)} (${s.rr.toFixed(1)}R) · ` +
           (s.res === 'objetivo' ? `llegó al objetivo (+${s.r.toFixed(1)}R)` : s.res === 'stop' ? `tocó el stop (llegó a ${s.best.toFixed(1)}R a favor)` : `abierta (${s.r >= 0 ? '+' : ''}${s.r.toFixed(1)}R)`);
-        labels.push({ id: 'nv:s:' + s.i + (s.long ? 'l' : 's'), paneId: '', xloc: 'bar_time', x: s.t, y: s.long ? b.l - rng(s.i) * 0.6 : b.h + rng(s.i) * 0.6, yloc: 'price',
-          style: s.long ? 'label_up' : 'label_down', color: col, textColor: C.txt, text: s.kind === 'pinchazo' ? 'P' : 'L', size: 'small', textAlign: 'center', fontFamily: 'default', tooltip: tip, overlay: true });
+        labels.push({ id: 'nv:s:' + s.i + (s.long ? 'l' : 's'), paneId: '', xloc: 'bar_time', x: s.t, y: s.long ? b.l - rng(s.i) * 1.2 : b.h + rng(s.i) * 1.2, yloc: 'price',
+          style: 'none', noFill: true, color: col, textColor: col, text: '♛', size: 'huge', bold: true, textAlign: 'center', fontFamily: 'default', tooltip: tip, overlay: true });
         if (s.res === 'abierta') {
           const t2 = s.t + IV_MS[iv()] * 30;
           [[s.entry, C.fg], [s.stop, C.dn], [s.target, C.up]].forEach(([y, c2], q) => lines.push({ id: `nv:o:${s.i}:${q}`, paneId: '', xloc: 'bar_time', x1: s.t, y1: y, x2: t2, y2: y, extend: 'none', color: c2, invisible: false, width: 1, style: q ? 'dashed' : 'solid', arrowLeft: false, arrowRight: false, overlay: true }));
@@ -207,6 +208,13 @@ window.createNiveles = function createNiveles(env) {
       if (a.ok) hAur = chart.indicators().find((x) => x.source === AURORA) || null;
     } else if (!st.aurora && hAur) { const h = hAur; hAur = null; h.remove(); }
   }
+  async function syncHull() {
+    if (!chart) return;
+    if (st.hull && !hHull) {
+      const h = await chart.runIndicator(HULL, { inputs: {} });
+      if (h.ok) hHull = chart.indicators().find((x) => x.source === HULL) || null;
+    } else if (!st.hull && hHull) { const h = hHull; hHull = null; h.remove(); }
+  }
   async function switchMarket() {
     cut = null; syncTf();
     veil('Cargando ' + env.labelOf(st.symbol) + ' ' + env.TF_LABEL[st.tf] + '…');
@@ -218,7 +226,7 @@ window.createNiveles = function createNiveles(env) {
   function syncTf() {
     document.querySelectorAll('#nvTf button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tf === st.tf)));
     $('nvMin').value = String(st.minPts);
-    $('nvHide').checked = st.hideWorked; $('nvMtf').checked = st.mtf; $('nvSig').checked = st.sigs; $('nvAur').checked = st.aurora;
+    $('nvHide').checked = st.hideWorked; $('nvMtf').checked = st.mtf; $('nvSig').checked = st.sigs; $('nvAur').checked = st.aurora; $('nvHull').checked = st.hull;
     $('nvMtf').disabled = iv() === '1d';
   }
   async function build() {
@@ -243,6 +251,7 @@ window.createNiveles = function createNiveles(env) {
         cut = j >= k.length - 1 ? null : Math.max(120, j); recompute();
       });
       veil(null);
+      await syncHull();
       syncAurora();
     } catch (e) { veil('No se pudo iniciar el gráfico: ' + (e && e.message || e), true); }
     load();
@@ -256,6 +265,7 @@ window.createNiveles = function createNiveles(env) {
   $('nvMtf').addEventListener('change', () => { st.mtf = $('nvMtf').checked; save(); recompute(); });
   $('nvSig').addEventListener('change', () => { st.sigs = $('nvSig').checked; save(); redraw(); });
   $('nvAur').addEventListener('change', () => { st.aurora = $('nvAur').checked; save(); syncAurora(); });
+  $('nvHull').addEventListener('change', () => { st.hull = $('nvHull').checked; save(); syncHull(); });
   $('nvToday').addEventListener('click', () => { cut = null; recompute(); });
   // ← → mueven el corte una vela (con Shift, diez) mientras se ve la sección.
   window.addEventListener('keydown', (e) => {

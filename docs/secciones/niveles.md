@@ -1,5 +1,5 @@
 ---
-description: Zonas de confluencia Fibonacci ancladas en extremos de Aurora, con línea de corte, señales y su historial.
+description: Zonas de confluencia Fibonacci ancladas en extremos de Aurora, con Hull Suite, línea de corte, señales y su historial.
 ---
 
 # Niveles
@@ -30,7 +30,8 @@ Una zona **no dice que el precio va a girar ahí.** Dice que, *si* gira ahí, el
 | **Hoy** | Vuelve la línea de corte al presente. |
 | **Ocultar trabajadas** | Oculta las zonas que el precio ya superó. |
 | **Zonas de 1D** | En temporalidades chicas, suma las zonas diarias en **dorado punteado**. |
-| **Señales** | Muestra u oculta las marcas P y L. |
+| **Señales** | Muestra u oculta las coronas de compra y venta. |
+| **Hull Suite** | La tendencia sobre las velas (HMA 55): verde alcista, rojo bajista. |
 | **Panel Aurora** | El oscilador debajo del precio, para ver los extremos. |
 
 ## La línea de corte
@@ -65,15 +66,23 @@ Debajo del gráfico:
 
 ## Las señales
 
-| Marca | Señal | Stop |
+| Marca | Significa |
+|---|---|
+| 🟢 **♛ debajo de la vela** | Compra |
+| 🔴 **♛ arriba de la vela** | Venta |
+
+Hay dos tipos de señal, y el tipo se ve al pasar el mouse sobre la corona y en la tabla:
+
+| Tipo | Qué pasa | Stop |
 |---|---|---|
-| **P** · Pinchazo | El precio toca la zona y cierra afuera, del lado del que venía. | Detrás de la mecha. |
-| **L** · Limpieza | El precio atraviesa la zona entera, cierra del otro lado y vuelve a entrar. | Detrás del extremo del barrido. |
+| **Pinchazo** | El precio toca la zona y cierra afuera, del lado del que venía. | Detrás de la mecha. |
+| **Limpieza** | El precio atraviesa la zona entera, cierra del otro lado y vuelve a entrar. | Detrás del extremo del barrido. |
+
+**Solo a favor del Hull Suite:** las compras se dan únicamente con el Hull verde (alcista) y las ventas con el Hull rojo (bajista). Las señales en contra de la tendencia se descartan, y el contador histórico tampoco las cuenta.
 
 - **Objetivo:** la zona opuesta más cercana. Si no hay, 3 veces el riesgo (3R).
 - **Una señal por zona:** la de su **primera visita** después de formarse.
-- **Colores:** 🟢 llegó al objetivo · 🔴 tocó el stop · 🟡 todavía abierta.
-- Pasá el mouse sobre la marca para ver la entrada, el stop, el objetivo y el resultado. Las señales abiertas muestran sus tres líneas.
+- Pasá el mouse sobre la corona para ver el tipo, la entrada, el stop, el objetivo y cómo terminó. Las señales abiertas muestran sus tres líneas: entrada, stop y objetivo.
 
 ### El contador histórico
 
@@ -91,5 +100,5 @@ Para cada mercado y temporalidad cuenta las señales anteriores al corte:
 
 1. Mirá las zonas en **1D** o **4H** para saber dónde están las confluencias grandes.
 2. Bajá a **15m** o **5m** con **Zonas de 1D** prendido: las entradas en zonas que coinciden con una diaria son las más sólidas.
-3. Esperá un **pinchazo** o una **limpieza** y poné el stop donde indica la señal.
+3. Esperá la **corona** (pinchazo o limpieza a favor del Hull) y poné el stop donde indica la señal.
 4. Si hay varias zonas seguidas a favor, no cierres en la primera: suelen limpiarse juntas.
