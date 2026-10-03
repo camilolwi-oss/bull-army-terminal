@@ -9,7 +9,7 @@ Marca las **zonas donde se juntan muchos niveles de Fibonacci**. Cada zona tiene
 ![Sección Niveles](../.gitbook/assets/niveles.png)
 
 {% hint style="warning" %}
-Una zona **no dice que el precio va a girar ahí.** Dice que, *si* gira ahí, el recorrido suele ser interesante y el stop chico. Antes de operar, mirá el **contador histórico** de ese mercado.
+Una zona **no dice que el precio va a girar ahí.** Dice que, *si* gira ahí, el recorrido suele ser interesante y el stop chico. Antes de operar, confirmá con Aurora y el Hull Suite.
 {% endhint %}
 
 ## Cómo se arman las zonas
@@ -61,7 +61,6 @@ Debajo del gráfico:
 
 - **Nivel activo:** la zona más cercana, con su rango, puntos, fuerza (**Alta** de 12 pts, **Media** de 8 pts) y estado.
 - **Reacción:** la distancia a la zona, o cuánto se alejó el precio desde que la tocó.
-- **Contador histórico:** cómo les fue a las señales anteriores en ese mercado y temporalidad.
 - **Tablas** de zonas al corte y últimas señales.
 
 ## Las señales
@@ -78,22 +77,14 @@ Hay dos tipos de señal, y el tipo se ve al pasar el mouse sobre la corona y en 
 | **Pinchazo** | El precio toca la zona y cierra afuera, del lado del que venía. | Detrás de la mecha. |
 | **Limpieza** | El precio atraviesa la zona entera, cierra del otro lado y vuelve a entrar. | Detrás del extremo del barrido. |
 
-**Solo a favor del Hull Suite:** las compras se dan únicamente con el Hull verde (alcista) y las ventas con el Hull rojo (bajista). Las señales en contra de la tendencia se descartan, y el contador histórico tampoco las cuenta.
+**Solo a favor del Hull Suite:** las compras se dan únicamente con el Hull verde (alcista) y las ventas con el Hull rojo (bajista). Las señales en contra de la tendencia se descartan.
 
 - **Objetivo:** la zona opuesta más cercana. Si no hay, 3 veces el riesgo (3R).
 - **Una señal por zona:** la de su **primera visita** después de formarse.
 - Pasá el mouse sobre la corona para ver el tipo, la entrada, el stop, el objetivo y cómo terminó. Las señales abiertas muestran sus tres líneas: entrada, stop y objetivo.
 
-### El contador histórico
-
-Para cada mercado y temporalidad cuenta las señales anteriores al corte:
-
-- cuántas **llegaron a 1R** y a **3R** a favor antes del stop;
-- cuántas alcanzaron el **objetivo** y cuántas tocaron el **stop**;
-- el **resultado promedio en R**.
-
 {% hint style="info" %}
-**Los números son honestos.** Si en una vela tocan el stop y el objetivo a la vez, cuenta como stop. Las señales usan solo las zonas que existían en ese momento. En muchos mercados el promedio queda cerca de 0R: la zona sola no alcanza. Combinala con [Aurora](aurora.md), el Hull Suite y las zonas de 1D, y elegí los mercados donde el contador acompaña.
+La tabla **Últimas señales** muestra cómo terminó cada una: objetivo, stop o abierta. Si en una vela se tocan el stop y el objetivo a la vez, cuenta como stop. Las señales usan solo las zonas que existían en ese momento.
 {% endhint %}
 
 ## Cómo usarlo

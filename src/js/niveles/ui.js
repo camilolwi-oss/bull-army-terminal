@@ -129,8 +129,8 @@ window.createNiveles = function createNiveles(env) {
         const col = s.long ? '#22F07A' : '#FF3B5C', b = k[s.i];   // corona verde (compra) o roja (venta), bien visibles sobre las zonas
         const tip = `${s.kind === 'pinchazo' ? 'Pinchazo' : 'Limpieza'} ${s.long ? 'alcista' : 'bajista'} · entrada ${fmt(s.entry)} · stop ${fmt(s.stop)} · objetivo ${fmt(s.target)} (${s.rr.toFixed(1)}R) · ` +
           (s.res === 'objetivo' ? `llegó al objetivo (+${s.r.toFixed(1)}R)` : s.res === 'stop' ? `tocó el stop (llegó a ${s.best.toFixed(1)}R a favor)` : `abierta (${s.r >= 0 ? '+' : ''}${s.r.toFixed(1)}R)`);
-        labels.push({ id: 'nv:s:' + s.i + (s.long ? 'l' : 's'), paneId: '', xloc: 'bar_time', x: s.t, y: s.long ? b.l - rng(s.i) * 1.2 : b.h + rng(s.i) * 1.2, yloc: 'price',
-          style: 'none', noFill: true, color: col, textColor: col, text: '♛', size: 'huge', bold: true, textAlign: 'center', fontFamily: 'default', tooltip: tip, overlay: true });
+        labels.push({ id: 'nv:s:' + s.i + (s.long ? 'l' : 's'), paneId: '', xloc: 'bar_time', x: s.t, y: s.long ? b.l - rng(s.i) * 0.9 : b.h + rng(s.i) * 0.9, yloc: 'price',
+          style: 'none', noFill: true, color: col, textColor: col, text: '♛', size: 'large', bold: true, textAlign: 'center', fontFamily: 'default', tooltip: tip, overlay: true });
         if (s.res === 'abierta') {
           const t2 = s.t + IV_MS[iv()] * 30;
           [[s.entry, C.fg], [s.stop, C.dn], [s.target, C.up]].forEach(([y, c2], q) => lines.push({ id: `nv:o:${s.i}:${q}`, paneId: '', xloc: 'bar_time', x1: s.t, y1: y, x2: t2, y2: y, extend: 'none', color: c2, invisible: false, width: 1, style: q ? 'dashed' : 'solid', arrowLeft: false, arrowRight: false, overlay: true }));
@@ -160,7 +160,7 @@ window.createNiveles = function createNiveles(env) {
   function render() {
     redraw();
     const nv = model && model.r, k = model && model.k;
-    if (!nv) { ['nvActive', 'nvReact', 'nvStats'].forEach((id) => { $(id).innerHTML = '<p class="nv-empty">Cargando…</p>'; }); $('nvZones').innerHTML = ''; $('nvSigs').innerHTML = ''; return; }
+    if (!nv) { ['nvActive', 'nvReact'].forEach((id) => { $(id).innerHTML = '<p class="nv-empty">Cargando…</p>'; }); $('nvZones').innerHTML = ''; $('nvSigs').innerHTML = ''; return; }
     const at = model.at, px = k[at].c, live = cut == null;
     $('nvCut').innerHTML = live ? `Corte: <b>hoy</b> (${fmtD(k[at].t)})` : `Corte: <b>${fmtD(k[at].t)}</b> · el sistema solo ve lo anterior`;
     $('nvToday').disabled = live;
@@ -184,10 +184,6 @@ window.createNiveles = function createNiveles(env) {
       } else txt = `<b>${pct((near.mid / px - 1) * 100)}</b><span>distancia a la zona</span>`;
       $('nvReact').innerHTML = `<span class="nv-k">Reacción</span>${txt}`;
     }
-    const s = nv.stats;
-    $('nvStats').innerHTML = `<span class="nv-k">Contador histórico · señales antes del corte</span>` + (s.n
-      ? `<div class="nv-stat"><span><b>${s.n}</b>señales</span><span><b>${s.r1}%</b>llegó a 1R</span><span><b>${s.r3}%</b>llegó a 3R</span><span><b class="up">${s.tp}%</b>objetivo</span><span><b class="dn">${s.stop}%</b>stop</span><span><b class="${s.exp >= 0 ? 'up' : 'dn'}">${s.exp >= 0 ? '+' : ''}${s.exp.toFixed(2)}R</b>promedio</span></div>`
-      : '<p class="nv-empty">Todavía no hay señales cerradas con estos filtros.</p>');
     $('nvZones').innerHTML = nv.zones.slice().sort((a, b) => b.mid - a.mid).map((z) => `<tr>
       <td><span class="nv-tag ${z.sup ? 'sup' : 'res'}">${z.sup ? 'Soporte' : 'Resistencia'}</span></td>
       <td>${fmt(z.lo)} – ${fmt(z.hi)}</td><td><b>${z.pts}</b>${z.block ? ` <span class="dim">Σ${z.block}</span>` : ''}</td>
