@@ -16,7 +16,7 @@
   ];
   // ZigZag en múltiplos del rango típico de vela de cada mercado (así un 9% de BTC diario y el ruido
   // de una acción HIP-3 en 5m se miden con la misma vara).
-  const K = { '1d': 3, '4h': 3.5, '1h': 4, '15m': 4.5, '5m': 5 };
+  const K = { '1d': 3, '6h': 3.25, '4h': 3.5, '1h': 4, '30m': 4.25, '15m': 4.5, '5m': 5 };
   const DEF = { ob: 50, os: -50, extWin: 3, maxImp: 25, halfLife: 400, minPts: 10, sweepBars: 12, horizon: 400 };
 
   function params(k, tf) {

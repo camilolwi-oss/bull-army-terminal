@@ -57,7 +57,7 @@ Funcionan igual que en la sección [Indicador](indicador.md): el buscador tiene 
 | **Divergencias CVD** | Las etiquetas *Absorción* y *Agotamiento* sobre las velas. |
 | **VWAP** | Diario, Semanal, Mensual, Trimestral y Anual: cada botón prende su línea, con su color. |
 
-Todo se explica en [Flujo de Binance](#flujo-de-binance). Los paneles también se pueden cerrar desde la **✕** de su leyenda: el interruptor se apaga solo.
+Vienen **apagados**: prendé solo lo que quieras usar, y la terminal lo recuerda la próxima vez. Todo se explica en [Flujo de Binance](#flujo-de-binance). Los paneles también se pueden cerrar desde la **✕** de su leyenda: el interruptor se apaga solo.
 
 ## Cómo se lee
 
