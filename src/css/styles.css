@@ -323,7 +323,11 @@ dialog.settings .primary{background:var(--gold);color:var(--gold-ink);border-col
 .lq-body{grid-template-columns:minmax(0,1fr) 260px}
 @media (max-width:900px){.lq-body{grid-template-columns:minmax(0,1fr)}}
 .lq-fig{height:clamp(440px,64vh,760px)}
-#lqCv{display:block;width:100%;flex:1;min-height:0;cursor:crosshair}
+.liq[data-view="heat"] .lq-fig{height:clamp(520px,72vh,860px)}
+#lqCv,#lqHeat{display:block;width:100%;flex:1;min-height:0;cursor:crosshair}
+#lqCv[hidden],#lqHeat[hidden]{display:none}
+.liq[data-view="heat"] .lq-profonly,.liq[data-view="profile"] .lq-heatonly{display:none}
+#lqLevs .chipchk{--c:#F0745A}
 #lqCv:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
 .lq-side{display:flex;flex-direction:column;gap:14px;padding:4px 0}
 .lq-side caption{text-align:left;font:11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 8px 6px}

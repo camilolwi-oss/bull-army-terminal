@@ -32,6 +32,12 @@ jobs:
           node scripts/calendario.mjs src/calendario.json \
             || curl -fsS "https://camilolwi-oss.github.io/bull-army-terminal/calendario.json" -o src/calendario.json \
             || echo "Sin calendario en este deploy"
+      - name: Posiciones de las 5000 cuentas más grandes (mapa de liquidaciones)
+        # Se escanean en los deploys programados (unos 10 minutos). En un push se reutiliza el último publicado.
+        run: |
+          if [ "${{ github.event_name }}" != "push" ]; then node scripts/wallets.mjs src/liq-wallets.json 5000 && exit 0; fi
+          curl -fsS "https://camilolwi-oss.github.io/bull-army-terminal/liq-wallets.json" -o src/liq-wallets.json \
+            || echo "Sin posiciones de wallets en este deploy"
       - name: Armar la página, la lista de accesos y la PWA
         run: |
           npm run build

@@ -16,3 +16,6 @@ desktop.ini
 
 # Calendario macro: lo baja GitHub Actions al publicar (npm run calendario en desarrollo)
 src/calendario.json
+
+# Posiciones de las wallets: las escanea GitHub Actions al publicar (npm run wallets en desarrollo)
+src/liq-wallets.json

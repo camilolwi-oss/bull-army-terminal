@@ -11,7 +11,7 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 | **Scanner** | Plano cartesiano con todos los perps de crypto y HIP-3 (filtro Todos/Perps/HIP-3, carga por volumen y en pausa cuando no se ve): vistas Reversión (estiramiento vs giro), Rotación vs BTC (tipo RRG) y Puntaje, con colas de 5 velas, ranking alcista/bajista y confirmación de Binance para los 15 mejores. |
 | **Niveles** | Zonas de confluencia Fibonacci (puntos por nivel) solo de impulsos anclados en extremos de Aurora, sin look-ahead, con línea de corte, zonas de 1D, Hull Suite y señales de pinchazo/limpieza a favor del Hull. |
 | **Spaghetti** | Todos los activos de Hyperliquid en un mismo gráfico para ver quién lidera y quién se queda. |
-| **Liquidaciones** | Mapa de los precios de liquidación de las cuentas más grandes de Hyperliquid. |
+| **Liquidaciones** | Mapa de calor de liquidaciones en el tiempo (estilo Coinglass): posiciones de las 5000 cuentas más grandes (escaneadas cada hora por GitHub Actions) y modelo x3–x125 desde el volumen; vista Perfil acumulada. |
 | **Noticias** | Feed de Tree News en tiempo real y calendario macro de la semana. |
 
 **Abrila en el navegador:** https://camilolwi-oss.github.io/bull-army-terminal/ (requiere usuario VIP). Se puede instalar como app (PWA).
@@ -64,12 +64,14 @@ bull-army-terminal/
 │   │   ├── scanner/           calc.js (ejes y puntaje) · ui.js (plano, ranking y datos)
 │   │   ├── niveles/           calc.js (impulsos, zonas Fibonacci, señales) · ui.js (gráfico y paneles)
 │   │   ├── spaghetti/         calc.js · ui.js
-│   │   ├── liquidaciones/     calc.js · source.js (fuente de datos) · ui.js
+│   │   ├── liquidaciones/     calc.js (perfil) · heat.js (mapa de calor y modelo) · source.js (servidor o escaneo) · ui.js
 │   │   └── noticias/          ui.js (Tree News + calendario macro)
 │   ├── data/                  Datos de muestra para el modo demo (sin conexión)
 │   └── pine/                  extremos.pine · aurora.pine · hull-suite.pine
 ├── scripts/
 │   ├── build.mjs              Arma dist/ (página + accesos + PWA)
+│   ├── calendario.mjs         Calendario macro (lo corre el deploy)
+│   ├── wallets.mjs            Posiciones de las 5000 cuentas más grandes (lo corre el deploy cada hora)
 │   └── serve.mjs              Servidor local sin dependencias
 ├── docs/                      Guía para usuarios (GitBook)
 ├── dev/                       Documentación técnica (no se publica)

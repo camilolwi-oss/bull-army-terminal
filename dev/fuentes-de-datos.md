@@ -5,7 +5,7 @@ Todos los datos vienen de APIs **públicas y gratuitas**, consultadas directamen
 | Fuente | Qué aporta | Usada en |
 |---|---|---|
 | **Hyperliquid API** (`api.hyperliquid.xyz`) | Velas, lista de mercados (perps, spot, HIP-3), precios, volumen, funding y estado de cuentas. Velas en vivo por WebSocket. | Todas las secciones |
-| **Hyperliquid stats** (`stats-data.hyperliquid.xyz`) | Ranking público de cuentas por valor. | Liquidaciones |
+| **Hyperliquid stats** (`stats-data.hyperliquid.xyz`) | Ranking público de cuentas por valor. GitHub Actions toma las 5000 más grandes cada hora, consulta su `clearinghouseState` (`scripts/wallets.mjs`, unos 10 minutos) y publica `liq-wallets.json` con precio de liquidación, entrada, tamaño y apalancamiento de cada posición. En los deploys por push se reutiliza el último publicado. | Liquidaciones |
 | **Binance Futures** (`fapi.binance.com`) | Open interest, relación long/short de cuentas y compras/ventas agresivas de BTCUSDT (Contexto). En Aurora, para los perps que también cotizan ahí (`ticker/price` decide cuáles): velas con volumen comprador (`klines`, campo 9) para delta y CVD, fotos de open interest (`openInterestHist`, últimos 30 días) y valor actual (`openInterest`), consultados cada 10 s mientras el flujo está en el gráfico. En el Scanner, lo mismo para los 15 mejores candidatos, al cierre de cada vela. | Contexto · Aurora · Scanner |
 | **SoSoValue** (`api.sosovalue.xyz`) | Flujos netos diarios de los ETF spot de BTC de EE.UU. | Contexto |
 | **Tree News** (`news.treeofalpha.com`) | Noticias (últimas 200 + WebSocket en vivo). | Noticias |

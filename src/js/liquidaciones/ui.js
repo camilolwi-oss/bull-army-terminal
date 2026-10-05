@@ -43,6 +43,7 @@ window.createLiqMap = function createLiqMap(env) {
     if (!c || !c.mark) { S.map = null; draw(); texts(pos); return; }
     S.map = LM.buildMap(pos, { ...opt(), mark: c.mark });
     texts(pos); tables(); draw();
+    if (H.view === 'heat') rebuildHeat();
   }
 
   function coverage(coin) { const e = src.state.exposure[coin] || 0, oi = (S.ctx[coin] || {}).oi || 0; return oi ? Math.min(100, (e / oi) * 100) : 0; }
@@ -214,6 +215,169 @@ window.createLiqMap = function createLiqMap(env) {
   });
   new ResizeObserver(draw).observe(cv);
 
+  // ── Mapa de calor en el tiempo (vista por defecto, al estilo Coinglass) ──
+  const LH = window.LiqHeat;
+  const TF_MS = { '5m': 3e5, '30m': 18e5, '1h': 36e5, '4h': 144e5, '1d': 864e5, '3d': 2592e5, '1w': 6048e5 };
+  const SHOW = 300, LOOKBACK = 300;   // velas visibles + velas previas (para las bandas que nacieron antes de la ventana)
+  const H = { view: 'heat', tf: '5m', wallets: true, model: false, levs: LH.LEVS.slice(), k: null, key: '', map: null, hover: null, drawQ: false, loading: null };
+  try { Object.assign(H, JSON.parse(localStorage.getItem('baLiqHeat')) || {}); } catch {}
+  if (!TF_MS[H.tf]) H.tf = '5m';
+  const saveHeat = () => { try { localStorage.setItem('baLiqHeat', JSON.stringify({ view: H.view, tf: H.tf, wallets: H.wallets, model: H.model, levs: H.levs })); } catch {} };
+  // Paleta tipo "magma": violeta oscuro (nada) → magenta → coral → amarillo pálido (máximo).
+  const STOPS = [[0, [23, 10, 43]], [0.15, [59, 15, 95]], [0.35, [122, 31, 110]], [0.55, [195, 61, 104]], [0.75, [240, 116, 90]], [0.9, [251, 184, 105]], [1, [253, 243, 198]]];
+  const PAL = Array.from({ length: 256 }, (_, i) => {
+    const t = i / 255; let a = STOPS[0], b = STOPS[STOPS.length - 1];
+    for (let j = 1; j < STOPS.length; j++) if (t <= STOPS[j][0]) { a = STOPS[j - 1]; b = STOPS[j]; break; }
+    const f = (t - a[0]) / ((b[0] - a[0]) || 1);
+    return a[1].map((v, q) => Math.round(v + (b[1][q] - v) * f));
+  });
+  const hcv = $('lqHeat'), hctx = hcv.getContext('2d');
+  let hgeo = null;
+
+  // Mismos filtros que el perfil (tamaño mínimo, apalancamiento, lado y margen) para la capa de wallets.
+  function filterPos(pos) {
+    const o = opt();
+    return pos.filter((p) => p.usd >= (o.minUsd || 0) && (!o.minLev || p.lev >= o.minLev) &&
+      (o.side === 'both' || (o.side === 'long' ? p.side === 1 : p.side === -1)) &&
+      (o.margin === 'all' || (o.margin === 'cross' ? p.cross : !p.cross)));
+  }
+  async function loadCandles(force) {
+    if (!env.live) return;
+    const key = S.coin + '|' + H.tf;
+    if (!force && H.key === key && H.k) return;
+    if (H.loading === key) return;
+    H.loading = key;
+    try {
+      const now = Date.now(), ms = TF_MS[H.tf];
+      const rows = await env.hlPost({ type: 'candleSnapshot', req: { coin: S.coin, interval: H.tf, startTime: now - (SHOW + LOOKBACK) * ms, endTime: now } });
+      if (H.loading !== key) return;
+      H.k = (rows || []).map((x) => ({ t: +x.t, o: +x.o, h: +x.h, l: +x.l, c: +x.c, v: +x.v })); H.key = key;
+    } catch { if (H.key !== key) { H.k = null; H.key = key; } }
+    if (H.loading === key) H.loading = null;
+  }
+  function rebuildHeat() {
+    if (!H.k || H.k.length < 30 || H.key !== S.coin + '|' + H.tf) { H.map = null; drawHeat(); return; }
+    H.map = LH.build(H.k, { show: SHOW, bins: 170, wallets: H.wallets ? filterPos(src.positions(S.coin)) : null, model: H.model, levs: H.levs });
+    drawHeat();
+  }
+  async function refreshHeat(force) { await loadCandles(force); rebuildHeat(); }
+  function drawHeat() { if (!H.drawQ) { H.drawQ = true; requestAnimationFrame(paintHeat); } }
+  const fmtT = (t) => { const d = new Date(t); return TF_MS[H.tf] >= 864e5 ? d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' }) : d.toLocaleString('es-AR', { day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); };
+  function paintHeat() {
+    H.drawQ = false;
+    if (H.view !== 'heat') return;
+    const dpr = window.devicePixelRatio || 1, W = hcv.clientWidth, Hh = hcv.clientHeight;
+    if (!W || !Hh) return;
+    if (hcv.width !== Math.round(W * dpr) || hcv.height !== Math.round(Hh * dpr)) { hcv.width = Math.round(W * dpr); hcv.height = Math.round(Hh * dpr); }
+    hctx.setTransform(dpr, 0, 0, dpr, 0, 0); hctx.fillStyle = '#0B0B0C'; hctx.fillRect(0, 0, W, Hh);
+    const m = H.map;
+    hctx.font = FONT; hctx.textBaseline = 'middle';
+    if (!m) { hctx.fillStyle = COL.muted; hctx.textAlign = 'center'; hctx.fillText(env.live ? 'Cargando velas…' : 'El mapa de calor necesita datos en vivo de Hyperliquid.', W / 2, Hh / 2); return; }
+    const LEG = 54, AX = W < 560 ? 62 : 74, T = 10, B = 26, L = LEG, pw = W - L - AX, ph = Hh - T - B;
+    const cw = pw / m.cols, rh = ph / m.bins;
+    const Y = (p) => T + ph - ((p - m.lo) / (m.hi - m.lo)) * ph;
+    hgeo = { L, T, pw, ph, cw, rh, W, H: Hh };
+    // Celdas: una imagen de columnas × niveles, escalada sin suavizado.
+    const img = new ImageData(m.cols, m.bins), useW = H.wallets && m.maxW > 0, useM = H.model && m.maxM > 0;
+    for (let r = 0; r < m.bins; r++) for (let c = 0; c < m.cols; c++) {
+      const v = LH.cell(m, r * m.cols + c, useW, useM), col = PAL[Math.round(v * 255)], o4 = ((m.bins - 1 - r) * m.cols + c) * 4;
+      img.data[o4] = col[0]; img.data[o4 + 1] = col[1]; img.data[o4 + 2] = col[2]; img.data[o4 + 3] = 255;
+    }
+    const off = document.createElement('canvas'); off.width = m.cols; off.height = m.bins; off.getContext('2d').putImageData(img, 0, 0);
+    hctx.imageSmoothingEnabled = false; hctx.drawImage(off, L, T, pw, ph); hctx.imageSmoothingEnabled = true;
+    // Velas
+    const bw = Math.max(1, Math.min(cw * 0.62, 9));
+    m.candles.forEach((k, c) => {
+      const x = L + (c + 0.5) * cw, up = k.c >= k.o, col = up ? '#2EBD85' : '#F6465D';
+      hctx.strokeStyle = col; hctx.lineWidth = 1; hctx.beginPath(); hctx.moveTo(Math.round(x) + 0.5, Y(k.h)); hctx.lineTo(Math.round(x) + 0.5, Y(k.l)); hctx.stroke();
+      const y1 = Y(Math.max(k.o, k.c)), y2 = Y(Math.min(k.o, k.c)); hctx.fillStyle = col; hctx.fillRect(x - bw / 2, y1, bw, Math.max(1, y2 - y1));
+    });
+    // Precio actual
+    const last = m.candles[m.candles.length - 1], mark = (S.ctx[S.coin] || {}).mark || last.c, ym = Math.round(Y(mark)) + 0.5;
+    hctx.strokeStyle = COL.gold; hctx.setLineDash([4, 3]); hctx.beginPath(); hctx.moveTo(L, ym); hctx.lineTo(L + pw, ym); hctx.stroke(); hctx.setLineDash([]);
+    // Eje de precios (derecha) y de tiempo (abajo)
+    hctx.fillStyle = COL.muted; hctx.textAlign = 'left';
+    const pstep = (() => { const raw = (m.hi - m.lo) / 7, mag = Math.pow(10, Math.floor(Math.log10(raw))); return [1, 2, 2.5, 5, 10].map((q) => q * mag).find((s) => s >= raw); })();
+    for (let p = Math.ceil(m.lo / pstep) * pstep; p <= m.hi; p += pstep) { const y = Y(p); if (Math.abs(y - ym) > 12) hctx.fillText(px(p), L + pw + 6, y); }
+    const lab = px(mark), lw = hctx.measureText(lab).width + 10;
+    hctx.fillStyle = COL.gold; hctx.fillRect(L + pw + 2, ym - 9, lw, 18); hctx.fillStyle = '#0B0B0C'; hctx.fillText(lab, L + pw + 7, ym);
+    hctx.fillStyle = COL.muted; hctx.textBaseline = 'top';
+    const nt = Math.max(2, Math.floor(pw / 150));
+    for (let q = 0; q <= nt; q++) {
+      const c = Math.round((q / nt) * (m.cols - 1)), x = L + (c + 0.5) * cw;
+      hctx.textAlign = q === 0 ? 'left' : q === nt ? 'right' : 'center'; hctx.fillText(fmtT(m.candles[c].t), x, T + ph + 8);
+    }
+    // Escala de color (izquierda): arriba el máximo de la capa activa.
+    const gx = 14, gw = 14, gy = T + 18, gh = ph - 36;
+    for (let i = 0; i < gh; i++) { const col = PAL[Math.round((1 - i / gh) * 255)]; hctx.fillStyle = `rgb(${col[0]},${col[1]},${col[2]})`; hctx.fillRect(gx, gy + i, gw, 1); }
+    hctx.strokeStyle = COL.line; hctx.strokeRect(gx + 0.5, gy + 0.5, gw - 1, gh - 1);
+    hctx.fillStyle = COL.fg; hctx.textAlign = 'left'; hctx.textBaseline = 'bottom';
+    hctx.fillText(useW && !useM ? usdAx(m.maxW) : useM && !useW ? 'Modelo' : 'Relativo', 4, gy - 4);
+    hctx.textBaseline = 'top'; hctx.fillText('0', gx + 3, gy + gh + 4);
+    if (H.wallets && !H.model && !useW) {
+      hctx.fillStyle = 'rgba(11,11,12,.75)'; hctx.fillRect(L + pw / 2 - 230, T + ph / 2 - 24, 460, 48);
+      hctx.fillStyle = COL.fg; hctx.textAlign = 'center'; hctx.textBaseline = 'middle';
+      hctx.fillText('Ninguna posición de las wallets se liquida en este rango de precio.', L + pw / 2, T + ph / 2 - 8);
+      hctx.fillStyle = COL.muted; hctx.fillText('Probá una vela más grande (1H, 4H) o prendé el Modelo.', L + pw / 2, T + ph / 2 + 10);
+    }
+    // Crosshair
+    if (H.hover) {
+      const x = Math.round(L + (H.hover.c + 0.5) * cw) + 0.5, y = Math.round(T + ph - (H.hover.r + 0.5) * rh) + 0.5;
+      hctx.strokeStyle = 'rgba(236,233,226,.45)'; hctx.setLineDash([2, 3]);
+      hctx.beginPath(); hctx.moveTo(x, T); hctx.lineTo(x, T + ph); hctx.moveTo(L, y); hctx.lineTo(L + pw, y); hctx.stroke(); hctx.setLineDash([]);
+    }
+  }
+  function heatTip(c, r, x, y) {
+    const m = H.map, tip = $('lqTip'); if (!m) return;
+    const i = r * m.cols + c, p0 = m.lo + r * m.step, k = m.candles[c];
+    tip.textContent = '';
+    const t = document.createElement('time'); t.textContent = `${fmtT(k.t)} · ${px(p0)} – ${px(p0 + m.step)}`; tip.append(t);
+    const ol = document.createElement('ol');
+    const row = (name, v, color) => {
+      const li = document.createElement('li'), sw = document.createElement('span'), nm = document.createElement('span'), b = document.createElement('b');
+      sw.className = 'sw'; if (color) sw.style.background = color; nm.textContent = name; b.textContent = v; li.append(sw, nm, b); ol.append(li);
+    };
+    if (H.wallets) { row('Longs a liquidar (wallets)', usd(m.grid.wl[i]), COL.long); row('Shorts a liquidar (wallets)', usd(m.grid.ws[i]), COL.short); }
+    if (H.model) {
+      const v = m.grid.ml[i] + m.grid.ms[i];
+      row('Modelo · intensidad', m.maxM ? nf(Math.min(100, (v / m.maxM) * 100), 0) + ' %' : '—', null);
+      row('Modelo · lado', v ? (m.grid.ml[i] >= m.grid.ms[i] ? 'longs' : 'shorts') : '—', null);
+    }
+    row('Distancia al precio', pct(((p0 + m.step / 2) / ((S.ctx[S.coin] || {}).mark || k.c) - 1) * 100), null);
+    tip.append(ol); tip.hidden = false;
+    const fw = hcv.clientWidth, tw = tip.offsetWidth, th = tip.offsetHeight;
+    let lx = x + 14; if (lx + tw > fw - 8) lx = x - tw - 14;
+    tip.style.left = Math.max(8, lx) + 'px'; tip.style.top = Math.min(Math.max(8, y - th / 2), hcv.clientHeight - th - 8) + 'px';
+  }
+  hcv.addEventListener('pointermove', (e) => {
+    if (!hgeo || !H.map) return;
+    const r0 = hcv.getBoundingClientRect(), x = e.clientX - r0.left, y = e.clientY - r0.top;
+    const c = Math.floor((x - hgeo.L) / hgeo.cw), r = Math.floor((hgeo.T + hgeo.ph - y) / hgeo.rh);
+    if (c < 0 || c >= H.map.cols || r < 0 || r >= H.map.bins) { H.hover = null; $('lqTip').hidden = true; return drawHeat(); }
+    H.hover = { c, r }; heatTip(c, r, x, y); drawHeat();
+  });
+  hcv.addEventListener('pointerleave', () => { H.hover = null; $('lqTip').hidden = true; drawHeat(); });
+  new ResizeObserver(drawHeat).observe(hcv);
+
+  function syncHeatControls() {
+    $('panel-liq').dataset.view = H.view;
+    hcv.hidden = H.view !== 'heat'; cv.hidden = H.view === 'heat';
+    $('lqView').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === H.view)));
+    $('lqTf').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tf === H.tf)));
+    $('lqHw').checked = H.wallets; $('lqHm').checked = H.model;
+    $('lqLevs').querySelectorAll('input').forEach((b) => { b.checked = H.levs.includes(+b.value); b.disabled = !H.model; });
+  }
+  $('lqView').addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b || b.dataset.v === H.view) return;
+    H.view = b.dataset.v; saveHeat(); syncHeatControls(); $('lqTip').hidden = true;
+    if (H.view === 'heat') refreshHeat(); else draw();
+  });
+  $('lqTf').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || b.dataset.tf === H.tf) return; H.tf = b.dataset.tf; saveHeat(); syncHeatControls(); H.map = null; drawHeat(); refreshHeat(); });
+  $('lqHw').addEventListener('change', () => { H.wallets = $('lqHw').checked; saveHeat(); rebuildHeat(); });
+  $('lqHm').addEventListener('change', () => { H.model = $('lqHm').checked; saveHeat(); syncHeatControls(); rebuildHeat(); });
+  $('lqLevs').addEventListener('change', () => { H.levs = [...$('lqLevs').querySelectorAll('input:checked')].map((b) => +b.value); saveHeat(); rebuildHeat(); });
+  syncHeatControls();
+
   // ── Selector de mercado ────────────────────────────────────────────────
   function coins() {
     const set = new Set([...Object.keys(src.state.exposure), ...Object.keys(S.ctx)]);
@@ -238,7 +402,7 @@ window.createLiqMap = function createLiqMap(env) {
   $('lqCoinQ').addEventListener('keydown', (e) => { if (e.key === 'Escape') setPop(false); if (e.key === 'Enter') { const li = $('lqCoinList').firstElementChild; li && pick(li.dataset.c); } });
   $('lqCoinList').addEventListener('click', (e) => { const li = e.target.closest('li[data-c]'); li && pick(li.dataset.c); });
   document.addEventListener('mousedown', (e) => { if (!$('lqCoinPop').hidden && !$('lqCoinCtl').contains(e.target)) setPop(false); });
-  function pick(c) { S.coin = c; try { localStorage.setItem('baLiqCoin', c); } catch {} setPop(false); S.hover = null; $('lqTip').hidden = true; rebuild(); }
+  function pick(c) { S.coin = c; try { localStorage.setItem('baLiqCoin', c); } catch {} setPop(false); S.hover = null; H.hover = null; H.map = null; $('lqTip').hidden = true; rebuild(); refreshHeat(); }
 
   // ── Controles de sensibilidad ──────────────────────────────────────────
   ['lqRange', 'lqBins', 'lqMin', 'lqLev', 'lqSide', 'lqMargin', 'lqScale'].forEach((id) => $(id).addEventListener('change', rebuild));
@@ -271,14 +435,16 @@ window.createLiqMap = function createLiqMap(env) {
       $('lqNote').textContent = `Modo demo: snapshot real de ${nf(snap.accounts, 0)} cuentas de Hyperliquid tomado el ${new Date(snap.t).toLocaleString('es-AR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', hourCycle:'h23' })}, para ${snap.coins.join(', ')}. Abrí el archivo en tu navegador para escanear cualquier perpetuo en vivo.`;
       veil(null); rebuild(); return;
     }
-    veil('Cargando precios…');
-    await refreshCtx();
-    $('lqNote').textContent = 'Cada posición trae el precio de liquidación que calcula Hyperliquid. El mapa suma el nocional de las posiciones de las cuentas más grandes del ranking público; las cuentas chicas no entran, por eso se muestra la cobertura del open interest.';
-    if (src.state.rows.length) { status(`Último escaneo ${ago(src.state.t)} · ${nf(src.state.scanned, 0)} cuentas. Tocá Escanear para actualizar.`); veil(null); }
-    else { status('Todavía no hay datos. Tocá Escanear.'); veil('Tocá Escanear para leer las posiciones de las cuentas más grandes.'); }
-    rebuild();
+    veil('Cargando precios y posiciones…');
+    await Promise.all([refreshCtx(), src.loadServer()]);
+    $('lqNote').textContent = 'Mapa de calor: cuanto más clara la franja, más se liquidaría en ese precio. Wallets: posiciones reales de las cuentas más grandes (escaneadas cada hora), desde su apertura estimada. Modelo: en cada vela con volumen sobre el promedio se estiman las liquidaciones de x3 a x125 desde su máximo y su mínimo; la franja se apaga cuando el precio la toca. Las cuentas chicas no entran en las wallets: por eso se muestra la cobertura del open interest.';
+    if (src.state.rows.length) { status(`${src.state.server ? 'Escaneo del servidor' : 'Último escaneo'} ${ago(src.state.t)} · ${nf(src.state.scanned, 0)} cuentas. Reescaneá para tener lo último.`); veil(null); }
+    else { status('Todavía no hay posiciones de wallets. Tocá Reescanear en vivo, o usá el Modelo.'); veil(H.view === 'heat' ? null : 'Tocá Reescanear en vivo para leer las posiciones de las cuentas más grandes.'); }
+    rebuild(); refreshHeat();
     ctxTimer = setInterval(async () => { if (!$('panel-liq').hidden) { await refreshCtx(); rebuild(); } }, 30000);
+    // Velas del mapa de calor: se renuevan cada minuto mientras se ve la sección.
+    setInterval(() => { if (!$('panel-liq').hidden && H.view === 'heat') refreshHeat(true); }, 60000);
   })();
 
-  return { show() { draw(); }, hide() { S.hover = null; $('lqTip').hidden = true; } };
+  return { show() { draw(); drawHeat(); }, hide() { S.hover = null; H.hover = null; $('lqTip').hidden = true; } };
 };

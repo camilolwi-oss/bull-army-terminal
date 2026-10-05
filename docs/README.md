@@ -54,7 +54,7 @@ En el menú lateral están las secciones. Cada una tiene su propia dirección, a
 | [**Scanner**](secciones/scanner.md) | Ver en un plano cuáles de todos los perps de crypto y HIP-3 están estirados y empezando a girar: los mejores momentos de reversión. |
 | [**Niveles**](secciones/niveles.md) | Zonas de confluencia Fibonacci ancladas en extremos de Aurora, con Hull Suite, línea de corte y señales de pinchazo y limpieza. |
 | [**Spaghetti**](secciones/spaghetti.md) | Comparar todos los activos en un mismo gráfico: quién lidera y quién se queda. |
-| [**Liquidaciones**](secciones/liquidaciones.md) | Ver dónde se concentran los precios de liquidación de las cuentas grandes. |
+| [**Liquidaciones**](secciones/liquidaciones.md) | Mapa de calor de liquidaciones en el tiempo: las 5000 cuentas más grandes y un modelo x3 a x125. |
 | [**Noticias**](secciones/noticias.md) | Enterarte de lo que mueve el mercado y de los datos macro de la semana. |
 
 Debajo del menú, una etiqueta indica de dónde salen los datos: 🟢 **En vivo · Hyperliquid** o 🟡 **Demo · datos de muestra** (ver [Modo demo](modo-demo.md)). En el celular, el menú se abre con el botón **☰**.

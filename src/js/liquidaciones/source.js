@@ -1,5 +1,6 @@
 // Liquidaciones · fuente de datos intercambiable.
-// Fuente "scan": gratis, desde el navegador. Ranking público de cuentas → clearinghouseState de las N más grandes.
+// Fuente "server": GitHub Actions escanea las 5000 cuentas más grandes cada hora (scripts/wallets.mjs) y publica
+// liq-wallets.json junto a la terminal. Fuente "scan": el mismo escaneo desde el navegador, para tener lo último.
 // Fuente "server" (futura): un servidor propio que consulte Hydromancer perpSnapshot (100 % de las posiciones) y
 // devuelva el mismo formato. La API key de Hydromancer nunca va en el HTML.
 window.createLiqSource = function createLiqSource(env) {
@@ -10,7 +11,7 @@ window.createLiqSource = function createLiqSource(env) {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
   };
-  // Filas compactas: [coin, side, liq, usd, cross, lev, addrIdx]
+  // Filas compactas: [coin, side, liq, usd, cross, lev, addrIdx, entrada]
   let state = store.get(KEY_POS) || { t: 0, scanned: 0, rows: [], exposure: {} };
   let running = null;
 
@@ -47,7 +48,7 @@ window.createLiqSource = function createLiqSource(env) {
           for (const ap of (r && r.assetPositions) || []) {
             const p = ap.position, usd = +p.positionValue;
             exposure[p.coin] = (exposure[p.coin] || 0) + usd;
-            if (p.liquidationPx) rows.push([p.coin, +p.szi > 0 ? 1 : -1, +p.liquidationPx, usd, p.leverage.type === 'cross' ? 1 : 0, p.leverage.value, idx]);
+            if (p.liquidationPx) rows.push([p.coin, +p.szi > 0 ? 1 : -1, +p.liquidationPx, usd, p.leverage.type === 'cross' ? 1 : 0, p.leverage.value, idx, +p.entryPx]);
           }
           if (done - lastEmit >= 100) { lastEmit = done; emit(false); }
         }
@@ -62,13 +63,26 @@ window.createLiqSource = function createLiqSource(env) {
   }
 
   function positions(coin) {
-    return state.rows.filter((r) => r[0] === coin).map((r) => ({ side: r[1], liq: r[2], usd: r[3], cross: !!r[4], lev: r[5], acct: r[6] }));
+    return state.rows.filter((r) => r[0] === coin).map((r) => ({ side: r[1], liq: r[2], usd: r[3], cross: !!r[4], lev: r[5], acct: r[6], entry: r[7] }));
   }
 
   return {
     kind: 'scan',
     get state() { return state; },
     scan, positions,
+    // Escaneo del servidor (liq-wallets.json): se usa si es más nuevo que el último escaneo de este navegador.
+    async loadServer() {
+      try {
+        const r = await fetch('liq-wallets.json', { cache: 'no-cache' });
+        if (!r.ok) return false;
+        const j = await r.json();
+        if (!j.rows || !(j.t > (state.t || 0))) return false;
+        const exposure = {};
+        j.coins.forEach((c, i) => (exposure[c] = j.exp[i] * 1000));
+        state = { t: j.t, scanned: j.accounts, rows: j.rows.map((r) => [j.coins[r[0]], r[1], r[2], r[3] * 1000, r[4], r[5], -1, r[6]]), exposure, server: true };
+        return true;
+      } catch { return false; }
+    },
     useSnapshot(snap) {
       const rows = snap.rows.map((r) => [snap.coins[r[0]], r[1], r[2], r[3] * 1000, r[4], r[5], -1]);
       const exposure = {};

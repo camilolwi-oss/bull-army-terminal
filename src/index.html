@@ -612,7 +612,7 @@
   <section id="panel-liq" class="liq" aria-labelledby="h-liq" hidden>
     <header class="view-head">
       <h1 id="h-liq">Mapa de liquidaciones</h1>
-      <p class="sp-cap">Dónde están los precios de liquidación de las cuentas más grandes de Hyperliquid.</p>
+      <p class="sp-cap">Dónde están los precios de liquidación de las 5000 cuentas más grandes de Hyperliquid, y dónde los estima el modelo según el volumen.</p>
     </header>
     <div class="controls" role="group" aria-label="Mercado y escaneo">
       <div class="ctl picker" id="lqCoinCtl">
@@ -626,21 +626,45 @@
         </div>
       </div>
       <label class="ctl"><span class="lbl">Cuentas</span>
-        <select id="lqN"><option value="500">Top 500</option><option value="1000">Top 1.000</option><option value="2000" selected>Top 2.000</option><option value="3000">Top 3.000</option><option value="5000">Top 5.000</option></select>
+        <select id="lqN"><option value="500">Top 500</option><option value="1000">Top 1.000</option><option value="2000">Top 2.000</option><option value="3000">Top 3.000</option><option value="5000" selected>Top 5.000</option></select>
       </label>
-      <button type="button" class="btn" id="lqScan">Escanear</button>
+      <button type="button" class="btn" id="lqScan">Reescanear en vivo</button>
       <output class="lq-status" id="lqStatus" for="lqScan lqN"></output>
+    </div>
+
+    <div class="controls" role="group" aria-label="Vista">
+      <div class="ctl">
+        <span class="lbl">Vista</span>
+        <div class="seg" id="lqView"><button type="button" data-v="heat" aria-pressed="true">Mapa de calor</button><button type="button" data-v="profile">Perfil</button></div>
+      </div>
+      <div class="ctl lq-heatonly">
+        <span class="lbl">Vela</span>
+        <div class="seg scroll" id="lqTf">
+          <button type="button" data-tf="5m" aria-pressed="true">5m</button><button type="button" data-tf="30m">30m</button><button type="button" data-tf="1h">1H</button><button type="button" data-tf="4h">4H</button><button type="button" data-tf="1d">1D</button><button type="button" data-tf="3d">3D</button><button type="button" data-tf="1w">1W</button>
+        </div>
+      </div>
+      <label class="tog lq-heatonly"><input type="checkbox" id="lqHw" checked> Wallets</label>
+      <label class="tog lq-heatonly"><input type="checkbox" id="lqHm"> Modelo</label>
+      <div class="vwap-chips lq-heatonly" id="lqLevs" role="group" aria-label="Apalancamientos del modelo">
+        <label class="chipchk"><input type="checkbox" value="3" checked><span>x3</span></label>
+        <label class="chipchk"><input type="checkbox" value="5" checked><span>x5</span></label>
+        <label class="chipchk"><input type="checkbox" value="10" checked><span>x10</span></label>
+        <label class="chipchk"><input type="checkbox" value="25" checked><span>x25</span></label>
+        <label class="chipchk"><input type="checkbox" value="50" checked><span>x50</span></label>
+        <label class="chipchk"><input type="checkbox" value="100" checked><span>x100</span></label>
+        <label class="chipchk"><input type="checkbox" value="125" checked><span>x125</span></label>
+      </div>
     </div>
 
     <fieldset class="controls lq-sens">
       <legend class="lbl">Sensibilidad</legend>
-      <label class="ctl"><span class="lbl">Rango</span>
+      <label class="ctl lq-profonly"><span class="lbl">Rango</span>
         <select id="lqRange"><option value="5">±5 %</option><option value="10">±10 %</option><option value="15" selected>±15 %</option><option value="25">±25 %</option><option value="50">±50 %</option></select>
       </label>
-      <label class="ctl"><span class="lbl">Niveles</span>
+      <label class="ctl lq-profonly"><span class="lbl">Niveles</span>
         <select id="lqBins"><option value="60">60</option><option value="120" selected>120</option><option value="200">200</option><option value="300">300</option></select>
       </label>
-      <div class="ctl"><label class="lbl" for="lqSmooth">Suavizado</label>
+      <div class="ctl lq-profonly"><label class="lbl" for="lqSmooth">Suavizado</label>
         <input type="range" id="lqSmooth" min="0" max="6" step="0.5" value="1.5"><output id="lqSmoothV" for="lqSmooth">1,5</output>
       </div>
       <label class="ctl"><span class="lbl">Posición mín.</span>
@@ -655,7 +679,7 @@
       <label class="ctl"><span class="lbl">Margen</span>
         <select id="lqMargin"><option value="all">Cross e isolated</option><option value="cross">Cross</option><option value="isolated">Isolated</option></select>
       </label>
-      <label class="ctl"><span class="lbl">Escala</span>
+      <label class="ctl lq-profonly"><span class="lbl">Escala</span>
         <select id="lqScale"><option value="lin">Lineal</option><option value="sqrt" selected>Raíz</option></select>
       </label>
     </fieldset>
@@ -667,7 +691,8 @@
 
     <div class="sp-body lq-body">
       <figure class="sp-fig lq-fig">
-        <canvas id="lqCv" tabindex="0" role="img" aria-label="Mapa de liquidaciones" aria-describedby="lqTitle"></canvas>
+        <canvas id="lqHeat" role="img" aria-label="Mapa de calor de liquidaciones" aria-describedby="lqTitle"></canvas>
+        <canvas id="lqCv" tabindex="0" role="img" aria-label="Mapa de liquidaciones" aria-describedby="lqTitle" hidden></canvas>
         <div class="sp-tip" id="lqTip" role="status" hidden></div>
         <div class="veil" id="lqVeil"><span id="lqVeilTxt">Abrí esta pestaña para cargar el mapa.</span></div>
       </figure>
@@ -745,6 +770,7 @@
 <script type="text/plain" data-app="js/spaghetti/calc.js"></script>
 <script type="text/plain" data-app="js/spaghetti/ui.js"></script>
 <script type="text/plain" data-app="js/liquidaciones/calc.js"></script>
+<script type="text/plain" data-app="js/liquidaciones/heat.js"></script>
 <script type="text/plain" data-app="js/liquidaciones/source.js"></script>
 <script type="text/plain" data-app="js/liquidaciones/ui.js"></script>
 <script type="text/plain" data-app="js/contexto/calc.js"></script>

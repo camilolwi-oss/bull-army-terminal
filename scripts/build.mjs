@@ -66,6 +66,8 @@ fs.writeFileSync(outFile, html);
 const extra = ['app.dat', 'manifest.webmanifest', 'sw.js', ...fs.readdirSync(path.join(src, 'icons')).map((f) => 'icons/' + f)];
 // El calendario macro es opcional en el build: lo genera scripts/calendario.mjs (en el deploy, cada hora).
 if (fs.existsSync(path.join(src, 'calendario.json'))) extra.push('calendario.json');
+// Las posiciones de las wallets (mapa de liquidaciones) también: las genera scripts/wallets.mjs en el deploy.
+if (fs.existsSync(path.join(src, 'liq-wallets.json'))) extra.push('liq-wallets.json');
 for (const rel of extra) {
   fs.mkdirSync(path.dirname(path.join(dist, rel)), { recursive: true });
   fs.copyFileSync(path.join(src, rel), path.join(dist, rel));
