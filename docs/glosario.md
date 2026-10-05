@@ -3,6 +3,7 @@
 | Término | Significado |
 |---|---|
 | **Absorción** | Tres o más señales contrarias que el precio no respetó. Indica que la tendencia está absorbiendo la presión en contra. En el CVD (Aurora): el precio no acompaña un nuevo extremo del CVD, porque alguien absorbe la compra o venta agresiva. |
+| **Área de valor** (*Value Area*) | La zona donde se concentró el 70 % del volumen (o del tiempo, en TPO) de una sesión. Sus bordes son **VAH** (arriba) y **VAL** (abajo). |
 | **Agotamiento** | En el CVD (Aurora): el precio hace un extremo nuevo y el CVD no lo acompaña. El movimiento sigue con menos compradores o vendedores agresivos. |
 | **Amplitud** (*breadth*) | Qué parte del mercado acompaña el movimiento: cuántas monedas suben contra cuántas bajan. |
 | **ATR** (*Average True Range*) | Cuánto se mueve el precio en una vela típica. Se usa para medir volatilidad y dimensionar stops. |
@@ -22,20 +23,26 @@
 | **Gap de CME** | Diferencia de precio entre el cierre del viernes y la reapertura del domingo de los futuros de Bitcoin de CME. |
 | **HIP-3** | Mercados perpetuos de Hyperliquid creados por terceros, distintos de los perps principales. |
 | **Hull Suite** | Indicador de tendencia de InSilico basado en la media móvil de Hull. Verde: tendencia alcista. Rojo: bajista. |
+| **Initial Balance** | El rango de precio de los primeros períodos de la sesión (la primera hora en la diaria). |
 | **Limpieza** (de banda) | El precio atraviesa una zona entera, cierra del otro lado y vuelve a entrar. Señal de Niveles con stop detrás del barrido. |
 | **MFI** (*Money Flow Index*) | Un RSI que pondera el precio por el volumen. Uno de los cinco de Aurora. |
+| **Naked POC** | El POC de una sesión anterior al que el precio todavía no volvió. Lo mismo vale para VAH y VAL ("naked VAH/VAL"). Suelen atraer el precio. |
 | **OBV** (*On-Balance Volume*) | Volumen acumulado: suma el volumen de las velas alcistas y resta el de las bajistas. |
 | **Order Block** (OB) | Zona de la última vela contraria antes de un impulso que rompe la estructura. De **demanda** (alcista) o de **oferta** (bajista). |
 | **Open interest** | Valor total de las posiciones abiertas en un mercado de futuros. |
 | **Perp** (perpetuo) | Futuro sin vencimiento. Es el mercado principal de Hyperliquid. |
 | **Pinchazo** | El precio toca una zona y cierra afuera, del lado del que venía. Señal de Niveles con stop detrás de la mecha. |
+| **POC** (*Point of Control*) | El nivel de precio con más volumen (o más tiempo, en TPO) de una sesión. |
 | **R** / **R:R** | **R** es el riesgo de un trade (distancia de la entrada al stop). **2R** = ganar el doble de lo arriesgado. **R:R** es la relación riesgo/beneficio. |
 | **Range shift** | Cambio de régimen del RSI: rompe 60 hacia arriba o pierde 40 hacia abajo. |
 | **Régimen** | El rango en el que vive el RSI según la tendencia (Cardwell): 40–80 en tendencia alcista, 20–60 en bajista. |
 | **RRG** (*Relative Rotation Graph*) | Gráfico de rotación: ubica cada activo según su fuerza relativa contra una referencia (BTC) y el momentum de esa fuerza. Los activos suelen rotar en sentido horario. |
 | **RSI** (*Relative Strength Index*) | Oscilador de momentum de 0 a 100. |
+| **Single print** | En TPO, un nivel con una sola letra: el precio pasó rápido. Suele volver a rellenarse. |
 | **SMA / EMA** | Media móvil simple / exponencial. |
 | **SRSI** (*Stochastic RSI*) | El estocástico aplicado al RSI. Sus líneas %K y %D van de 0 a 1 (o de 0 a 100) y marcan los extremos de corto plazo. |
+| **TPO** (*Time Price Opportunity*) | Market Profile: cada letra es un período de la sesión y marca los niveles por los que pasó el precio. Muestra dónde pasó más tiempo. |
 | **TSI** (*True Strength Index*) | Oscilador de momentum con doble suavizado. Uno de los cinco de Aurora. |
 | **UTC** | Hora universal coordinada. Argentina está en UTC−3: las 12:00 UTC son las 9:00 en Buenos Aires. |
+| **Volume Profile** | El volumen operado en cada nivel de precio de una sesión, dibujado como barras horizontales. |
 | **VWAP** | Precio promedio ponderado por volumen desde un ancla: inicio del día, semana, mes, trimestre o año. |

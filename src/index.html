@@ -41,6 +41,7 @@
     <li><a class="side-item" href="#grid" data-v="grid" title="Grid"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg><span class="lab">Grid</span></a></li>
     <li><a class="side-item" href="#scanner" data-v="scan" title="Scanner"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18"/><circle cx="7" cy="7.5" r="1.6"/><circle cx="16.5" cy="16" r="1.6"/><circle cx="17" cy="6.5" r="1"/><circle cx="7.5" cy="16.5" r="1"/></svg><span class="lab">Scanner</span></a></li>
     <li><a class="side-item" href="#niveles" data-v="niv" title="Niveles"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg><span class="lab">Niveles</span></a></li>
+    <li><a class="side-item" href="#orderflow" data-v="of" title="Orderflow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v18"/><path d="M4 6h7M4 9h11M4 12h15M4 15h9M4 18h5"/></svg><span class="lab">Orderflow</span></a></li>
     <li><a class="side-item" href="#spaghetti" data-v="spag" title="Spaghetti"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 9-9"/><path d="M3 11l6 3 5-5 7 5"/></svg><span class="lab">Spaghetti</span></a></li>
     <li><a class="side-item" href="#liquidaciones" data-v="liq" title="Liquidaciones"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V11M9 20V4M14 20v-8M19 20v-5"/></svg><span class="lab">Liquidaciones</span></a></li>
     <li><a class="side-item" href="#noticias" data-v="news" title="Noticias"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span class="lab">Noticias</span></a></li>
@@ -514,6 +515,61 @@
   <p class="note"><b class="up">♛</b> debajo de la vela = compra · <b class="dn">♛</b> arriba = venta. Solo a favor del Hull Suite: compras con el Hull verde, ventas con el Hull rojo. Pinchazo: toca la zona y cierra afuera, stop detrás de la mecha. Limpieza: atraviesa la zona entera y vuelve, stop detrás del barrido. Objetivo: la zona opuesta más cercana. Pasá el mouse sobre la corona para ver el detalle. Material educativo, no es consejo financiero.</p>
   </section>
 
+  <section id="panel-of" class="nv of" aria-labelledby="h-of" hidden>
+  <header class="view-head">
+    <h1 id="h-of">Orderflow</h1>
+    <p class="sp-cap"><b>Volume Profile y TPO por sesión, con POC, área de valor y niveles naked.</b> Dónde se operó más volumen o pasó más tiempo el precio, y qué niveles todavía no se volvieron a tocar.</p>
+  </header>
+  <div class="controls" role="group" aria-label="Mercado y temporalidad">
+    <div class="ctl picker" id="ofSymCtl">
+      <span class="lbl">Mercado</span>
+      <button type="button" id="ofSymBtn" class="sym-btn" aria-haspopup="listbox" aria-expanded="false"><span id="ofSymLbl">BTC-PERP</span><span class="caret" aria-hidden="true">▾</span></button>
+      <div class="pop" id="ofPop" hidden>
+        <input type="text" id="ofSymQ" class="sym-q" role="combobox" aria-controls="ofSymList" aria-expanded="true" aria-autocomplete="list" placeholder="Buscar entre todos los mercados…" aria-label="Buscar mercado" autocomplete="off" spellcheck="false">
+        <div class="seg filt" id="ofSymF">
+          <button type="button" data-g="all" aria-pressed="true">Todos</button><button type="button" data-g="perp">Perps</button><button type="button" data-g="spot">Spot</button><button type="button" data-g="hip3">HIP-3</button>
+        </div>
+        <div class="rows-head"><span>Mercado</span><span>Precio</span><span>24h</span><span>Volumen 24h</span></div>
+        <ul class="rows" id="ofSymList" role="listbox" aria-label="Mercados de Hyperliquid"></ul>
+        <p class="pop-foot" id="ofSymCount">Cargando mercados…</p>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lbl">Velas</span>
+      <div class="seg scroll" id="ofTf">
+        <button type="button" data-tf="5">5m</button><button type="button" data-tf="15" aria-pressed="true">15m</button><button type="button" data-tf="30">30m</button><button type="button" data-tf="60">1H</button><button type="button" data-tf="240">4H</button><button type="button" data-tf="1D">1D</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lbl">Sesión</span>
+      <div class="seg scroll" id="ofSess">
+        <button type="button" data-s="day" aria-pressed="true">Diaria</button><button type="button" data-s="week">Semanal</button><button type="button" data-s="month">Mensual</button><button type="button" data-s="ny">Nueva York</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="lbl">Perfil</span>
+      <div class="seg" id="ofMode"><button type="button" data-m="vp" aria-pressed="true">Volumen</button><button type="button" data-m="tp">TPO</button></div>
+    </div>
+  </div>
+  <div class="controls" role="group" aria-label="Opciones">
+    <label class="tog"><input type="checkbox" id="ofVa" checked> Área de valor</label>
+    <label class="tog"><input type="checkbox" id="ofNk" checked> Naked POC</label>
+    <label class="tog"><input type="checkbox" id="ofNva" checked> Naked VAH / VAL</label>
+    <label class="tog"><input type="checkbox" id="ofIb" checked> Initial Balance</label>
+    <label class="tog"><input type="checkbox" id="ofSg" checked> Single prints</label>
+  </div>
+  <div class="chartbox">
+    <div id="ofChart"></div>
+    <div class="veil" id="ofVeil"><span id="ofVeilTxt">Cargando…</span></div>
+  </div>
+  <p class="note" id="ofNote"></p>
+  <div class="nv-tables">
+    <div class="nv-card of-cards" id="ofCur"></div>
+    <div class="nv-tbl"><h2>Niveles naked más cercanos</h2><table><thead><tr><th>Nivel</th><th>Precio</th><th>Dist.</th><th>Sesión</th></tr></thead><tbody id="ofNaked"></tbody></table></div>
+  </div>
+  <p class="note"><b class="gold">POC</b>: el nivel con más volumen (o más tiempo, en TPO). <b class="sup">VAH</b> y <b class="res">VAL</b>: bordes del área de valor (70 %). Naked: niveles de sesiones pasadas que el precio todavía no volvió a tocar; suelen atraer el precio. TPO: cada letra es un período (A = el primero de la sesión). Material educativo, no es consejo financiero.</p>
+  </section>
+
   <section id="panel-spag" class="spag" aria-labelledby="h-spag" hidden>
     <header class="view-head">
       <h1 id="h-spag">Spaghetti</h1>
@@ -785,6 +841,8 @@
 <script type="text/plain" data-app="js/scanner/ui.js"></script>
 <script type="text/plain" data-app="js/niveles/calc.js"></script>
 <script type="text/plain" data-app="js/niveles/ui.js"></script>
+<script type="text/plain" data-app="js/orderflow/calc.js"></script>
+<script type="text/plain" data-app="js/orderflow/ui.js"></script>
 <script type="text/plain" data-app="js/app.js"></script>
 <script src="js/loader.js"></script>
 </body>

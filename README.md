@@ -10,6 +10,7 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 | **Grid** | Screener de 2×2 a 5×5 con velas, **Aurora** y **Hull** en vivo por celda, activos a elección (perps, spot o HIP-3) y alertas visuales. |
 | **Scanner** | Plano cartesiano con todos los perps de crypto y HIP-3 (filtro Todos/Perps/HIP-3, carga por volumen y en pausa cuando no se ve): vistas Reversión (estiramiento vs giro), Rotación vs BTC (tipo RRG) y Puntaje, con colas de 5 velas, ranking alcista/bajista y confirmación de Binance para los 15 mejores. |
 | **Niveles** | Zonas de confluencia Fibonacci (puntos por nivel) solo de impulsos anclados en extremos de Aurora, sin look-ahead, con línea de corte, zonas de 1D, Hull Suite y señales de pinchazo/limpieza a favor del Hull. |
+| **Orderflow** | Volume Profile y TPO por sesión (diaria, semanal, mensual, Nueva York) sobre el gráfico de Vela, en una capa propia: POC, área de valor (70 %), Initial Balance, single prints y naked POC/VAH/VAL. |
 | **Spaghetti** | Todos los activos de Hyperliquid en un mismo gráfico para ver quién lidera y quién se queda. |
 | **Liquidaciones** | Mapa de calor de liquidaciones en el tiempo (estilo Coinglass): posiciones de las 5000 cuentas más grandes (escaneadas cada hora por GitHub Actions) y modelo x3–x125 desde el volumen; vista Perfil acumulada. |
 | **Noticias** | Feed de Tree News en tiempo real y calendario macro de la semana. |
@@ -63,6 +64,7 @@ bull-army-terminal/
 │   │   ├── grid/              ui.js (screener en grilla)
 │   │   ├── scanner/           calc.js (ejes y puntaje) · ui.js (plano, ranking y datos)
 │   │   ├── niveles/           calc.js (impulsos, zonas Fibonacci, señales) · ui.js (gráfico y paneles)
+│   │   ├── orderflow/         calc.js (sesiones, perfiles, TPO, naked) · ui.js (capa de Vela y paneles)
 │   │   ├── spaghetti/         calc.js · ui.js
 │   │   ├── liquidaciones/     calc.js (perfil) · heat.js (mapa de calor y modelo) · source.js (servidor o escaneo) · ui.js
 │   │   └── noticias/          ui.js (Tree News + calendario macro)

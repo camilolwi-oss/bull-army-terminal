@@ -379,7 +379,7 @@
 
   // ── Secciones ──────────────────────────────────────────────────────────
   let liveKnown; const liveReady = new Promise((r) => (liveKnown = r));
-  const VIEWS = { ctx:'#contexto', ind:'#indicador', aur:'#aurora', grid:'#grid', scan:'#scanner', niv:'#niveles', spag:'#spaghetti', liq:'#liquidaciones', news:'#noticias' };
+  const VIEWS = { ctx:'#contexto', ind:'#indicador', aur:'#aurora', grid:'#grid', scan:'#scanner', niv:'#niveles', of:'#orderflow', spag:'#spaghetti', liq:'#liquidaciones', news:'#noticias' };
   const mods = {};
   const snapBtc = () => { const m = (b) => ({ t:b.time, o:b.open, h:b.high, l:b.low, c:b.close, v:b.volume }); return { h1: snapBars('60').map(m), h4: snapBars('240').map(m) }; };
   // El Grid abre una celda en la sección Aurora con su mercado y temporalidad.
@@ -403,6 +403,7 @@
       if (id === 'ctx') mods.ctx = window.createContext({ live: state.live, hlPost, snapBtc });
       if (id === 'grid') mods.grid = window.createGrid({ live: state.live, CAT, loadCatalog, hlPost, makePicker, labelOf, openAurora });
       if (id === 'scan') mods.scan = window.createScanner({ live: state.live, CAT, loadCatalog, hlPost, labelOf, openAurora });
+      if (id === 'of') mods.of = window.createOrderflow({ live: state.live, hlPost, CAT, loadCatalog, loadLibs, makeProvider, makePicker, labelOf, aliasKey, THEME, TF_LABEL });
       if (id === 'niv') mods.niv = window.createNiveles({ live: state.live, hlPost, CAT, loadCatalog, loadLibs, makeProvider, makePicker, labelOf, aliasKey, THEME, TF_LABEL });
       if (id === 'aur') mods.aur = window.createAurora({ live: state.live, hlPost, CAT, loadCatalog, loadLibs, makeProvider, makePicker, labelOf, aliasKey, THEME, TF_LABEL, snapBars, hasSnap: (tf) => !!SNAP[tf], fmtDate });
       if (id === 'spag') mods.spag = window.createSpaghetti({ live: state.live, CAT, loadCatalog, hlPost, snapshot: () => JSON.parse($('spagSnap').textContent) });
