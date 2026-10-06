@@ -1,0 +1,58 @@
+# Publica todos los días a las 8:30 de Argentina (11:30 UTC) en el canal de análisis técnico de Discord la captura
+# de Contexto y un resumen de BTC y de las alts que más suben y bajan. Ver dev/discord-diario.md.
+# Necesita dos secretos del repositorio: DISCORD_WEBHOOK_URL y DISCORD_ROLE_ID (el rol @bull).
+name: Mensaje diario en Discord
+
+on:
+  schedule:
+    # GitHub suele arrancar las tareas programadas con demora: se programa media hora antes y el script
+    # espera hasta las 11:30 UTC para publicar.
+    - cron: '0 11 * * *'
+  workflow_dispatch:   # para probar a mano desde la pestaña Actions (publica en el momento)
+
+permissions:
+  contents: read
+  actions: write       # para mantener activas las tareas programadas (ver el último paso)
+
+concurrency:
+  group: discord-diario
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Armar la terminal
+        run: npm run build
+      - name: Esperar a las 8:30 de Argentina
+        if: github.event_name == 'schedule'
+        run: |
+          target=$(date -u -d "today 11:30" +%s); now=$(date -u +%s)
+          if [ "$now" -lt "$target" ]; then echo "Esperando $(( (target - now) / 60 )) min"; sleep $(( target - now )); fi
+      - name: Captura de Contexto y publicación
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_ROLE_ID: ${{ secrets.DISCORD_ROLE_ID }}
+          CHROME: /usr/bin/google-chrome
+        run: node scripts/discord-diario.mjs
+      - name: Guardar la imagen y el mensaje del día
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discord-${{ github.run_id }}
+          path: dist/discord/
+          retention-days: 14
+      - name: Mantener activas las tareas programadas
+        # GitHub apaga las tareas programadas de un repositorio público después de 60 días sin actividad.
+        # Volver a "habilitarlas" cada día reinicia ese plazo.
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/discord-diario.yml/enable" || true
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/pages.yml/enable" || true

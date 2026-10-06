@@ -9,7 +9,8 @@
     "build": "node scripts/build.mjs",
     "preview": "node scripts/build.mjs && node scripts/serve.mjs dist bull-army-extremos.html",
     "calendario": "node scripts/calendario.mjs",
-    "wallets": "node scripts/wallets.mjs"
+    "wallets": "node scripts/wallets.mjs",
+    "discord": "node scripts/discord-diario.mjs"
   },
   "engines": {
     "node": ">=18"

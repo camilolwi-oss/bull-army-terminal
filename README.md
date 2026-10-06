@@ -74,6 +74,7 @@ bull-army-terminal/
 │   ├── build.mjs              Arma dist/ (página + accesos + PWA)
 │   ├── calendario.mjs         Calendario macro (lo corre el deploy)
 │   ├── wallets.mjs            Posiciones de las 5000 cuentas más grandes (lo corre el deploy cada hora)
+│   ├── discord-diario.mjs     Mensaje diario en Discord con la captura de Contexto (8:30 ARG)
 │   └── serve.mjs              Servidor local sin dependencias
 ├── docs/                      Guía para usuarios (GitBook)
 ├── dev/                       Documentación técnica (no se publica)
@@ -85,7 +86,7 @@ bull-army-terminal/
 
 **Para usuarios** (se publica como GitBook): [`docs/`](docs/README.md) — cómo entrar, cada sección, el indicador Extremos, modo demo, preguntas frecuentes y glosario.
 
-**Para desarrollo** (no se publica en el GitBook): [`dev/`](dev/) — [arquitectura](dev/arquitectura.md), [fuentes de datos y límites](dev/fuentes-de-datos.md), [calendario macro](dev/calendario-macro.md), [modificar el código](dev/modificar-el-codigo.md) y [publicar](dev/publicar.md). La administración de accesos está en [ADMIN.md](ADMIN.md).
+**Para desarrollo** (no se publica en el GitBook): [`dev/`](dev/) — [arquitectura](dev/arquitectura.md), [fuentes de datos y límites](dev/fuentes-de-datos.md), [calendario macro](dev/calendario-macro.md), [mensaje diario en Discord](dev/discord-diario.md), [modificar el código](dev/modificar-el-codigo.md) y [publicar](dev/publicar.md). La administración de accesos está en [ADMIN.md](ADMIN.md).
 
 ## Créditos
 
