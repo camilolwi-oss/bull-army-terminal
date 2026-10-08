@@ -13,7 +13,9 @@ Muestra **a qué precios se liquidarían** las posiciones apalancadas. Las zonas
 Las posiciones de las **5000 cuentas más grandes** de Hyperliquid se escanean **automáticamente cada hora** en el servidor, así que al abrir la sección ya están cargadas. Arriba se indica cuándo fue el último escaneo.
 
 - **Reescanear en vivo** repite el escaneo desde tu navegador para tener lo último. Tarda varios minutos (Hyperliquid limita los pedidos) y podés elegir cuántas cuentas: Top 500 a Top 5.000.
-- El buscador de **Mercado** muestra el open interest y la **cobertura**: qué parte de ese open interest está en las cuentas escaneadas.
+- El buscador de **Mercado** es el mismo de Aurora: **todos los mercados de Hyperliquid** (perps, spot y HIP-3), con filtros y búsqueda.
+- Las **wallets** se escanean en los **perps principales** (BTC, ETH, SOL…). En **HIP-3** y **spot** no hay posiciones de wallets: al elegirlos se prende solo el **Modelo**, que funciona con cualquier mercado. Spot no tiene apalancamiento propio; ahí el Modelo estima dónde se liquidarían quienes operan ese activo con apalancamiento.
+- Arriba del mapa se indica la **cobertura**: qué parte del open interest está en las cuentas escaneadas.
 
 ## Mapa de calor (vista por defecto)
 

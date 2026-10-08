@@ -671,14 +671,17 @@
       <p class="sp-cap">Dónde están los precios de liquidación de las 5000 cuentas más grandes de Hyperliquid, y dónde los estima el modelo según el volumen.</p>
     </header>
     <div class="controls" role="group" aria-label="Mercado y escaneo">
-      <div class="ctl picker" id="lqCoinCtl">
+      <div class="ctl picker" id="lqSymCtl">
         <span class="lbl">Mercado</span>
-        <button type="button" class="pickbtn" id="lqCoinBtn" aria-haspopup="dialog" aria-expanded="false" aria-controls="lqCoinPop"><span id="lqCoinLbl">BTC</span><span class="caret" aria-hidden="true">▾</span></button>
-        <div class="pop" id="lqCoinPop" role="dialog" aria-label="Elegir mercado" hidden>
-          <input type="search" id="lqCoinQ" role="combobox" aria-controls="lqCoinList" aria-expanded="true" aria-autocomplete="list" placeholder="Buscar perpetuo…" aria-label="Buscar perpetuo" autocomplete="off" spellcheck="false">
-          <div class="rows-head lq-rows"><span>Mercado</span><span>Open interest</span><span>Cobertura</span></div>
-          <ul class="rows lq-rows" id="lqCoinList" role="listbox" aria-label="Perpetuos"></ul>
-          <p class="pop-foot" id="lqCoinFoot"></p>
+        <button type="button" id="lqSymBtn" class="sym-btn" aria-haspopup="listbox" aria-expanded="false"><span id="lqSymLbl">BTC-PERP</span><span class="caret" aria-hidden="true">▾</span></button>
+        <div class="pop" id="lqPop" hidden>
+          <input type="text" id="lqSymQ" class="sym-q" role="combobox" aria-controls="lqSymList" aria-expanded="true" aria-autocomplete="list" placeholder="Buscar entre todos los mercados…" aria-label="Buscar mercado" autocomplete="off" spellcheck="false">
+          <div class="seg filt" id="lqSymF">
+            <button type="button" data-g="all" aria-pressed="true">Todos</button><button type="button" data-g="perp">Perps</button><button type="button" data-g="spot">Spot</button><button type="button" data-g="hip3">HIP-3</button>
+          </div>
+          <div class="rows-head"><span>Mercado</span><span>Precio</span><span>24h</span><span>Volumen 24h</span></div>
+          <ul class="rows" id="lqSymList" role="listbox" aria-label="Mercados de Hyperliquid"></ul>
+          <p class="pop-foot" id="lqSymCount">Cargando mercados…</p>
         </div>
       </div>
       <label class="ctl"><span class="lbl">Cuentas</span>

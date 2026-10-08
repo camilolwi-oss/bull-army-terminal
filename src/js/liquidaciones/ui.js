@@ -1,5 +1,5 @@
 // Liquidaciones · interfaz. Se crea recién cuando se abre la pestaña.
-// env: { live, hlPost, snapshot() }
+// env: { live, hlPost, CAT, loadCatalog, makePicker, labelOf, aliasKey, snapshot() }
 window.createLiqMap = function createLiqMap(env) {
   'use strict';
   const $ = (id) => document.getElementById(id);
@@ -12,6 +12,12 @@ window.createLiqMap = function createLiqMap(env) {
   const FONT = '11px "IBM Plex Mono", ui-monospace, monospace';
   const S = { coin: 'BTC', ctx: {}, map: null, hover: null, drawQ: false };
   try { const c = localStorage.getItem('baLiqCoin'); if (c) S.coin = c; } catch {}
+  // S.coin es el alias del catálogo (como en Aurora); para Hyperliquid se usa su nombre real (xyz:NVDA, @107…).
+  const mkt = () => env.CAT && env.CAT.byAlias.get(S.coin);
+  const real = () => (env.CAT && env.CAT.realOf.get(S.coin)) || S.coin;
+  // Las wallets se escanean en los perps principales; en HIP-3 y spot el mapa usa el Modelo.
+  const walletsOk = () => { const m = mkt(); return !m || m.group === 'perp'; };
+  const ctxOf = () => S.ctx[real()] || (mkt() && mkt().px ? { mark: mkt().px, oi: 0 } : null);
 
   // ── Formatos ───────────────────────────────────────────────────────────
   const nf = (v, d) => v.toLocaleString('es-AR', { minimumFractionDigits:d, maximumFractionDigits:d });
@@ -34,12 +40,15 @@ window.createLiqMap = function createLiqMap(env) {
     try {
       const [meta, ctx] = await env.hlPost({ type:'metaAndAssetCtxs' });
       meta.universe.forEach((u, i) => { if (!u.isDelisted) S.ctx[u.name] = { mark: +ctx[i].markPx, oi: +ctx[i].openInterest * +ctx[i].markPx }; });
+      // Mercado HIP-3 elegido: su dex tiene su propio precio y open interest.
+      const m = mkt();
+      if (m && m.dex) { const [dm, dc] = await env.hlPost({ type:'metaAndAssetCtxs', dex: m.dex }); dm.universe.forEach((u, i) => { S.ctx[u.name] = { mark: +dc[i].markPx, oi: +dc[i].openInterest * +dc[i].markPx }; }); }
     } catch {}
   }
 
   function rebuild() {
-    const c = S.ctx[S.coin];
-    const pos = src.positions(S.coin);
+    const c = ctxOf();
+    const pos = walletsOk() ? src.positions(real()) : [];
     if (!c || !c.mark) { S.map = null; draw(); texts(pos); return; }
     S.map = LM.buildMap(pos, { ...opt(), mark: c.mark });
     texts(pos); tables(); draw();
@@ -50,14 +59,15 @@ window.createLiqMap = function createLiqMap(env) {
 
   function texts(pos) {
     const st = src.state, m = S.map, o = opt();
-    $('lqCoinLbl').textContent = S.coin + '-PERP';
-    const cov = coverage(S.coin);
+    $('lqSymLbl').textContent = env.labelOf ? env.labelOf(S.coin) : S.coin + '-PERP';
+    const cov = coverage(real());
     $('lqCap').textContent = `Hyperliquid · ${nf(st.scanned || 0, 0)} cuentas ${st.snapshot ? 'del snapshot' : 'escaneadas'} ${st.t ? ago(st.t) : ''} · ${nf(pos.length, 0)} posiciones con precio de liquidación · cobertura ${nf(cov, 0)} % del open interest`;
     if (!st.rows.length) { $('lqTitle').textContent = 'Escaneá las cuentas para armar el mapa.'; return; }
+    if (!walletsOk()) { $('lqTitle').textContent = mkt().group === 'spot' ? `${env.labelOf(S.coin)} es spot: no tiene posiciones apalancadas propias. El Modelo estima dónde se liquidarían quienes lo operan con apalancamiento.` : `${env.labelOf(S.coin)}: las wallets se escanean en los perps principales. Usá el Modelo del mapa de calor.`; return; }
     if (!m) { $('lqTitle').textContent = `Sin precio para ${S.coin}.`; return; }
     const d = Math.min(5, o.rangePct), iLo = Math.floor((m.mark * (1 - d / 100) - m.lo) / m.w), iHi = Math.floor((m.mark * (1 + d / 100) - m.lo) / m.w);
     const L = m.cumLong[Math.max(0, iLo)] || 0, Sh = m.cumShort[Math.min(m.n - 1, iHi)] || 0;
-    $('lqTitle').textContent = `${S.coin}: si cae ${nf(d, 0)} % se liquidan ${usd(L)} en longs; si sube ${nf(d, 0)} %, ${usd(Sh)} en shorts`;
+    $('lqTitle').textContent = `${env.labelOf(S.coin)}: si cae ${nf(d, 0)} % se liquidan ${usd(L)} en longs; si sube ${nf(d, 0)} %, ${usd(Sh)} en shorts`;
     $('lqCv').setAttribute('aria-label', `Mapa de liquidaciones de ${S.coin}. ${$('lqTitle').textContent}.`);
   }
 
@@ -243,21 +253,21 @@ window.createLiqMap = function createLiqMap(env) {
   }
   async function loadCandles(force) {
     if (!env.live) return;
-    const key = S.coin + '|' + H.tf;
+    const key = real() + '|' + H.tf;
     if (!force && H.key === key && H.k) return;
     if (H.loading === key) return;
     H.loading = key;
     try {
       const now = Date.now(), ms = TF_MS[H.tf];
-      const rows = await env.hlPost({ type: 'candleSnapshot', req: { coin: S.coin, interval: H.tf, startTime: now - (SHOW + LOOKBACK) * ms, endTime: now } });
+      const rows = await env.hlPost({ type: 'candleSnapshot', req: { coin: real(), interval: H.tf, startTime: now - (SHOW + LOOKBACK) * ms, endTime: now } });
       if (H.loading !== key) return;
       H.k = (rows || []).map((x) => ({ t: +x.t, o: +x.o, h: +x.h, l: +x.l, c: +x.c, v: +x.v })); H.key = key;
     } catch { if (H.key !== key) { H.k = null; H.key = key; } }
     if (H.loading === key) H.loading = null;
   }
   function rebuildHeat() {
-    if (!H.k || H.k.length < 30 || H.key !== S.coin + '|' + H.tf) { H.map = null; drawHeat(); return; }
-    H.map = LH.build(H.k, { show: SHOW, bins: 170, wallets: H.wallets ? filterPos(src.positions(S.coin)) : null, model: H.model, levs: H.levs });
+    if (!H.k || H.k.length < 30 || H.key !== real() + '|' + H.tf) { H.map = null; drawHeat(); return; }
+    H.map = LH.build(H.k, { show: SHOW, bins: 170, wallets: H.wallets && walletsOk() ? filterPos(src.positions(real())) : null, model: H.model, levs: H.levs });
     drawHeat();
   }
   async function refreshHeat(force) { await loadCandles(force); rebuildHeat(); }
@@ -293,7 +303,7 @@ window.createLiqMap = function createLiqMap(env) {
       const y1 = Y(Math.max(k.o, k.c)), y2 = Y(Math.min(k.o, k.c)); hctx.fillStyle = col; hctx.fillRect(x - bw / 2, y1, bw, Math.max(1, y2 - y1));
     });
     // Precio actual
-    const last = m.candles[m.candles.length - 1], mark = (S.ctx[S.coin] || {}).mark || last.c, ym = Math.round(Y(mark)) + 0.5;
+    const last = m.candles[m.candles.length - 1], mark = (ctxOf() || {}).mark || last.c, ym = Math.round(Y(mark)) + 0.5;
     hctx.strokeStyle = COL.gold; hctx.setLineDash([4, 3]); hctx.beginPath(); hctx.moveTo(L, ym); hctx.lineTo(L + pw, ym); hctx.stroke(); hctx.setLineDash([]);
     // Eje de precios (derecha) y de tiempo (abajo)
     hctx.fillStyle = COL.muted; hctx.textAlign = 'left';
@@ -317,8 +327,8 @@ window.createLiqMap = function createLiqMap(env) {
     if (H.wallets && !H.model && !useW) {
       hctx.fillStyle = 'rgba(11,11,12,.75)'; hctx.fillRect(L + pw / 2 - 230, T + ph / 2 - 24, 460, 48);
       hctx.fillStyle = COL.fg; hctx.textAlign = 'center'; hctx.textBaseline = 'middle';
-      hctx.fillText('Ninguna posición de las wallets se liquida en este rango de precio.', L + pw / 2, T + ph / 2 - 8);
-      hctx.fillStyle = COL.muted; hctx.fillText('Probá una vela más grande (1H, 4H) o prendé el Modelo.', L + pw / 2, T + ph / 2 + 10);
+      hctx.fillText(walletsOk() ? 'Ninguna posición de las wallets se liquida en este rango de precio.' : 'Las wallets se escanean en los perps principales, no en HIP-3 ni spot.', L + pw / 2, T + ph / 2 - 8);
+      hctx.fillStyle = COL.muted; hctx.fillText(walletsOk() ? 'Probá una vela más grande (1H, 4H) o prendé el Modelo.' : 'Prendé el Modelo para ver las liquidaciones estimadas de este mercado.', L + pw / 2, T + ph / 2 + 10);
     }
     // Crosshair
     if (H.hover) {
@@ -343,7 +353,7 @@ window.createLiqMap = function createLiqMap(env) {
       row('Modelo · intensidad', m.maxM ? nf(Math.min(100, (v / m.maxM) * 100), 0) + ' %' : '—', null);
       row('Modelo · lado', v ? (m.grid.ml[i] >= m.grid.ms[i] ? 'longs' : 'shorts') : '—', null);
     }
-    row('Distancia al precio', pct(((p0 + m.step / 2) / ((S.ctx[S.coin] || {}).mark || k.c) - 1) * 100), null);
+    row('Distancia al precio', pct(((p0 + m.step / 2) / ((ctxOf() || {}).mark || k.c) - 1) * 100), null);
     tip.append(ol); tip.hidden = false;
     const fw = hcv.clientWidth, tw = tip.offsetWidth, th = tip.offsetHeight;
     let lx = x + 14; if (lx + tw > fw - 8) lx = x - tw - 14;
@@ -378,31 +388,15 @@ window.createLiqMap = function createLiqMap(env) {
   $('lqLevs').addEventListener('change', () => { H.levs = [...$('lqLevs').querySelectorAll('input:checked')].map((b) => +b.value); saveHeat(); rebuildHeat(); });
   syncHeatControls();
 
-  // ── Selector de mercado ────────────────────────────────────────────────
-  function coins() {
-    const set = new Set([...Object.keys(src.state.exposure), ...Object.keys(S.ctx)]);
-    return [...set].filter((c) => S.ctx[c]).sort((a, b) => (S.ctx[b].oi || 0) - (S.ctx[a].oi || 0));
+  // ── Selector de mercado (el mismo de Aurora: perps, spot y HIP-3) ──
+  const picker = env.makePicker ? env.makePicker('lq', { current: () => S.coin, onPick: pick }) : null;
+  function pick(c) {
+    S.coin = c; try { localStorage.setItem('baLiqCoin', c); } catch {}
+    S.hover = null; H.hover = null; H.map = null; $('lqTip').hidden = true;
+    // En HIP-3 y spot no hay wallets: se prende el Modelo para que el mapa no quede vacío.
+    if (!walletsOk() && !H.model) { H.model = true; saveHeat(); syncHeatControls(); }
+    refreshCtx().then(rebuild); rebuild(); refreshHeat();
   }
-  function renderCoins() {
-    const q = $('lqCoinQ').value.trim().toLowerCase(), ul = $('lqCoinList'); ul.textContent = '';
-    const list = coins().filter((c) => !q || c.toLowerCase().includes(q));
-    for (const c of list.slice(0, 300)) {
-      const li = document.createElement('li'); li.dataset.c = c; li.setAttribute('role', 'option'); li.tabIndex = -1;
-      if (c === S.coin) li.className = 'cur';
-      const a = document.createElement('span'), b = document.createElement('b'); b.textContent = c; a.append(b);
-      const oi = document.createElement('span'); oi.textContent = usd(S.ctx[c].oi || 0);
-      const cv2 = document.createElement('span'); cv2.textContent = src.state.rows.length ? nf(coverage(c), 0) + ' %' : '—';
-      li.append(a, oi, cv2); ul.append(li);
-    }
-    $('lqCoinFoot').textContent = `${list.length} perpetuos · ordenados por open interest · cobertura = parte del OI que cubren las cuentas escaneadas`;
-  }
-  const setPop = (open) => { $('lqCoinPop').hidden = !open; $('lqCoinBtn').setAttribute('aria-expanded', String(open)); if (open) { $('lqCoinQ').value = ''; renderCoins(); $('lqCoinQ').focus(); } };
-  $('lqCoinBtn').addEventListener('click', () => setPop($('lqCoinPop').hidden));
-  $('lqCoinQ').addEventListener('input', renderCoins);
-  $('lqCoinQ').addEventListener('keydown', (e) => { if (e.key === 'Escape') setPop(false); if (e.key === 'Enter') { const li = $('lqCoinList').firstElementChild; li && pick(li.dataset.c); } });
-  $('lqCoinList').addEventListener('click', (e) => { const li = e.target.closest('li[data-c]'); li && pick(li.dataset.c); });
-  document.addEventListener('mousedown', (e) => { if (!$('lqCoinPop').hidden && !$('lqCoinCtl').contains(e.target)) setPop(false); });
-  function pick(c) { S.coin = c; try { localStorage.setItem('baLiqCoin', c); } catch {} setPop(false); S.hover = null; H.hover = null; H.map = null; $('lqTip').hidden = true; rebuild(); refreshHeat(); }
 
   // ── Controles de sensibilidad ──────────────────────────────────────────
   ['lqRange', 'lqBins', 'lqMin', 'lqLev', 'lqSide', 'lqMargin', 'lqScale'].forEach((id) => $(id).addEventListener('change', rebuild));
@@ -430,12 +424,16 @@ window.createLiqMap = function createLiqMap(env) {
       src.useSnapshot(snap);
       snap.coins.forEach((c, i) => (S.ctx[c] = { mark: snap.mark[i], oi: snap.oi[i] * 1000 }));
       if (!S.ctx[S.coin]) S.coin = snap.coins[0];
+      $('lqSymBtn').disabled = true; $('lqSymCtl').title = 'Disponible con datos en vivo';
       ['lqScan', 'lqN'].forEach((id) => { $(id).disabled = true; $(id).title = 'Disponible con datos en vivo'; });
       status('Modo demo');
       $('lqNote').textContent = `Modo demo: snapshot real de ${nf(snap.accounts, 0)} cuentas de Hyperliquid tomado el ${new Date(snap.t).toLocaleString('es-AR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit', hourCycle:'h23' })}, para ${snap.coins.join(', ')}. Abrí el archivo en tu navegador para escanear cualquier perpetuo en vivo.`;
       veil(null); rebuild(); return;
     }
     veil('Cargando precios y posiciones…');
+    if (env.CAT && !env.CAT.ready) { try { await env.loadCatalog(); } catch {} }
+    if (env.CAT && env.CAT.ready) { if (!env.CAT.byAlias.has(env.aliasKey(S.coin))) S.coin = 'BTC'; S.coin = env.aliasKey(S.coin); }
+    picker && picker.render();
     await Promise.all([refreshCtx(), src.loadServer()]);
     $('lqNote').textContent = 'Mapa de calor: cuanto más clara la franja, más se liquidaría en ese precio. Wallets: posiciones reales de las cuentas más grandes (escaneadas cada hora), desde su apertura estimada. Modelo: en cada vela con volumen sobre el promedio se estiman las liquidaciones de x3 a x125 desde su máximo y su mínimo; la franja se apaga cuando el precio la toca. Las cuentas chicas no entran en las wallets: por eso se muestra la cobertura del open interest.';
     if (src.state.rows.length) { status(`${src.state.server ? 'Escaneo del servidor' : 'Último escaneo'} ${ago(src.state.t)} · ${nf(src.state.scanned, 0)} cuentas. Reescaneá para tener lo último.`); veil(null); }

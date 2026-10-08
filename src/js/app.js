@@ -407,7 +407,7 @@
       if (id === 'niv') mods.niv = window.createNiveles({ live: state.live, hlPost, CAT, loadCatalog, loadLibs, makeProvider, makePicker, labelOf, aliasKey, THEME, TF_LABEL });
       if (id === 'aur') mods.aur = window.createAurora({ live: state.live, hlPost, CAT, loadCatalog, loadLibs, makeProvider, makePicker, labelOf, aliasKey, THEME, TF_LABEL, snapBars, hasSnap: (tf) => !!SNAP[tf], fmtDate });
       if (id === 'spag') mods.spag = window.createSpaghetti({ live: state.live, CAT, loadCatalog, hlPost, snapshot: () => JSON.parse($('spagSnap').textContent) });
-      if (id === 'liq') mods.liq = window.createLiqMap({ live: state.live, hlPost, snapshot: () => JSON.parse($('liqSnap').textContent) });
+      if (id === 'liq') mods.liq = window.createLiqMap({ live: state.live, hlPost, CAT, loadCatalog, makePicker, labelOf, aliasKey, snapshot: () => JSON.parse($('liqSnap').textContent) });
       if (id === 'news') mods.news = window.createNews({ settings, openSettings });
     }
     mods[id].show();
