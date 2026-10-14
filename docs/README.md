@@ -60,6 +60,20 @@ En el menú lateral están las secciones. Cada una tiene su propia dirección, a
 
 Debajo del menú, una etiqueta indica de dónde salen los datos: 🟢 **En vivo · Hyperliquid** o 🟡 **Demo · datos de muestra** (ver [Modo demo](modo-demo.md)). En el celular, el menú se abre con el botón **☰**.
 
+### Capturas del gráfico
+
+Cada sección con gráfico (Contexto, Indicador, Aurora, Grid, Scanner, Niveles, Orderflow, Spaghetti y Liquidaciones) tiene un botón **📷 Captura** arriba a la derecha. Saca una imagen de lo que estás viendo, con tus indicadores y dibujos, más una franja al pie con la marca, el mercado, la temporalidad, la fecha y el enlace a la terminal.
+
+| Opción | Qué hace | Atajo |
+|---|---|---|
+| **Descargar imagen** | Guarda un PNG en tu computadora o celular. | Ctrl + Alt + S |
+| **Copiar imagen** | La copia al portapapeles para pegarla con Ctrl + V en Discord, Telegram o X. | Ctrl + Shift + S |
+| **Abrir en una pestaña nueva** | Muestra la imagen sola en otra pestaña. | |
+| **Compartir…** | Abre el menú de compartir del sistema (aparece en los celulares y navegadores que lo permiten). | |
+| **Publicar en X** | Copia la imagen y abre un post con el nombre del gráfico y el enlace: pegá la imagen con Ctrl + V antes de publicar. | |
+
+Los atajos funcionan sobre la sección que tenés abierta. Si tu navegador no permite copiar imágenes, usá **Descargar**.
+
 ### Ajustes
 
 El botón **Ajustes** del menú tiene un solo ajuste, **opcional**: la key de Tree News. Sin ella las noticias ya se actualizan cada minuto; con ella llegan al instante. Se consigue gratis entrando con Discord en [news.treeofalpha.com](https://news.treeofalpha.com/) y queda guardada solo en tu navegador.

@@ -184,6 +184,9 @@ window.createAurora = function createAurora(env) {
   [...Object.values(FLOW_IDS).map((id) => $(id)), ...vwapBoxes()].forEach((el) => el.addEventListener('change', () => { saveFlow(); syncFlow(); }));
   window.addEventListener('resize', () => chart && !$('panel-aur').hidden && chart.resize());
 
+  // Botón 📷 del encabezado: captura de lo que se ve en esta sección.
+  window.BACapture && window.BACapture.register('aur', { name: () => `Aurora · ${env.labelOf(state.symbol)} · ${env.TF_LABEL[state.tf]}`, canvas: window.BACapture.vela(() => chart) });
+
   return {
     show() { if (!started) started = build(); else chart && chart.resize(); return started; },
     hide() {},

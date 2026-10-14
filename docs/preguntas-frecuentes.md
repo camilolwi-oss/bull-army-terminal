@@ -36,6 +36,10 @@ Las señales se confirman **al cierre de la vela**. Mientras la vela está abier
 
 En **6H** y **3D** no está disponible. Ver [Indicador](secciones/indicador.md).
 
+## ¿Cómo comparto lo que estoy viendo?
+
+Con el botón **📷 Captura** arriba a la derecha de cada sección: podés descargar la imagen, copiarla (Ctrl + Shift + S) o publicarla en X. Ver [Capturas del gráfico](README.md#capturas-del-grafico). La imagen se arma en tu navegador y no se sube a ningún lado, por eso no hay un "enlace a la imagen": para compartirla, copiala o descargala.
+
 ## El escaneo de liquidaciones tarda mucho
 
 Revisa cuenta por cuenta respetando el límite de Hyperliquid. Top 500 es rápido; Top 5.000 puede tardar bastante. El resultado queda guardado, así que no hace falta repetirlo al cambiar de mercado.

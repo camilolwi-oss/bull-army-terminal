@@ -509,3 +509,19 @@ dialog.settings .primary{background:var(--gold);color:var(--gold-ink);border-col
 .ad-help summary{cursor:pointer;color:var(--gold)}
 .ad-help ol{margin:8px 0 0;padding-left:20px;line-height:1.6}
 .ad-help a{color:var(--gold)}
+
+/* Captura del gráfico (botón 📷 del encabezado) */
+.view-head.has-cap{position:relative;padding-right:150px}
+.cap{position:absolute;top:2px;right:0}
+.cap-btn{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;background:var(--surface);border:1px solid var(--line);border-radius:4px;color:var(--fg);font:600 12px var(--f-mono);cursor:pointer}
+.cap-btn:hover,.cap-btn[aria-expanded="true"]{border-color:var(--gold);color:var(--gold)}
+.cap-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round}
+.cap-menu{position:absolute;right:0;top:40px;z-index:30;min-width:280px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.5)}
+.cap-h{margin:4px 8px 6px;font:600 11px var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.cap-menu button{display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;padding:9px 10px;background:none;border:0;border-radius:4px;color:var(--fg);font:14px system-ui,sans-serif;text-align:left;cursor:pointer}
+.cap-menu button:hover,.cap-menu button:focus-visible{background:color-mix(in srgb,var(--gold) 14%,transparent);outline:none}
+.cap-menu kbd{font:11px var(--f-mono);color:var(--muted)}
+.cap-toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:100;background:var(--surface);border:1px solid var(--gold);color:var(--fg);padding:10px 16px;border-radius:6px;font:13px system-ui,sans-serif;transition:opacity .2s,transform .2s}
+.cap-toast.on{opacity:1;transform:translate(-50%,0)}
+.cap-toast.err{border-color:#D8344F}
+@media (max-width:700px){.view-head.has-cap{padding-right:56px}.cap-btn span{display:none}.cap-menu{min-width:240px}}

@@ -194,6 +194,9 @@ window.createOrderflow = function createOrderflow(env) {
   [['ofVa', 'va'], ['ofNk', 'naked'], ['ofNva', 'nva'], ['ofIb', 'ib'], ['ofSg', 'singles']].forEach(([id, k]) => $(id).addEventListener('change', () => { st[k] = $(id).checked; save(); redraw(); }));
   window.addEventListener('resize', () => chart && visible && chart.resize());
 
+  // Botón 📷 del encabezado: captura de lo que se ve en esta sección.
+  window.BACapture && window.BACapture.register('of', { name: () => `Orderflow · ${env.labelOf(st.symbol)} · ${env.TF_LABEL[st.tf]} · ${O.SESS[st.sess].label} · ${st.mode === 'vp' ? 'Volume Profile' : 'TPO'}`, canvas: window.BACapture.vela(() => chart) });
+
   return {
     show() {
       visible = true;

@@ -387,6 +387,9 @@ window.createScanner = function createScanner(env) {
   window.addEventListener('resize', () => visible && draw());
   syncControls();
 
+  // Botón 📷 del encabezado: captura de lo que se ve en esta sección.
+  window.BACapture && window.BACapture.register('scan', { name: () => `Scanner · ${({ rev: 'Reversión', rrg: 'Rotación vs BTC', score: 'Puntaje' })[st.mode]} · ${st.tf.toUpperCase()}`, canvas: window.BACapture.plain(cv) });
+
   return {
     async show() {
       visible = true; draw();

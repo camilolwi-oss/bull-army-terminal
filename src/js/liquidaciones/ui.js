@@ -444,5 +444,8 @@ window.createLiqMap = function createLiqMap(env) {
     setInterval(() => { if (!$('panel-liq').hidden && H.view === 'heat') refreshHeat(true); }, 60000);
   })();
 
+  // Botón 📷 del encabezado: captura de lo que se ve en esta sección.
+  window.BACapture && window.BACapture.register('liq', { name: () => `Liquidaciones · ${env.labelOf ? env.labelOf(S.coin) : S.coin} · ${H.view === 'heat' ? 'Mapa de calor ' + H.tf.toUpperCase() : 'Perfil'}`, canvas: window.BACapture.plain(() => (H.view === 'heat' ? hcv : cv)) });
+
   return { show() { draw(); drawHeat(); }, hide() { S.hover = null; H.hover = null; $('lqTip').hidden = true; } };
 };

@@ -549,6 +549,9 @@ window.createSpaghetti = function createSpaghetti(env) {
     load(false);
   })();
 
+  // Botón 📷 del encabezado: captura de lo que se ve en esta sección.
+  window.BACapture && window.BACapture.register('spag', { name: () => 'Spaghetti · ' + ($('spTitle') ? $('spTitle').textContent : ''), canvas: window.BACapture.plain(cv) });
+
   return {
     show() { draw(); if (S.live && !ws && Object.keys(S.raw).length) openWs(); },
     hide() { closeWs(); setPlaying(false); clearHover(); }

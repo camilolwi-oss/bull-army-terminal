@@ -15,6 +15,8 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 | **Liquidaciones** | Mapa de calor de liquidaciones en el tiempo (estilo Coinglass): posiciones de las 5000 cuentas más grandes (escaneadas cada hora por GitHub Actions) y modelo x3–x125 desde el volumen; vista Perfil acumulada. |
 | **Noticias** | Feed de Tree News en tiempo real y calendario macro de la semana. |
 
+Cada sección tiene un botón **📷 Captura** (descargar, copiar, abrir en pestaña, compartir o publicar en X; atajos Ctrl+Alt+S y Ctrl+Shift+S) que arma una imagen del gráfico con una franja de marca.
+
 **Abrila en el navegador:** https://camilolwi-oss.github.io/bull-army-terminal/ (requiere usuario VIP). Se puede instalar como app (PWA).
 
 **Accesos:** los administra el Admin desde `#admin`. Ver [ADMIN.md](ADMIN.md).
@@ -58,6 +60,7 @@ bull-army-terminal/
 │   │   ├── loader.js          Carga datos y scripts en orden (solo en desarrollo)
 │   │   ├── acceso/            Login, sesión y panel de Admin
 │   │   ├── app.js             Arranque, navegación, ajustes, buscador de mercados y sección Indicador
+│   │   ├── captura.js         Botón 📷 de cada sección: imagen del gráfico con franja de marca
 │   │   ├── contexto/          calc.js (cálculos puros) · ui.js (interfaz y datos)
 │   │   ├── aurora/            calc.js (réplica de Aurora y el Hull) · flujo.js (delta, CVD, OI, señales, VWAP)
 │   │   │                      flujo-vela.js (datos de Binance e indicadores nativos de Vela) · ui.js (gráfico)

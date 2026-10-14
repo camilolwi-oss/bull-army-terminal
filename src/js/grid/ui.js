@@ -413,6 +413,27 @@ window.createGrid = function createGrid(env) {
     S.list = S.list.filter((a) => env.CAT.byAlias.has(a));
     build(); openWs();
   }
+  // Botón 📷 del encabezado: la grilla completa, cada celda con su nombre, precio y gráfico.
+  async function gridShot() {
+    const grid = $('gdGrid'), gr = grid.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+    const out = document.createElement('canvas'); out.width = Math.round(gr.width * dpr); out.height = Math.round(gr.height * dpr);
+    const g = out.getContext('2d'); g.scale(dpr, dpr); g.fillStyle = COL.bg; g.fillRect(0, 0, gr.width, gr.height);
+    for (const c of cells) {
+      const r = c.el.getBoundingClientRect(), x = r.left - gr.left, y = r.top - gr.top;
+      g.strokeStyle = COL.line; g.lineWidth = 1; g.strokeRect(x + 0.5, y + 0.5, r.width - 1, r.height - 1);
+      const head = c.el.querySelector('.gd-head'), hr = head.getBoundingClientRect(), hy = y + hr.height / 2;
+      g.textBaseline = 'middle'; g.textAlign = 'left'; g.font = '600 12px "IBM Plex Mono", ui-monospace, monospace'; g.fillStyle = COL.fg;
+      g.fillText(head.querySelector('.gd-name b').textContent, x + 8, hy);
+      g.textAlign = 'right'; const ch = head.querySelector('.gd-ch'); g.fillStyle = ch.classList.contains('up') ? COL.up : ch.classList.contains('dn') ? COL.dn : COL.text;
+      g.fillText(ch.textContent, x + r.width - 30, hy); const chw = g.measureText(ch.textContent).width;
+      g.fillStyle = COL.text; g.fillText(head.querySelector('.gd-px').textContent, x + r.width - 38 - chw, hy);
+      const cr = c.cv.getBoundingClientRect();
+      if (c.cv.width) g.drawImage(c.cv, cr.left - gr.left, cr.top - gr.top, cr.width, cr.height);
+    }
+    return out;
+  }
+  window.BACapture && window.BACapture.register('grid', { name: () => `Grid ${S.size.replace('x', '×')} · ${S.tf.toUpperCase()}`, canvas: gridShot });
+
   return {
     show() {
       visible = true;

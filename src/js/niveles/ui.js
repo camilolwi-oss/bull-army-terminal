@@ -272,6 +272,9 @@ window.createNiveles = function createNiveles(env) {
   });
   window.addEventListener('resize', () => chart && visible && chart.resize());
 
+  // Botón 📷 del encabezado: captura de lo que se ve en esta sección.
+  window.BACapture && window.BACapture.register('niv', { name: () => `Niveles · ${env.labelOf(st.symbol)} · ${env.TF_LABEL[st.tf]}`, canvas: window.BACapture.vela(() => chart) });
+
   return {
     show() {
       visible = true;

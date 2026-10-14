@@ -253,10 +253,12 @@
       if (CAT.ready && !CAT.byAlias.has(aliasKey(state.symbol))) state.symbol = 'BTC';
       state.symbol = aliasKey(state.symbol);
       chart = new Vela.Vela('#chart', { ...opts, symbol:'hyperliquid:' + state.symbol, timeframe:state.tf, live:true });
+      window.BACapture && window.BACapture.register('ind', { name: () => `Indicador Extremos · ${labelOf(state.symbol)} · ${TF_LABEL[state.tf]}`, canvas: window.BACapture.vela(() => chart) });
       chart.data.registerProvider('hyperliquid', makeProvider());
       picker.render();
     } else {
       chart = new Vela.Vela('#chart', { ...opts, symbol:'BTCUSDC', timeframe:state.tf, data:snapBars(state.tf), live:false });
+      window.BACapture && window.BACapture.register('ind', { name: () => `Indicador Extremos · BTC (demo) · ${TF_LABEL[state.tf]}`, canvas: window.BACapture.vela(() => chart) });
       $('symBtn').disabled = true; $('symLbl').textContent = 'BTC (demo)';
       $('symCtl').title = 'Disponible con datos en vivo';
     }

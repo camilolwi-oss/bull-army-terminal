@@ -272,5 +272,8 @@ window.createContext = function createContext(env) {
     }, 5 * 60000);
   })();
 
+  // Botón 📷 del encabezado: captura de lo que se ve en esta sección.
+  window.BACapture && window.BACapture.register('ctx', { name: () => 'Contexto de mercado', canvas: window.BACapture.dom(() => document.querySelector('#panel-ctx .cx-grid')) });
+
   return { show() { if (D.hourly) { renderBtcChart(); renderMoves(); } }, hide() {} };
 };
