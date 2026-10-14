@@ -62,7 +62,7 @@ Debajo del menú, una etiqueta indica de dónde salen los datos: 🟢 **En vivo 
 
 ### Capturas del gráfico
 
-Cada sección con gráfico (Contexto, Indicador, Aurora, Grid, Scanner, Niveles, Orderflow, Spaghetti y Liquidaciones) tiene un botón **📷 Captura** arriba a la derecha. Saca una imagen de lo que estás viendo, con tus indicadores y dibujos, más una franja al pie con la marca, el mercado, la temporalidad, la fecha y el enlace a la terminal.
+Cada sección con gráfico (Contexto, Indicador, Aurora, Grid, Scanner, Niveles, Orderflow, Spaghetti y Liquidaciones) tiene un botón **📷 Captura** arriba a la derecha. Saca una imagen de lo que estás viendo, con tus indicadores y dibujos, más una franja al pie con la marca, el mercado, la temporalidad, la fecha y «Seguinos en YouTube @BullArmyOficial».
 
 | Opción | Qué hace | Atajo |
 |---|---|---|

@@ -1,6 +1,6 @@
 // Captura del gráfico que se está viendo: botón 📷 en el encabezado de cada sección con un menú como el de
 // TradingView (descargar, copiar, abrir en una pestaña, compartir y publicar en X). La imagen lleva una franja
-// con la marca, el mercado, la fecha y el enlace a la terminal.
+// con la marca, el mercado, la fecha y el YouTube de Bull Army.
 // Cada sección se registra con: BACapture.register(id, { name: () => 'Aurora · BTC-PERP · 1H', canvas: async () => canvas })
 window.BACapture = (() => {
   'use strict';
@@ -31,7 +31,7 @@ window.BACapture = (() => {
     const w1 = g.measureText('Bull Army Terminal').width;
     g.fillStyle = MUTED; g.font = `500 ${s(12)}px "IBM Plex Mono", ui-monospace, monospace`; g.fillText('·  ' + (r.name() || ''), s(50) + w1, mid);
     const when = new Date().toLocaleString('es-AR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
-    g.textAlign = 'right'; g.fillText(`${when}  ·  ${WEB.replace('https://', '')}`, out.width - s(14), mid);
+    g.textAlign = 'right'; g.fillText(`${when}  ·  Seguinos en YouTube @BullArmyOficial`, out.width - s(14), mid);
     return out;
   }
   const toBlob = (cv) => new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej(new Error('No se pudo armar la imagen'))), 'image/png'));
