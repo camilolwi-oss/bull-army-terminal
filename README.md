@@ -17,7 +17,7 @@ Panel de trading de Bull Army sobre datos en vivo de [Hyperliquid](https://hyper
 
 Cada sección tiene un botón **📷 Captura** (descargar, copiar, abrir en pestaña, compartir o publicar en X; atajos Ctrl+Alt+S y Ctrl+Shift+S) que arma una imagen del gráfico con una franja de marca.
 
-**Abrila en el navegador:** https://camilolwi-oss.github.io/bull-army-terminal/ (requiere usuario VIP). Se puede instalar como app (PWA).
+> **La terminal se mudó a Railway:** https://terminal-production-7210.up.railway.app (requiere usuario VIP). Este repo ya no se publica: GitHub Pages solo redirige a la dirección nueva (`redirect/`), y los accesos se administran en el servidor de Railway.
 
 **Accesos:** los administra el Admin desde `#admin`. Ver [ADMIN.md](ADMIN.md).
 
@@ -77,7 +77,6 @@ bull-army-terminal/
 │   ├── build.mjs              Arma dist/ (página + accesos + PWA)
 │   ├── calendario.mjs         Calendario macro (lo corre el deploy)
 │   ├── wallets.mjs            Posiciones de las 5000 cuentas más grandes (lo corre el deploy cada hora)
-│   ├── discord-diario.mjs     Mensaje diario en Discord con la captura de Contexto (8:30 ARG)
 │   └── serve.mjs              Servidor local sin dependencias
 ├── docs/                      Guía para usuarios (GitBook)
 ├── dev/                       Documentación técnica (no se publica)
@@ -89,7 +88,7 @@ bull-army-terminal/
 
 **Para usuarios** (se publica como GitBook): [`docs/`](docs/README.md) — cómo entrar, cada sección, el indicador Extremos, modo demo, preguntas frecuentes y glosario.
 
-**Para desarrollo** (no se publica en el GitBook): [`dev/`](dev/) — [arquitectura](dev/arquitectura.md), [fuentes de datos y límites](dev/fuentes-de-datos.md), [calendario macro](dev/calendario-macro.md), [mensaje diario en Discord](dev/discord-diario.md), [modificar el código](dev/modificar-el-codigo.md) y [publicar](dev/publicar.md). La administración de accesos está en [ADMIN.md](ADMIN.md).
+**Para desarrollo** (no se publica en el GitBook): [`dev/`](dev/) — [arquitectura](dev/arquitectura.md), [fuentes de datos y límites](dev/fuentes-de-datos.md), [calendario macro](dev/calendario-macro.md), [modificar el código](dev/modificar-el-codigo.md) y [publicar](dev/publicar.md). La administración de accesos está en [ADMIN.md](ADMIN.md).
 
 ## Créditos
 
